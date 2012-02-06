@@ -1,30 +1,24 @@
-CC := g++ -g
+CC := g++
+CFLAGS := -g -c -Wall
+#LDFLAGS := -fuse-ld=gold -lncurses
+LDFLAGS := -lncurses
+SOURCES=buffer.cc statusbar.cc state.cc curses_window.cc main.cc
+OBJECTS=$(SOURCES:.cc=.o)
+EXECUTABLE=e
 
 .PHONY: all
-all: e
+all: $(SOURCES) $(EXECUTABLE)
 
 .PHONY: opt
-opt: e_opt
+opt: $(EXECUTABLE)
+	strip -s $(EXECUTABLE)
 
-buffer.o: buffer.cc
-	$(CC) -c $^
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) -g $(LDFLAGS) $(OBJECTS) -o $@
 
-state.o: state.cc
-	$(CC) -c $^
+.cc.o:
+	$(CC) $(CFLAGS) $< -o $@
 
-statusbar.o: statusbar.cc
-	$(CC) -c $^
-
-term.o: term.cc
-	$(CC) -c $^
-
-e: main.cc buffer.o term.o statusbar.o state.o
-	$(CC) $^ -lstdc++ -lncurses -o $@
-
-e_opt: main.cc buffer.o term.o statusbar.o state.o
-	$(CC) -Os $^ -lstdc++ -lncurses -o $@
-	strip -s $@
-
-PHONY: clean
+.PHONY: clean
 clean:
-	rm -f *.o e
+	rm -f $(OBJECTS) $(EXECUTABLE)

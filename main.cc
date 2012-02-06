@@ -3,27 +3,11 @@
 #include <curses.h>
 #include <unistd.h>
 
-#include "buffer.h"
-#include "state.h"
-
-int linenum = 0;
-
-using namespace e;
+#include "curses_window.h"
 
 int main(int argc, char **argv)
 {
-  State *s;
-  if (argc >= 2) {
-	Buffer b("tmp", argv[1]);
-	s = new State(&b);
-  } else {
-	s = new State();
-  }
-
-  s->redraw();
-  getch();
-
-  delete s;
-
+  e::CursesWindow w;
+  w.loop();
   return 0;
 }
