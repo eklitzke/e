@@ -41,6 +41,7 @@ namespace e {
     }
 #endif
     clearok(window_, true);
+    wtimeout(window_, 1000);
     
     clear();
   }
@@ -118,7 +119,7 @@ namespace e {
     const Buffer *active_buffer = state_.get_active_buffer();
     std::vector<Buffer *> *buffers = state_.get_buffers();
     std::vector<Buffer *>::iterator it;
-    for (it = buffers->begin(); it != buffers->end(); it++) {
+    for (it = buffers->begin(); it != buffers->end(); ++it) {
       if ((*it) == active_buffer) {
         attroff(A_REVERSE);
         addstr((*it)->get_name().c_str());
@@ -180,13 +181,28 @@ namespace e {
 
     int line, col;
     buf->cursor_pos(line, col);
-    wprintw(window_, "(%d,%d)", line + 1, col + 1);
+
+    int maxy = getmaxy(window_);
+
+    // the percentage is the percentage of the last line shown on the screen
+    int pct;
+    if (buf->num_lines() == 0) {
+      pct = 100;
+    } else {
+      size_t last_line = buf->get_window_top() + maxy - 3;
+      if (last_line >= buf->num_lines()) {
+        pct = 100;
+      } else {
+        pct = (last_line * 100) / buf->num_lines();
+      }
+    }
+    wprintw(window_, "%3d%% (%d,%d)", pct, line + 1, col + 1);
 
     // get the time
     struct timeval tv;
     gettimeofday(&tv, NULL);
     time_t curtime = tv.tv_sec;
-    char buffer[10];
+    char buffer[16];
     strftime(buffer, sizeof(buffer), "%I:%M%p", localtime(&curtime));
 
     size_t timelen = strlen(buffer);

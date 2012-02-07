@@ -25,6 +25,7 @@ namespace e {
     }
     struct stat sb;
     if (fstat(fd, &sb) == -1) {
+      close(fd);
       throw 1;
     }
 
