@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     e::CursesWindow w;
     w.loop();
   } else {
-    e::Buffer b(argv[1]);
+    e::Buffer b(argv[1], argv[1]);
     e::CursesWindow w(&b);
     w.loop();
   }

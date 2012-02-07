@@ -1,4 +1,7 @@
 #include <curses.h>
+#include <string.h>
+#include <curses.h>
+#include <sys/time.h>
 
 #include "curses_window.h"
 
@@ -6,40 +9,14 @@ namespace e {
 
   CursesWindow::CursesWindow()
   {
-    window_ = initscr(); // initialize curses
-    
-    c_clearscreen_ = tigetstr("clear");
-    
-    noecho();
-    cbreak();
-    if (has_colors()) {
-      start_color();
-    }
-    clearok(window_, true);
-    //scrollok(window, true);
-    
-    clear();
+    init();
   }
 
   CursesWindow::CursesWindow(Buffer *b)
     :Window(b)
   {
-    window_ = initscr(); // initialize curses
-    
-    c_clearscreen_ = tigetstr("clear");
-    
-    noecho();
-    cbreak();
-    if (has_colors()) {
-      start_color();
-    }
-    clearok(window_, true);
-    //scrollok(window, true);
-    
-    clear();
-
+    init();
   }
-
 
   CursesWindow::~CursesWindow()
   {
@@ -47,6 +24,27 @@ namespace e {
     echo();
     endwin();
   }
+
+  // TODO: use a delegating ctor instead
+  void
+  CursesWindow::init()
+  {
+    window_ = initscr(); // initialize curses
+    
+    c_clearscreen_ = tigetstr("clear");
+    
+    noecho();
+    cbreak();
+#ifdef HAS_COLORS
+    if (has_colors()) {
+      start_color();
+    }
+#endif
+    clearok(window_, true);
+    
+    clear();
+  }
+
 
   void
   CursesWindow::loop_once()
@@ -123,19 +121,15 @@ namespace e {
     for (it = buffers->begin(); it != buffers->end(); it++) {
       if ((*it) == active_buffer) {
         attroff(A_REVERSE);
-        addstr((*it)->get_name());
+        addstr((*it)->get_name().c_str());
         attron(A_REVERSE);
       } else {
-        addstr((*it)->get_name());
+        addstr((*it)->get_name().c_str());
       }
     }
 
-    int height, width;
-    getmaxyx(window_, height, width);
-
-    int y, x;
-    getyx(window_, y, x);
-
+    int width = getmaxx(window_);
+    int x = getcurx(window_);
     printw("%*s", width - x, "");
 
     attroff(A_BOLD);
@@ -169,7 +163,39 @@ namespace e {
     attron(A_BOLD);
     attron(A_REVERSE);
 
-    mvprintw(height - 2, 0, "%*s", width, "");
+    const Buffer *buf = state_.get_active_buffer();
+
+    std::string dirty_status;
+    if (state_.get_active_buffer()->is_dirty()) {
+      dirty_status = "**";
+    } else {
+      dirty_status = "--";
+    }
+
+    const int bufwidth = 16;
+    mvwprintw(window_, height - 2, 0, "--:%s-  %-*s",
+              dirty_status.c_str(),
+              bufwidth,
+              buf->get_name().substr(0, bufwidth).c_str());
+
+    int line, col;
+    buf->cursor_pos(line, col);
+    wprintw(window_, "(%d,%d)", line + 1, col + 1);
+
+    // get the time
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    time_t curtime = tv.tv_sec;
+    char buffer[10];
+    strftime(buffer, sizeof(buffer), "%I:%M%p", localtime(&curtime));
+
+    size_t timelen = strlen(buffer);
+
+    int x = getcurx(window_);
+    wprintw(window_, "%*s", width - x - timelen - 1, "");
+    waddstr(window_, buffer);
+    waddstr(window_, " ");
+
     attroff(A_BOLD);
     attroff(A_REVERSE);
     

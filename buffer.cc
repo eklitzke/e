@@ -12,12 +12,12 @@
 
 namespace e {
   Buffer::Buffer (const std::string &name)
-    :name_(name), c_line_(0), c_col_(0), window_top_(0)
+    :name_(name), c_line_(0), c_col_(0), window_top_(0), dirty_(false)
   {
   }
 
   Buffer::Buffer (const std::string &name, const std::string &filepath)
-    :filepath_(filepath), name_(name), c_line_(0), c_col_(0), window_top_(0)
+    :filepath_(filepath), name_(name), c_line_(0), c_col_(0), window_top_(0), dirty_(false)
   {
     int fd = open(filepath.c_str(), O_RDONLY);
     if (fd == -1) {
@@ -86,9 +86,22 @@ namespace e {
     return window_top_;
   }
 
-  const char *
+  const std::string &
   Buffer::get_name() const
   {
-    return name_.c_str();
+    return name_;
+  }
+
+  bool
+  Buffer::is_dirty(void) const
+  {
+    return dirty_;
+  }
+
+  void
+  Buffer::cursor_pos(int &line, int &col) const
+  {
+    line = c_line_;
+    col = c_col_;
   }
 }

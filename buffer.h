@@ -22,6 +22,8 @@ namespace e {
     // top line shown in window
     int window_top_;
 
+    bool dirty_;
+
   public:
     // constructors
     Buffer(const std::string &name);
@@ -32,11 +34,14 @@ namespace e {
 
     std::string* line_at(size_t index) const;
 
-    const char *get_name() const;
+    const std::string & get_name() const;
     void set_name(const std::string &);
     size_t num_lines() const;
 
     int get_window_top() const;
+    bool is_dirty(void) const;
+
+    void cursor_pos(int &, int &) const;
   };
 }
 	

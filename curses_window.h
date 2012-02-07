@@ -14,6 +14,7 @@ namespace e {
     char *c_clearscreen_;
     WINDOW *window_;
 
+    void init(void);
     void clear(void);
     void reset_cursor(void);
     int scr_lines(void);
