@@ -40,7 +40,7 @@ namespace e {
     int get_window_top() const;
     bool is_dirty(void) const;
 
-    void cursor_pos(int &, int &) const;
+    void cursor_pos(int *, int *) const;
   };
 }
 

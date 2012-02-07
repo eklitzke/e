@@ -96,8 +96,8 @@ namespace e {
   }
 
   void
-  Buffer::cursor_pos(int &line, int &col) const {
-    line = c_line_;
-    col = c_col_;
+  Buffer::cursor_pos(int *line, int *col) const {
+    *line = c_line_;
+    *col = c_col_;
   }
 }

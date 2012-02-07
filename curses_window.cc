@@ -73,11 +73,6 @@ namespace e {
   }
 
   void
-  CursesWindow::scr_lines_cols(int &lines, int &cols) {
-    getmaxyx(window_, lines, cols);
-  }
-
-  void
   CursesWindow::render_line(int position, const std::string &s) {
     mvaddnstr(position, 0, s.c_str(), s.size());
     wnoutrefresh(window_);
@@ -166,7 +161,7 @@ namespace e {
               buf->get_name().substr(0, bufwidth).c_str());
 
     int line, col;
-    buf->cursor_pos(line, col);
+    buf->cursor_pos(&line, &col);
 
     int maxy = getmaxy(window_);
 

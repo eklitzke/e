@@ -22,7 +22,6 @@ namespace e {
     int scr_lines(void);
     void loop_once(void);
     void update(void);
-    void scr_lines_cols(int &, int &);
     void render_line(int, const std::string &);
 
   public:
