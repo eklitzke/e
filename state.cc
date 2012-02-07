@@ -1,7 +1,6 @@
 #include <string>
 
 #include "state.h"
-#include "term.h"
 
 namespace e {
 
