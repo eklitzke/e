@@ -1,28 +1,26 @@
 // -*- C++ -*-
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef _e_window_h_
-#define _e_window_h_
+#ifndef WINDOW_H_
+#define WINDOW_H_
 
-#include "buffer.h"
-#include "state.h"
+#include "./buffer.h"
+#include "./state.h"
 
 namespace e {
-  
   class Window {
   protected:
     State state_;
   public:
-
-    Window() {};
-    Window(Buffer *);
+    Window() {}
+    explicit Window(Buffer *buf);
+    virtual ~Window();
 
     virtual void loop(void) = 0;
-    
     virtual void draw_tabs(void) = 0;
     virtual void draw_buffer(void) = 0;
     virtual void draw_status(void) = 0;
   };
-
 }
 
-#endif
+#endif  // WINDOW_H_

@@ -1,8 +1,9 @@
-#include "buffer.h"
-#include "curses_window.h"
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-int main(int argc, char **argv)
-{
+#include "./buffer.h"
+#include "./curses_window.h"
+
+int main(int argc, char **argv) {
   if (argc == 1) {
     e::CursesWindow w;
     w.loop();

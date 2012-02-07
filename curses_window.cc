@@ -1,38 +1,35 @@
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
+
 #include <curses.h>
 #include <string.h>
-#include <curses.h>
 #include <sys/time.h>
 
-#include "curses_window.h"
+#include "./curses_window.h"
 
 namespace e {
 
-  CursesWindow::CursesWindow()
-  {
+  CursesWindow::CursesWindow() {
     init();
   }
 
-  CursesWindow::CursesWindow(Buffer *b)
-    :Window(b)
-  {
+  CursesWindow::CursesWindow(Buffer *buf)
+    :Window(buf) {
     init();
   }
 
-  CursesWindow::~CursesWindow()
-  {
+  CursesWindow::~CursesWindow() {
     nocbreak();
     echo();
     endwin();
   }
 
-  // TODO: use a delegating ctor instead
+  // TODO(eklitzke): use a delegating ctor instead
   void
-  CursesWindow::init()
-  {
-    window_ = initscr(); // initialize curses
-    
+  CursesWindow::init() {
+    window_ = initscr();  // initialize curses
+
     c_clearscreen_ = tigetstr("clear");
-    
+
     noecho();
     cbreak();
 #ifdef HAS_COLORS
@@ -42,14 +39,13 @@ namespace e {
 #endif
     clearok(window_, true);
     wtimeout(window_, 1000);
-    
+
     clear();
   }
 
 
   void
-  CursesWindow::loop_once()
-  {
+  CursesWindow::loop_once() {
     draw_tabs();
     draw_buffer();
     draw_status();
@@ -58,8 +54,7 @@ namespace e {
   }
 
   void
-  CursesWindow::loop()
-  {
+  CursesWindow::loop() {
     loop_once();
     while (true) {
       char c = getch();
@@ -71,22 +66,19 @@ namespace e {
   }
 
   int
-  CursesWindow::scr_lines(void)
-  {
+  CursesWindow::scr_lines(void) {
     int y, x;
     getmaxyx(window_, y, x);
     return y;
   }
-  
+
   void
-  CursesWindow::scr_lines_cols(int &lines, int &cols)
-  {
+  CursesWindow::scr_lines_cols(int &lines, int &cols) {
     getmaxyx(window_, lines, cols);
   }
 
   void
-  CursesWindow::render_line(int position, const std::string &s)
-  {
+  CursesWindow::render_line(int position, const std::string &s) {
     mvaddnstr(position, 0, s.c_str(), s.size());
     wnoutrefresh(window_);
   }
@@ -97,21 +89,18 @@ namespace e {
   }
 
   void
-  CursesWindow::clear(void)
-  {
+  CursesWindow::clear(void) {
     putp(c_clearscreen_);
     wnoutrefresh(window_);
   }
 
   void
-  CursesWindow::reset_cursor(void)
-  {
+  CursesWindow::reset_cursor(void) {
     mvaddstr(1, 0, "");
   }
-  
+
   void
-  CursesWindow::draw_tabs(void)
-  {
+  CursesWindow::draw_tabs(void) {
     attron(A_BOLD);
     attron(A_REVERSE);
 
@@ -138,8 +127,7 @@ namespace e {
   }
 
   void
-  CursesWindow::draw_buffer(void)
-  {
+  CursesWindow::draw_buffer(void) {
     int height, width;
     getmaxyx(window_, height, width);
 
@@ -153,12 +141,10 @@ namespace e {
     }
 
     delete lines;
-
   }
 
   void
-  CursesWindow::draw_status(void)
-  {
+  CursesWindow::draw_status(void) {
     int height, width;
     getmaxyx(window_, height, width);
     attron(A_BOLD);
@@ -203,7 +189,9 @@ namespace e {
     gettimeofday(&tv, NULL);
     time_t curtime = tv.tv_sec;
     char buffer[16];
-    strftime(buffer, sizeof(buffer), "%I:%M%p", localtime(&curtime));
+    struct tm lt;
+    localtime_r(&curtime, &lt);
+    strftime(buffer, sizeof(buffer), "%I:%M%p", &lt);
 
     size_t timelen = strlen(buffer);
 
@@ -214,7 +202,5 @@ namespace e {
 
     attroff(A_BOLD);
     attroff(A_REVERSE);
-    
   }
-
 }

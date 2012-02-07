@@ -1,35 +1,31 @@
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
+
 #include <string>
 
-#include "state.h"
+#include "./state.h"
 
 namespace e {
 
   State::State()
-    :active_buffer_(new Buffer("*temp*"))
-  {
+    :active_buffer_(new Buffer("*temp*")) {
     buffers_.push_back(active_buffer_);
   }
 
-  State::State(Buffer *b)
-    :active_buffer_(b)
-  {
+  State::State(Buffer *buf)
+    :active_buffer_(buf) {
     buffers_.push_back(active_buffer_);
   }
 
-  State::~State()
-  {
+  State::~State() {
   }
 
   Buffer *
-  State::get_active_buffer(void)
-  {
+  State::get_active_buffer(void) {
     return active_buffer_;
   }
 
   std::vector<Buffer *> *
-  State::get_buffers(void)
-  {
+  State::get_buffers(void) {
     return &buffers_;
   }
-
 }

@@ -1,11 +1,13 @@
 // -*- C++ -*-
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef _e_curses_window_h_
-#define _e_curses_window_h_
+#ifndef CURSES_WINDOW_H_
+#define CURSES_WINDOW_H_
 
 #include <curses.h>
+#include <string>
 
-#include "window.h"
+#include "./window.h"
 
 namespace e {
 
@@ -25,7 +27,7 @@ namespace e {
 
   public:
     CursesWindow();
-    CursesWindow(Buffer *);
+    explicit CursesWindow(Buffer *buf);
     ~CursesWindow();
 
     void loop(void);
@@ -33,7 +35,6 @@ namespace e {
     void draw_buffer(void);
     void draw_status(void);
   };
-
 }
 
-#endif
+#endif  // CURSES_WINDOW_H_

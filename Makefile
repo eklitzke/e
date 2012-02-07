@@ -7,7 +7,7 @@ OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=e
 
 .PHONY: all
-all: $(SOURCES) $(EXECUTABLE)
+all: $(EXECUTABLE)
 
 .PHONY: opt
 opt: $(EXECUTABLE)
@@ -21,7 +21,8 @@ $(EXECUTABLE): $(OBJECTS)
 
 .PHONY: check
 check: $(EXECUTABLE)
-	@cppcheck -q --enable=all .
+	cppcheck -q --enable=all .
+	python third_party/cpplint.py *.cc *.h
 
 .PHONY: clean
 clean:

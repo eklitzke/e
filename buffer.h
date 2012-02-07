@@ -1,15 +1,14 @@
 // -*- C++ -*-
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef _e_buffer_h_
-#define _e_buffer_h_
+#ifndef BUFFER_H_
+#define BUFFER_H_
 
 #include <string>
 #include <vector>
 
 namespace e {
-  
-  class Buffer
-  {
+  class Buffer {
   private:
     std::vector<std::string *> lines_;
     std::string filepath_;
@@ -26,7 +25,7 @@ namespace e {
 
   public:
     // constructors
-    Buffer(const std::string &name);
+    explicit Buffer(const std::string &name);
     explicit Buffer(const std::string &name, const std::string &filepath);
 
     std::vector<std::string *>* get_lines(size_t start, size_t end) const;
@@ -44,5 +43,5 @@ namespace e {
     void cursor_pos(int &, int &) const;
   };
 }
-	
-#endif
+
+#endif  // BUFFER_H_
