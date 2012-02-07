@@ -28,7 +28,10 @@ namespace e {
   CursesWindow::init() {
     window_ = initscr();  // initialize curses
 
-    c_clearscreen_ = tigetstr("clear");
+    // this look silly, but passing a string literal to tigetstr() causes a GCC
+    // warning as tigetstr() isn't declared with a const arg
+    static char c[6] = "clear";
+    c_clearscreen_ = tigetstr(c);
 
     noecho();
     cbreak();
