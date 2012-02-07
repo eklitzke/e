@@ -22,5 +22,8 @@ namespace e {
     State();
     State(Buffer *);
     ~State();
+
+    Buffer* get_active_buffer(void);
+    std::vector<Buffer *>* get_buffers(void);
   };
 }

@@ -28,12 +28,15 @@ namespace e {
     explicit Buffer(const std::string &name, const std::string &filepath);
 
     std::vector<std::string *>* get_lines(size_t start, size_t end) const;
+    std::vector<std::string *>* get_lines(size_t num) const;
+
     std::string* line_at(size_t index) const;
 
+    const char *get_name() const;
     void set_name(const std::string &);
     size_t num_lines() const;
 
-    int get_window_top();
+    int get_window_top() const;
   };
 }
 	

@@ -1,13 +1,15 @@
-#include <iostream>
-
-#include <curses.h>
-#include <unistd.h>
-
+#include "buffer.h"
 #include "curses_window.h"
 
 int main(int argc, char **argv)
 {
-  e::CursesWindow w;
-  w.loop();
+  if (argc == 1) {
+    e::CursesWindow w;
+    w.loop();
+  } else {
+    e::Buffer b(argv[1]);
+    e::CursesWindow w(&b);
+    w.loop();
+  }
   return 0;
 }

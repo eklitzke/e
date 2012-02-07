@@ -63,6 +63,13 @@ namespace e {
     return ret;
   }
 
+  std::vector<std::string *>*
+  Buffer::get_lines(size_t num) const
+  {
+    return get_lines(window_top_, window_top_ + num);
+  }
+
+
   std::string *
   Buffer::line_at(size_t index) const {
     return lines_[index];
@@ -74,8 +81,14 @@ namespace e {
   }
 
   int
-  Buffer::get_window_top()
+  Buffer::get_window_top() const
   {
     return window_top_;
+  }
+
+  const char *
+  Buffer::get_name() const
+  {
+    return name_.c_str();
   }
 }

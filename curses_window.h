@@ -15,13 +15,16 @@ namespace e {
     WINDOW *window_;
 
     void clear(void);
+    void reset_cursor(void);
     int scr_lines(void);
+    void loop_once(void);
     void update(void);
     void scr_lines_cols(int &, int &);
     void render_line(int, const std::string &);
 
   public:
     CursesWindow();
+    CursesWindow(Buffer *);
     ~CursesWindow();
 
     void loop(void);

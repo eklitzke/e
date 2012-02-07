@@ -1,8 +1,8 @@
 CC := g++
-CFLAGS := -g -c -Wall
+CFLAGS := -g -Wall
 #LDFLAGS := -fuse-ld=gold -lncurses
 LDFLAGS := -lncurses
-SOURCES=buffer.cc statusbar.cc state.cc curses_window.cc main.cc
+SOURCES=main.cc curses_window.cc window.cc state.cc buffer.cc statusbar.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=e
 
@@ -14,11 +14,11 @@ opt: $(EXECUTABLE)
 	strip -s $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) -g $(LDFLAGS) $(OBJECTS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) -o $@
 
 .cc.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
+	rm -f $(EXECUTABLE) *.o *.gch
