@@ -15,7 +15,9 @@ namespace e {
   }
 
   KeyCode::KeyCode(int code)
-    :code_(code), short_name_(""), curses_macro_("") {
+    :code_(code), curses_macro_("") {
+    const char name[2] = { static_cast<char>(code), 0 };
+    short_name_ = name;
   }
 
   const std::string&
