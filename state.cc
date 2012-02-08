@@ -28,4 +28,12 @@ namespace e {
   State::get_buffers(void) {
     return &buffers_;
   }
+
+  bool
+  State::handle_key(const KeyCode &k) {
+    if (k.is_ascii() && k.get_char() == 'q') {
+      return false;
+    }
+    return true;
+  }
 }

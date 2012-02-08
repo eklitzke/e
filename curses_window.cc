@@ -4,6 +4,9 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include <cassert>
+
+#include "./keycode.h"
 #include "./curses_window.h"
 
 namespace e {
@@ -35,6 +38,7 @@ namespace e {
 
     noecho();
     cbreak();
+    keypad(window_, TRUE);
 #ifdef HAS_COLORS
     if (has_colors()) {
       start_color();
@@ -58,13 +62,19 @@ namespace e {
 
   void
   CursesWindow::loop() {
-    loop_once();
-    while (true) {
-      char c = getch();
-      if (c == 'q') {
-        break;
-      }
+    bool keep_going = true;
+    while (keep_going) {
       loop_once();
+      int c = wgetch(window_);
+      if (c == ERR) {
+        // this probably means a timeout fired during wgetch(), no big deal
+        continue;
+      }
+
+      int err;
+      const KeyCode &k = keycode::curses_code_to_keycode(c, &err);
+      assert(err == 0);
+      keep_going = state_.handle_key(k);
     }
   }
 

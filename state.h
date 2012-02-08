@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "./buffer.h"
+#include "./keycode.h"
 
 namespace e {
   class State {
@@ -22,6 +23,9 @@ namespace e {
 
     Buffer* get_active_buffer(void);
     std::vector<Buffer *>* get_buffers(void);
+
+    // returns true if the mainloop should keep going, false otherwise
+    bool handle_key(const KeyCode &);
   };
 }
 

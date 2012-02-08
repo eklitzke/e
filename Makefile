@@ -2,7 +2,7 @@ CC := g++
 CFLAGS := -g -Wall
 #LDFLAGS := -fuse-ld=gold -lncurses
 LDFLAGS := -lncurses
-SOURCES=main.cc curses_window.cc window.cc state.cc buffer.cc
+SOURCES=main.cc curses_window.cc window.cc state.cc buffer.cc keycode.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=e
 
