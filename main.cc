@@ -1,9 +1,15 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include <v8.h>
+
 #include "./buffer.h"
 #include "./curses_window.h"
 
 int main(int argc, char **argv) {
+
+  v8::Persistent<v8::Context> context;
+  context = v8::Context::New();
+
   if (argc == 1) {
     e::CursesWindow w;
     w.loop();

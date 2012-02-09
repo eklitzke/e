@@ -1,7 +1,8 @@
 CC := g++
-CFLAGS := -g -Wall
+CFLAGS := -g -Wall -I../v8/include
 #LDFLAGS := -fuse-ld=gold -lncurses
-LDFLAGS := -lncurses
+LDFLAGS := -lncurses -lpthread
+LINKV8 := -lpthread third_party/libv8.a
 SOURCES=main.cc curses_window.cc window.cc state.cc buffer.cc keycode.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=e
@@ -14,7 +15,7 @@ opt: $(EXECUTABLE)
 	strip -s $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) $(LINKV8) -o $@
 
 .cc.o:
 	$(CC) $(CFLAGS) -c $< -o $@
