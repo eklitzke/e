@@ -10,12 +10,8 @@
 namespace e {
   class Window {
   protected:
-    State state_;
+    State *state_;
   public:
-    Window() {}
-    explicit Window(Buffer *buf);
-    virtual ~Window();
-
     virtual void loop(void) = 0;
     virtual void draw_tabs(void) = 0;
     virtual void draw_buffer(void) = 0;

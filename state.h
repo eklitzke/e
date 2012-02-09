@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <v8.h>
 
 #include "./buffer.h"
 #include "./keycode.h"
@@ -16,9 +17,11 @@ namespace e {
     std::vector<Buffer *> buffers_;
     Buffer *active_buffer_;
 
+    v8::Persistent<v8::Context> context_;
+    v8::Persistent<v8::Function> onkeypress_;
+
   public:
-    State();
-    explicit State(Buffer *buf);
+    explicit State(const std::string &script);
     ~State();
 
     Buffer* get_active_buffer(void);

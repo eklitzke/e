@@ -13,6 +13,7 @@ namespace e {
 
   class CursesWindow : public Window {
   private:
+    State *state_;
     char *c_clearscreen_;
     WINDOW *window_;
 
@@ -25,8 +26,7 @@ namespace e {
     void render_line(int, const std::string &);
 
   public:
-    CursesWindow();
-    explicit CursesWindow(Buffer *buf);
+    explicit CursesWindow(State *state);
     ~CursesWindow();
 
     void loop(void);

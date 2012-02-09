@@ -19,9 +19,7 @@ namespace e {
       explicit KeyCode(int code);
       const std::string& get_name(void) const;
       bool is_ascii(void) const;
-#if 0
       int get_code(void) const;
-#endif
       char get_char(void) const;
   };
 

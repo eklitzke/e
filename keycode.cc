@@ -30,12 +30,10 @@ namespace e {
     return code_ <= 0xff;
   }
 
-#if 0
   int
   KeyCode::get_code(void) const {
     return code_;
   }
-#endif
 
   // XXX: it's unspecified whether this is a signed or unsigned char!
   char

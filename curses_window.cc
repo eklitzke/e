@@ -9,12 +9,8 @@
 
 namespace e {
 
-  CursesWindow::CursesWindow() {
-    init();
-  }
-
-  CursesWindow::CursesWindow(Buffer *buf)
-    :Window(buf) {
+  CursesWindow::CursesWindow(State *state)
+    :state_(state) {
     init();
   }
 
@@ -70,7 +66,7 @@ namespace e {
       }
 
       const KeyCode &k = keycode::curses_code_to_keycode(c);
-      keep_going = state_.handle_key(k);
+      keep_going = state_->handle_key(k);
     }
   }
 
@@ -109,8 +105,8 @@ namespace e {
     attron(A_REVERSE);
 
     mvprintw(0, 0, "");
-    const Buffer *active_buffer = state_.get_active_buffer();
-    std::vector<Buffer *> *buffers = state_.get_buffers();
+    const Buffer *active_buffer = state_->get_active_buffer();
+    std::vector<Buffer *> *buffers = state_->get_buffers();
     std::vector<Buffer *>::iterator it;
     for (it = buffers->begin(); it != buffers->end(); ++it) {
       if ((*it) == active_buffer) {
@@ -135,7 +131,7 @@ namespace e {
     int height, width;
     getmaxyx(window_, height, width);
 
-    const Buffer *active_buffer = state_.get_active_buffer();
+    const Buffer *active_buffer = state_->get_active_buffer();
     const std::vector<std::string *> *lines =
       active_buffer->get_lines(height - 3);
 
@@ -154,10 +150,10 @@ namespace e {
     attron(A_BOLD);
     attron(A_REVERSE);
 
-    const Buffer *buf = state_.get_active_buffer();
+    const Buffer *buf = state_->get_active_buffer();
 
     std::string dirty_status;
-    if (state_.get_active_buffer()->is_dirty()) {
+    if (state_->get_active_buffer()->is_dirty()) {
       dirty_status = "**";
     } else {
       dirty_status = "--";
