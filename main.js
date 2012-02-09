@@ -1,5 +1,9 @@
 log("started script!");
 
+var logKeypress = function (code) {
+    log("JAVASCRIPT says: \"got keypress " + code + "\"");
+};
+
 var onKeyPress = function (k) {
-    log("got keypress " + k);
+    logKeypress(k);
 };

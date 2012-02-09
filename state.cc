@@ -13,6 +13,31 @@ using namespace v8;
 namespace e {
 
   namespace js {
+
+    // Reads a file into a v8 string.
+    Handle<String> ReadFile(const std::string& name) {
+      FILE* file = fopen(name.c_str(), "rb");
+      if (file == NULL) {
+        return Handle<String>();
+      }
+
+      fseek(file, 0, SEEK_END);
+      int size = ftell(file);
+      rewind(file);
+
+      char* chars = new char[size + 1];
+      chars[size] = '\0';
+      for (int i = 0; i < size;) {
+        int read = fread(&chars[i], 1, size - i, file);
+        i += read;
+      }
+      fclose(file);
+
+      Handle<String> result = String::New(chars, size);
+      delete[] chars;
+      return result;
+    }
+
     static Handle<Value> LogCallback(const Arguments& args) {
       if (args.Length() < 1) {
         return Undefined();
@@ -25,7 +50,7 @@ namespace e {
     }
   }
 
-  State::State(const std::string &script)
+  State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")) {
 
     HandleScope handle_scope;
@@ -39,7 +64,7 @@ namespace e {
     Context::Scope context_scope(context_);
 
     // compile the JS source code, and run it once
-    Handle<String> source = String::New(script.c_str(), script.size());
+    Handle<String> source = js::ReadFile(script_name);
     Handle<Script> scr = Script::Compile(source);
     scr->Run();
 
@@ -82,7 +107,7 @@ namespace e {
 
     const int argc = 1;
     Handle<Value> argv[argc] = { Integer::New(k.get_code()) };
-    Handle<Value> result = onkeypress_->Call(context_->Global(), argc, argv);
+    onkeypress_->Call(context_->Global(), argc, argv);
 
     return true;
   }
