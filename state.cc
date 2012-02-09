@@ -1,8 +1,9 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include <v8.h>
+
 #include <cassert>
 #include <string>
-#include <v8.h>
 
 #include "./log.h"
 #include "./state.h"
@@ -22,9 +23,6 @@ namespace e {
       e::log::log_string(*value);
       return Undefined();
     }
-
-    //static Handle<Value> KeyPressCallback(const Arguments &args) {
-    //}
   }
 
   State::State(const std::string &script)
@@ -57,7 +55,6 @@ namespace e {
 
     // that to remain after this call returns
     onkeypress_ = Persistent<Function>::New(onkeypress_fun);
-
   }
 
   State::~State() {

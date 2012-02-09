@@ -32,7 +32,7 @@ namespace e {
   };
 
   namespace keycode {
-    const KeyCode& curses_code_to_keycode(int);
+    const KeyCode& curses_code_to_keycode(int code);
   }
 }
 

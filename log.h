@@ -4,6 +4,8 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#include <string>
+
 namespace e {
   namespace log {
     void init(const std::string &);

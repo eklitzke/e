@@ -12,6 +12,7 @@ namespace e {
   protected:
     State *state_;
   public:
+    virtual ~Window();
     virtual void loop(void) = 0;
     virtual void draw_tabs(void) = 0;
     virtual void draw_buffer(void) = 0;

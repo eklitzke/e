@@ -22,7 +22,7 @@ std::string load_script(void) {
     perror("open()");
     exit(1);
   }
-  
+
   std::string script;
   char rd_buf[8000];
   while (true) {
@@ -40,7 +40,6 @@ std::string load_script(void) {
 }
 
 int main(int argc, char **argv) {
-
   google::ParseCommandLineFlags(&argc, &argv, true);
 
   // initialize logging

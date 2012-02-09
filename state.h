@@ -4,9 +4,10 @@
 #ifndef STATE_H_
 #define STATE_H_
 
+#include <v8.h>
+
 #include <string>
 #include <vector>
-#include <v8.h>
 
 #include "./buffer.h"
 #include "./keycode.h"
