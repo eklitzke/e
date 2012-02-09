@@ -100,4 +100,9 @@ namespace e {
     *line = c_line_;
     *col = c_col_;
   }
+
+  void
+  Buffer::append_line(std::string *line) {
+    lines_.push_back(line);
+  }
 }

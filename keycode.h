@@ -13,14 +13,11 @@ namespace e {
     private:
       int code_;
       std::string short_name_;
-      std::string curses_macro_;
     public:
       explicit KeyCode(int code,
-                       const std::string &short_name,
-                       const std::string &curses_macro);
+                       const std::string &short_name);
       explicit KeyCode(int code);
       const std::string& get_name(void) const;
-      const std::string& get_curses_macro(void) const;
       bool is_ascii(void) const;
 #if 0
       int get_code(void) const;
@@ -29,7 +26,7 @@ namespace e {
   };
 
   namespace keycode {
-    const KeyCode& curses_code_to_keycode(int, int*);
+    const KeyCode& curses_code_to_keycode(int);
   }
 }
 

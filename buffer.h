@@ -55,6 +55,9 @@ namespace e {
 
     // get the line, col of the cursor
     void cursor_pos(int *, int *) const;
+
+    // now the buffer owns the line
+    void append_line(std::string *);
   };
 }
 

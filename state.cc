@@ -34,6 +34,8 @@ namespace e {
     if (k.is_ascii() && k.get_char() == 'q') {
       return false;
     }
+    std::string *s = new std::string(k.get_name());
+    active_buffer_->append_line(s);
     return true;
   }
 }

@@ -21,14 +21,11 @@ namespace e {
     private:
       int code_;
       std::string short_name_;
-      std::string curses_macro_;
     public:
       explicit KeyCode(int code,
-                       const std::string &short_name,
-                       const std::string &curses_macro);
+                       const std::string &short_name);
       explicit KeyCode(int code);
       const std::string& get_name(void) const;
-      const std::string& get_curses_macro(void) const;
       bool is_ascii(void) const;
 #if 0
       int get_code(void) const;
@@ -37,7 +34,7 @@ namespace e {
   };
 
   namespace keycode {
-    const KeyCode& curses_code_to_keycode(int, int*);
+    const KeyCode& curses_code_to_keycode(int);
   }
 }
 
@@ -55,26 +52,21 @@ cc_template = """
 #include "./%(h_name)s"
 
 namespace e {
-  KeyCode::KeyCode(int code,
-          const std::string &short_name,
-          const std::string &curses_macro)
-    :code_(code), short_name_(short_name), curses_macro_(curses_macro) {
+  KeyCode::KeyCode(int code, const std::string &short_name)
+    :code_(code), short_name_(short_name) {
   }
 
   KeyCode::KeyCode(int code)
-    :code_(code), curses_macro_("") {
-    const char name[2] = { static_cast<char>(code), 0 };
-    short_name_ = name;
+    :code_(code) {
+    if (code <= 127) {
+      const char name[2] = { static_cast<char>(code), 0 };
+      short_name_ = name;
+    }
   }
 
   const std::string&
   KeyCode::get_name(void) const {
     return short_name_;
-  }
-
-  const std::string&
-  KeyCode::get_curses_macro(void) const {
-    return curses_macro_;
   }
 
   bool
@@ -100,16 +92,14 @@ namespace e {
   }
 
   namespace keycode {
+    const size_t max_code = %(max_code)d;
+    KeyCode keycode_arr[max_code + 1] = {
 %(codes)s
+    };
 
     const KeyCode&
-    curses_code_to_keycode(int code, int *err) {
-      *err = 0;
-      switch (code) {
-%(case)s
-      }
-      *err = 1;
-      return ASCII_000;
+    curses_code_to_keycode(int code) {
+      return keycode_arr[static_cast<size_t>(code)];
     }
   }
 }
@@ -165,35 +155,26 @@ if __name__ == '__main__':
             return cmp(a[2], b[2])
 
     values.sort(comparator)
+    value_map = dict((code, (name, description)) for name, _, code, description in values)
+    max_code = max(value_map.iterkeys())
 
     current_year = datetime.date.today().year
     h_name = opts.output_prefix + '.h'
     cc_name = opts.output_prefix + '.cc'
 
-    codes = []
-    case = []
-    for x in xrange(256):
-        codes.append('    // ASCII %d' % (x,))
-        codes.append('    KeyCode ASCII_%03d = KeyCode(%d);' % (x, x))
-        codes.append('')
-        case.append('      case %d:' % (x,))
-        case.append('        return ASCII_%03d;' % (x,))
-        case.append('        break;')
-    for name, macro, code, description in values:
-        if code == 0:
-            continue
-        codes.append('    // %s' % (description,))
-        codes.append('    KeyCode %s = KeyCode(%d, "%s", "%s");' % (name[4:].upper(), code, name, macro))
-        codes.append('')
-        case.append('      case %d:' % (code,))
-        case.append('        return %s;' % (name[4:].upper()))
-        case.append('        break;')
+    code_arr = []
+    for code in xrange(max_code + 1):
+        if code and code in value_map:
+            name, description = value_map[code]
+            code_arr.append('      KeyCode(%d, "%s"),  // %s' % (code, name, description))
+        else:
+            code_arr.append('      KeyCode(%d),' % (code,))
 
     with open(h_name, 'w') as h_file:
         h_file.write(h_template.lstrip() % {'current_year': current_year})
 
     with open(cc_name, 'w') as cc_file:
         cc_file.write(cc_template.lstrip() % ({'current_year': current_year,
-                                               'codes': '\n'.join(codes),
-                                               'case': '\n'.join(case),
-                                               'h_name': h_name}))
+                                               'codes': '\n'.join(code_arr),
+                                               'h_name': h_name,
+                                               'max_code': max_code}))

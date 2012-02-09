@@ -4,8 +4,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include <cassert>
-
 #include "./keycode.h"
 #include "./curses_window.h"
 
@@ -71,9 +69,7 @@ namespace e {
         continue;
       }
 
-      int err;
-      const KeyCode &k = keycode::curses_code_to_keycode(c, &err);
-      assert(err == 0);
+      const KeyCode &k = keycode::curses_code_to_keycode(c);
       keep_going = state_.handle_key(k);
     }
   }

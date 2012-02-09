@@ -8,26 +8,21 @@
 #include "./keycode.h"
 
 namespace e {
-  KeyCode::KeyCode(int code,
-          const std::string &short_name,
-          const std::string &curses_macro)
-    :code_(code), short_name_(short_name), curses_macro_(curses_macro) {
+  KeyCode::KeyCode(int code, const std::string &short_name)
+    :code_(code), short_name_(short_name) {
   }
 
   KeyCode::KeyCode(int code)
-    :code_(code), curses_macro_("") {
-    const char name[2] = { static_cast<char>(code), 0 };
-    short_name_ = name;
+    :code_(code) {
+    if (code <= 127) {
+      const char name[2] = { static_cast<char>(code), 0 };
+      short_name_ = name;
+    }
   }
 
   const std::string&
   KeyCode::get_name(void) const {
     return short_name_;
-  }
-
-  const std::string&
-  KeyCode::get_curses_macro(void) const {
-    return curses_macro_;
   }
 
   bool
@@ -53,2072 +48,423 @@ namespace e {
   }
 
   namespace keycode {
-    // ASCII 0
-    KeyCode ASCII_000 = KeyCode(0);
-
-    // ASCII 1
-    KeyCode ASCII_001 = KeyCode(1);
-
-    // ASCII 2
-    KeyCode ASCII_002 = KeyCode(2);
-
-    // ASCII 3
-    KeyCode ASCII_003 = KeyCode(3);
-
-    // ASCII 4
-    KeyCode ASCII_004 = KeyCode(4);
-
-    // ASCII 5
-    KeyCode ASCII_005 = KeyCode(5);
-
-    // ASCII 6
-    KeyCode ASCII_006 = KeyCode(6);
-
-    // ASCII 7
-    KeyCode ASCII_007 = KeyCode(7);
-
-    // ASCII 8
-    KeyCode ASCII_008 = KeyCode(8);
-
-    // ASCII 9
-    KeyCode ASCII_009 = KeyCode(9);
-
-    // ASCII 10
-    KeyCode ASCII_010 = KeyCode(10);
-
-    // ASCII 11
-    KeyCode ASCII_011 = KeyCode(11);
-
-    // ASCII 12
-    KeyCode ASCII_012 = KeyCode(12);
-
-    // ASCII 13
-    KeyCode ASCII_013 = KeyCode(13);
-
-    // ASCII 14
-    KeyCode ASCII_014 = KeyCode(14);
-
-    // ASCII 15
-    KeyCode ASCII_015 = KeyCode(15);
-
-    // ASCII 16
-    KeyCode ASCII_016 = KeyCode(16);
-
-    // ASCII 17
-    KeyCode ASCII_017 = KeyCode(17);
-
-    // ASCII 18
-    KeyCode ASCII_018 = KeyCode(18);
-
-    // ASCII 19
-    KeyCode ASCII_019 = KeyCode(19);
-
-    // ASCII 20
-    KeyCode ASCII_020 = KeyCode(20);
-
-    // ASCII 21
-    KeyCode ASCII_021 = KeyCode(21);
-
-    // ASCII 22
-    KeyCode ASCII_022 = KeyCode(22);
-
-    // ASCII 23
-    KeyCode ASCII_023 = KeyCode(23);
-
-    // ASCII 24
-    KeyCode ASCII_024 = KeyCode(24);
-
-    // ASCII 25
-    KeyCode ASCII_025 = KeyCode(25);
-
-    // ASCII 26
-    KeyCode ASCII_026 = KeyCode(26);
-
-    // ASCII 27
-    KeyCode ASCII_027 = KeyCode(27);
-
-    // ASCII 28
-    KeyCode ASCII_028 = KeyCode(28);
-
-    // ASCII 29
-    KeyCode ASCII_029 = KeyCode(29);
-
-    // ASCII 30
-    KeyCode ASCII_030 = KeyCode(30);
-
-    // ASCII 31
-    KeyCode ASCII_031 = KeyCode(31);
-
-    // ASCII 32
-    KeyCode ASCII_032 = KeyCode(32);
-
-    // ASCII 33
-    KeyCode ASCII_033 = KeyCode(33);
-
-    // ASCII 34
-    KeyCode ASCII_034 = KeyCode(34);
-
-    // ASCII 35
-    KeyCode ASCII_035 = KeyCode(35);
-
-    // ASCII 36
-    KeyCode ASCII_036 = KeyCode(36);
-
-    // ASCII 37
-    KeyCode ASCII_037 = KeyCode(37);
-
-    // ASCII 38
-    KeyCode ASCII_038 = KeyCode(38);
-
-    // ASCII 39
-    KeyCode ASCII_039 = KeyCode(39);
-
-    // ASCII 40
-    KeyCode ASCII_040 = KeyCode(40);
-
-    // ASCII 41
-    KeyCode ASCII_041 = KeyCode(41);
-
-    // ASCII 42
-    KeyCode ASCII_042 = KeyCode(42);
-
-    // ASCII 43
-    KeyCode ASCII_043 = KeyCode(43);
-
-    // ASCII 44
-    KeyCode ASCII_044 = KeyCode(44);
-
-    // ASCII 45
-    KeyCode ASCII_045 = KeyCode(45);
-
-    // ASCII 46
-    KeyCode ASCII_046 = KeyCode(46);
-
-    // ASCII 47
-    KeyCode ASCII_047 = KeyCode(47);
-
-    // ASCII 48
-    KeyCode ASCII_048 = KeyCode(48);
-
-    // ASCII 49
-    KeyCode ASCII_049 = KeyCode(49);
-
-    // ASCII 50
-    KeyCode ASCII_050 = KeyCode(50);
-
-    // ASCII 51
-    KeyCode ASCII_051 = KeyCode(51);
-
-    // ASCII 52
-    KeyCode ASCII_052 = KeyCode(52);
-
-    // ASCII 53
-    KeyCode ASCII_053 = KeyCode(53);
-
-    // ASCII 54
-    KeyCode ASCII_054 = KeyCode(54);
-
-    // ASCII 55
-    KeyCode ASCII_055 = KeyCode(55);
-
-    // ASCII 56
-    KeyCode ASCII_056 = KeyCode(56);
-
-    // ASCII 57
-    KeyCode ASCII_057 = KeyCode(57);
-
-    // ASCII 58
-    KeyCode ASCII_058 = KeyCode(58);
-
-    // ASCII 59
-    KeyCode ASCII_059 = KeyCode(59);
-
-    // ASCII 60
-    KeyCode ASCII_060 = KeyCode(60);
-
-    // ASCII 61
-    KeyCode ASCII_061 = KeyCode(61);
-
-    // ASCII 62
-    KeyCode ASCII_062 = KeyCode(62);
-
-    // ASCII 63
-    KeyCode ASCII_063 = KeyCode(63);
-
-    // ASCII 64
-    KeyCode ASCII_064 = KeyCode(64);
-
-    // ASCII 65
-    KeyCode ASCII_065 = KeyCode(65);
-
-    // ASCII 66
-    KeyCode ASCII_066 = KeyCode(66);
-
-    // ASCII 67
-    KeyCode ASCII_067 = KeyCode(67);
-
-    // ASCII 68
-    KeyCode ASCII_068 = KeyCode(68);
-
-    // ASCII 69
-    KeyCode ASCII_069 = KeyCode(69);
-
-    // ASCII 70
-    KeyCode ASCII_070 = KeyCode(70);
-
-    // ASCII 71
-    KeyCode ASCII_071 = KeyCode(71);
-
-    // ASCII 72
-    KeyCode ASCII_072 = KeyCode(72);
-
-    // ASCII 73
-    KeyCode ASCII_073 = KeyCode(73);
-
-    // ASCII 74
-    KeyCode ASCII_074 = KeyCode(74);
-
-    // ASCII 75
-    KeyCode ASCII_075 = KeyCode(75);
-
-    // ASCII 76
-    KeyCode ASCII_076 = KeyCode(76);
-
-    // ASCII 77
-    KeyCode ASCII_077 = KeyCode(77);
-
-    // ASCII 78
-    KeyCode ASCII_078 = KeyCode(78);
-
-    // ASCII 79
-    KeyCode ASCII_079 = KeyCode(79);
-
-    // ASCII 80
-    KeyCode ASCII_080 = KeyCode(80);
-
-    // ASCII 81
-    KeyCode ASCII_081 = KeyCode(81);
-
-    // ASCII 82
-    KeyCode ASCII_082 = KeyCode(82);
-
-    // ASCII 83
-    KeyCode ASCII_083 = KeyCode(83);
-
-    // ASCII 84
-    KeyCode ASCII_084 = KeyCode(84);
-
-    // ASCII 85
-    KeyCode ASCII_085 = KeyCode(85);
-
-    // ASCII 86
-    KeyCode ASCII_086 = KeyCode(86);
-
-    // ASCII 87
-    KeyCode ASCII_087 = KeyCode(87);
-
-    // ASCII 88
-    KeyCode ASCII_088 = KeyCode(88);
-
-    // ASCII 89
-    KeyCode ASCII_089 = KeyCode(89);
-
-    // ASCII 90
-    KeyCode ASCII_090 = KeyCode(90);
-
-    // ASCII 91
-    KeyCode ASCII_091 = KeyCode(91);
-
-    // ASCII 92
-    KeyCode ASCII_092 = KeyCode(92);
-
-    // ASCII 93
-    KeyCode ASCII_093 = KeyCode(93);
-
-    // ASCII 94
-    KeyCode ASCII_094 = KeyCode(94);
-
-    // ASCII 95
-    KeyCode ASCII_095 = KeyCode(95);
-
-    // ASCII 96
-    KeyCode ASCII_096 = KeyCode(96);
-
-    // ASCII 97
-    KeyCode ASCII_097 = KeyCode(97);
-
-    // ASCII 98
-    KeyCode ASCII_098 = KeyCode(98);
-
-    // ASCII 99
-    KeyCode ASCII_099 = KeyCode(99);
-
-    // ASCII 100
-    KeyCode ASCII_100 = KeyCode(100);
-
-    // ASCII 101
-    KeyCode ASCII_101 = KeyCode(101);
-
-    // ASCII 102
-    KeyCode ASCII_102 = KeyCode(102);
-
-    // ASCII 103
-    KeyCode ASCII_103 = KeyCode(103);
-
-    // ASCII 104
-    KeyCode ASCII_104 = KeyCode(104);
-
-    // ASCII 105
-    KeyCode ASCII_105 = KeyCode(105);
-
-    // ASCII 106
-    KeyCode ASCII_106 = KeyCode(106);
-
-    // ASCII 107
-    KeyCode ASCII_107 = KeyCode(107);
-
-    // ASCII 108
-    KeyCode ASCII_108 = KeyCode(108);
-
-    // ASCII 109
-    KeyCode ASCII_109 = KeyCode(109);
-
-    // ASCII 110
-    KeyCode ASCII_110 = KeyCode(110);
-
-    // ASCII 111
-    KeyCode ASCII_111 = KeyCode(111);
-
-    // ASCII 112
-    KeyCode ASCII_112 = KeyCode(112);
-
-    // ASCII 113
-    KeyCode ASCII_113 = KeyCode(113);
-
-    // ASCII 114
-    KeyCode ASCII_114 = KeyCode(114);
-
-    // ASCII 115
-    KeyCode ASCII_115 = KeyCode(115);
-
-    // ASCII 116
-    KeyCode ASCII_116 = KeyCode(116);
-
-    // ASCII 117
-    KeyCode ASCII_117 = KeyCode(117);
-
-    // ASCII 118
-    KeyCode ASCII_118 = KeyCode(118);
-
-    // ASCII 119
-    KeyCode ASCII_119 = KeyCode(119);
-
-    // ASCII 120
-    KeyCode ASCII_120 = KeyCode(120);
-
-    // ASCII 121
-    KeyCode ASCII_121 = KeyCode(121);
-
-    // ASCII 122
-    KeyCode ASCII_122 = KeyCode(122);
-
-    // ASCII 123
-    KeyCode ASCII_123 = KeyCode(123);
-
-    // ASCII 124
-    KeyCode ASCII_124 = KeyCode(124);
-
-    // ASCII 125
-    KeyCode ASCII_125 = KeyCode(125);
-
-    // ASCII 126
-    KeyCode ASCII_126 = KeyCode(126);
-
-    // ASCII 127
-    KeyCode ASCII_127 = KeyCode(127);
-
-    // ASCII 128
-    KeyCode ASCII_128 = KeyCode(128);
-
-    // ASCII 129
-    KeyCode ASCII_129 = KeyCode(129);
-
-    // ASCII 130
-    KeyCode ASCII_130 = KeyCode(130);
-
-    // ASCII 131
-    KeyCode ASCII_131 = KeyCode(131);
-
-    // ASCII 132
-    KeyCode ASCII_132 = KeyCode(132);
-
-    // ASCII 133
-    KeyCode ASCII_133 = KeyCode(133);
-
-    // ASCII 134
-    KeyCode ASCII_134 = KeyCode(134);
-
-    // ASCII 135
-    KeyCode ASCII_135 = KeyCode(135);
-
-    // ASCII 136
-    KeyCode ASCII_136 = KeyCode(136);
-
-    // ASCII 137
-    KeyCode ASCII_137 = KeyCode(137);
-
-    // ASCII 138
-    KeyCode ASCII_138 = KeyCode(138);
-
-    // ASCII 139
-    KeyCode ASCII_139 = KeyCode(139);
-
-    // ASCII 140
-    KeyCode ASCII_140 = KeyCode(140);
-
-    // ASCII 141
-    KeyCode ASCII_141 = KeyCode(141);
-
-    // ASCII 142
-    KeyCode ASCII_142 = KeyCode(142);
-
-    // ASCII 143
-    KeyCode ASCII_143 = KeyCode(143);
-
-    // ASCII 144
-    KeyCode ASCII_144 = KeyCode(144);
-
-    // ASCII 145
-    KeyCode ASCII_145 = KeyCode(145);
-
-    // ASCII 146
-    KeyCode ASCII_146 = KeyCode(146);
-
-    // ASCII 147
-    KeyCode ASCII_147 = KeyCode(147);
-
-    // ASCII 148
-    KeyCode ASCII_148 = KeyCode(148);
-
-    // ASCII 149
-    KeyCode ASCII_149 = KeyCode(149);
-
-    // ASCII 150
-    KeyCode ASCII_150 = KeyCode(150);
-
-    // ASCII 151
-    KeyCode ASCII_151 = KeyCode(151);
-
-    // ASCII 152
-    KeyCode ASCII_152 = KeyCode(152);
-
-    // ASCII 153
-    KeyCode ASCII_153 = KeyCode(153);
-
-    // ASCII 154
-    KeyCode ASCII_154 = KeyCode(154);
-
-    // ASCII 155
-    KeyCode ASCII_155 = KeyCode(155);
-
-    // ASCII 156
-    KeyCode ASCII_156 = KeyCode(156);
-
-    // ASCII 157
-    KeyCode ASCII_157 = KeyCode(157);
-
-    // ASCII 158
-    KeyCode ASCII_158 = KeyCode(158);
-
-    // ASCII 159
-    KeyCode ASCII_159 = KeyCode(159);
-
-    // ASCII 160
-    KeyCode ASCII_160 = KeyCode(160);
-
-    // ASCII 161
-    KeyCode ASCII_161 = KeyCode(161);
-
-    // ASCII 162
-    KeyCode ASCII_162 = KeyCode(162);
-
-    // ASCII 163
-    KeyCode ASCII_163 = KeyCode(163);
-
-    // ASCII 164
-    KeyCode ASCII_164 = KeyCode(164);
-
-    // ASCII 165
-    KeyCode ASCII_165 = KeyCode(165);
-
-    // ASCII 166
-    KeyCode ASCII_166 = KeyCode(166);
-
-    // ASCII 167
-    KeyCode ASCII_167 = KeyCode(167);
-
-    // ASCII 168
-    KeyCode ASCII_168 = KeyCode(168);
-
-    // ASCII 169
-    KeyCode ASCII_169 = KeyCode(169);
-
-    // ASCII 170
-    KeyCode ASCII_170 = KeyCode(170);
-
-    // ASCII 171
-    KeyCode ASCII_171 = KeyCode(171);
-
-    // ASCII 172
-    KeyCode ASCII_172 = KeyCode(172);
-
-    // ASCII 173
-    KeyCode ASCII_173 = KeyCode(173);
-
-    // ASCII 174
-    KeyCode ASCII_174 = KeyCode(174);
-
-    // ASCII 175
-    KeyCode ASCII_175 = KeyCode(175);
-
-    // ASCII 176
-    KeyCode ASCII_176 = KeyCode(176);
-
-    // ASCII 177
-    KeyCode ASCII_177 = KeyCode(177);
-
-    // ASCII 178
-    KeyCode ASCII_178 = KeyCode(178);
-
-    // ASCII 179
-    KeyCode ASCII_179 = KeyCode(179);
-
-    // ASCII 180
-    KeyCode ASCII_180 = KeyCode(180);
-
-    // ASCII 181
-    KeyCode ASCII_181 = KeyCode(181);
-
-    // ASCII 182
-    KeyCode ASCII_182 = KeyCode(182);
-
-    // ASCII 183
-    KeyCode ASCII_183 = KeyCode(183);
-
-    // ASCII 184
-    KeyCode ASCII_184 = KeyCode(184);
-
-    // ASCII 185
-    KeyCode ASCII_185 = KeyCode(185);
-
-    // ASCII 186
-    KeyCode ASCII_186 = KeyCode(186);
-
-    // ASCII 187
-    KeyCode ASCII_187 = KeyCode(187);
-
-    // ASCII 188
-    KeyCode ASCII_188 = KeyCode(188);
-
-    // ASCII 189
-    KeyCode ASCII_189 = KeyCode(189);
-
-    // ASCII 190
-    KeyCode ASCII_190 = KeyCode(190);
-
-    // ASCII 191
-    KeyCode ASCII_191 = KeyCode(191);
-
-    // ASCII 192
-    KeyCode ASCII_192 = KeyCode(192);
-
-    // ASCII 193
-    KeyCode ASCII_193 = KeyCode(193);
-
-    // ASCII 194
-    KeyCode ASCII_194 = KeyCode(194);
-
-    // ASCII 195
-    KeyCode ASCII_195 = KeyCode(195);
-
-    // ASCII 196
-    KeyCode ASCII_196 = KeyCode(196);
-
-    // ASCII 197
-    KeyCode ASCII_197 = KeyCode(197);
-
-    // ASCII 198
-    KeyCode ASCII_198 = KeyCode(198);
-
-    // ASCII 199
-    KeyCode ASCII_199 = KeyCode(199);
-
-    // ASCII 200
-    KeyCode ASCII_200 = KeyCode(200);
-
-    // ASCII 201
-    KeyCode ASCII_201 = KeyCode(201);
-
-    // ASCII 202
-    KeyCode ASCII_202 = KeyCode(202);
-
-    // ASCII 203
-    KeyCode ASCII_203 = KeyCode(203);
-
-    // ASCII 204
-    KeyCode ASCII_204 = KeyCode(204);
-
-    // ASCII 205
-    KeyCode ASCII_205 = KeyCode(205);
-
-    // ASCII 206
-    KeyCode ASCII_206 = KeyCode(206);
-
-    // ASCII 207
-    KeyCode ASCII_207 = KeyCode(207);
-
-    // ASCII 208
-    KeyCode ASCII_208 = KeyCode(208);
-
-    // ASCII 209
-    KeyCode ASCII_209 = KeyCode(209);
-
-    // ASCII 210
-    KeyCode ASCII_210 = KeyCode(210);
-
-    // ASCII 211
-    KeyCode ASCII_211 = KeyCode(211);
-
-    // ASCII 212
-    KeyCode ASCII_212 = KeyCode(212);
-
-    // ASCII 213
-    KeyCode ASCII_213 = KeyCode(213);
-
-    // ASCII 214
-    KeyCode ASCII_214 = KeyCode(214);
-
-    // ASCII 215
-    KeyCode ASCII_215 = KeyCode(215);
-
-    // ASCII 216
-    KeyCode ASCII_216 = KeyCode(216);
-
-    // ASCII 217
-    KeyCode ASCII_217 = KeyCode(217);
-
-    // ASCII 218
-    KeyCode ASCII_218 = KeyCode(218);
-
-    // ASCII 219
-    KeyCode ASCII_219 = KeyCode(219);
-
-    // ASCII 220
-    KeyCode ASCII_220 = KeyCode(220);
-
-    // ASCII 221
-    KeyCode ASCII_221 = KeyCode(221);
-
-    // ASCII 222
-    KeyCode ASCII_222 = KeyCode(222);
-
-    // ASCII 223
-    KeyCode ASCII_223 = KeyCode(223);
-
-    // ASCII 224
-    KeyCode ASCII_224 = KeyCode(224);
-
-    // ASCII 225
-    KeyCode ASCII_225 = KeyCode(225);
-
-    // ASCII 226
-    KeyCode ASCII_226 = KeyCode(226);
-
-    // ASCII 227
-    KeyCode ASCII_227 = KeyCode(227);
-
-    // ASCII 228
-    KeyCode ASCII_228 = KeyCode(228);
-
-    // ASCII 229
-    KeyCode ASCII_229 = KeyCode(229);
-
-    // ASCII 230
-    KeyCode ASCII_230 = KeyCode(230);
-
-    // ASCII 231
-    KeyCode ASCII_231 = KeyCode(231);
-
-    // ASCII 232
-    KeyCode ASCII_232 = KeyCode(232);
-
-    // ASCII 233
-    KeyCode ASCII_233 = KeyCode(233);
-
-    // ASCII 234
-    KeyCode ASCII_234 = KeyCode(234);
-
-    // ASCII 235
-    KeyCode ASCII_235 = KeyCode(235);
-
-    // ASCII 236
-    KeyCode ASCII_236 = KeyCode(236);
-
-    // ASCII 237
-    KeyCode ASCII_237 = KeyCode(237);
-
-    // ASCII 238
-    KeyCode ASCII_238 = KeyCode(238);
-
-    // ASCII 239
-    KeyCode ASCII_239 = KeyCode(239);
-
-    // ASCII 240
-    KeyCode ASCII_240 = KeyCode(240);
-
-    // ASCII 241
-    KeyCode ASCII_241 = KeyCode(241);
-
-    // ASCII 242
-    KeyCode ASCII_242 = KeyCode(242);
-
-    // ASCII 243
-    KeyCode ASCII_243 = KeyCode(243);
-
-    // ASCII 244
-    KeyCode ASCII_244 = KeyCode(244);
-
-    // ASCII 245
-    KeyCode ASCII_245 = KeyCode(245);
-
-    // ASCII 246
-    KeyCode ASCII_246 = KeyCode(246);
-
-    // ASCII 247
-    KeyCode ASCII_247 = KeyCode(247);
-
-    // ASCII 248
-    KeyCode ASCII_248 = KeyCode(248);
-
-    // ASCII 249
-    KeyCode ASCII_249 = KeyCode(249);
-
-    // ASCII 250
-    KeyCode ASCII_250 = KeyCode(250);
-
-    // ASCII 251
-    KeyCode ASCII_251 = KeyCode(251);
-
-    // ASCII 252
-    KeyCode ASCII_252 = KeyCode(252);
-
-    // ASCII 253
-    KeyCode ASCII_253 = KeyCode(253);
-
-    // ASCII 254
-    KeyCode ASCII_254 = KeyCode(254);
-
-    // ASCII 255
-    KeyCode ASCII_255 = KeyCode(255);
-
-    // down-arrow key
-    KeyCode DOWN = KeyCode(258, "key_down", "KEY_DOWN");
-
-    // up-arrow key
-    KeyCode UP = KeyCode(259, "key_up", "KEY_UP");
-
-    // left-arrow key
-    KeyCode LEFT = KeyCode(260, "key_left", "KEY_LEFT");
-
-    // right-arrow key
-    KeyCode RIGHT = KeyCode(261, "key_right", "KEY_RIGHT");
-
-    // home key
-    KeyCode HOME = KeyCode(262, "key_home", "KEY_HOME");
-
-    // backspace key
-    KeyCode BACKSPACE = KeyCode(263, "key_backspace", "KEY_BACKSPACE");
-
-    // F0 function key
-    KeyCode F0 = KeyCode(264, "key_f0", "KEY_F(0)");
-
-    // delete-line key
-    KeyCode DL = KeyCode(328, "key_dl", "KEY_DL");
-
-    // insert-line key
-    KeyCode IL = KeyCode(329, "key_il", "KEY_IL");
-
-    // delete-character key
-    KeyCode DC = KeyCode(330, "key_dc", "KEY_DC");
-
-    // insert-character key
-    KeyCode IC = KeyCode(331, "key_ic", "KEY_IC");
-
-    // sent by rmir or smir in insert mode
-    KeyCode EIC = KeyCode(332, "key_eic", "KEY_EIC");
-
-    // clear-screen or erase key
-    KeyCode CLEAR = KeyCode(333, "key_clear", "KEY_CLEAR");
-
-    // clear-to-end-of-screen key
-    KeyCode EOS = KeyCode(334, "key_eos", "KEY_EOS");
-
-    // clear-to-end-of-line key
-    KeyCode EOL = KeyCode(335, "key_eol", "KEY_EOL");
-
-    // scroll-forward key
-    KeyCode SF = KeyCode(336, "key_sf", "KEY_SF");
-
-    // scroll-backward key
-    KeyCode SR = KeyCode(337, "key_sr", "KEY_SR");
-
-    // next-page key
-    KeyCode NPAGE = KeyCode(338, "key_npage", "KEY_NPAGE");
-
-    // previous-page key
-    KeyCode PPAGE = KeyCode(339, "key_ppage", "KEY_PPAGE");
-
-    // set-tab key
-    KeyCode STAB = KeyCode(340, "key_stab", "KEY_STAB");
-
-    // clear-tab key
-    KeyCode CTAB = KeyCode(341, "key_ctab", "KEY_CTAB");
-
-    // clear-all-tabs key
-    KeyCode CATAB = KeyCode(342, "key_catab", "KEY_CATAB");
-
-    // enter/send key
-    KeyCode ENTER = KeyCode(343, "key_enter", "KEY_ENTER");
-
-    // print key
-    KeyCode PRINT = KeyCode(346, "key_print", "KEY_PRINT");
-
-    // lower-left key (home down)
-    KeyCode LL = KeyCode(347, "key_ll", "KEY_LL");
-
-    // upper left of keypad
-    KeyCode A1 = KeyCode(348, "key_a1", "KEY_A1");
-
-    // upper right of keypad
-    KeyCode A3 = KeyCode(349, "key_a3", "KEY_A3");
-
-    // center of keypad
-    KeyCode B2 = KeyCode(350, "key_b2", "KEY_B2");
-
-    // lower left of keypad
-    KeyCode C1 = KeyCode(351, "key_c1", "KEY_C1");
-
-    // lower right of keypad
-    KeyCode C3 = KeyCode(352, "key_c3", "KEY_C3");
-
-    // back-tab key
-    KeyCode BTAB = KeyCode(353, "key_btab", "KEY_BTAB");
-
-    // begin key
-    KeyCode BEG = KeyCode(354, "key_beg", "KEY_BEG");
-
-    // cancel key
-    KeyCode CANCEL = KeyCode(355, "key_cancel", "KEY_CANCEL");
-
-    // close key
-    KeyCode CLOSE = KeyCode(356, "key_close", "KEY_CLOSE");
-
-    // command key
-    KeyCode COMMAND = KeyCode(357, "key_command", "KEY_COMMAND");
-
-    // copy key
-    KeyCode COPY = KeyCode(358, "key_copy", "KEY_COPY");
-
-    // create key
-    KeyCode CREATE = KeyCode(359, "key_create", "KEY_CREATE");
-
-    // end key
-    KeyCode END = KeyCode(360, "key_end", "KEY_END");
-
-    // exit key
-    KeyCode EXIT = KeyCode(361, "key_exit", "KEY_EXIT");
-
-    // find key
-    KeyCode FIND = KeyCode(362, "key_find", "KEY_FIND");
-
-    // help key
-    KeyCode HELP = KeyCode(363, "key_help", "KEY_HELP");
-
-    // mark key
-    KeyCode MARK = KeyCode(364, "key_mark", "KEY_MARK");
-
-    // message key
-    KeyCode MESSAGE = KeyCode(365, "key_message", "KEY_MESSAGE");
-
-    // move key
-    KeyCode MOVE = KeyCode(366, "key_move", "KEY_MOVE");
-
-    // next key
-    KeyCode NEXT = KeyCode(367, "key_next", "KEY_NEXT");
-
-    // open key
-    KeyCode OPEN = KeyCode(368, "key_open", "KEY_OPEN");
-
-    // options key
-    KeyCode OPTIONS = KeyCode(369, "key_options", "KEY_OPTIONS");
-
-    // previous key
-    KeyCode PREVIOUS = KeyCode(370, "key_previous", "KEY_PREVIOUS");
-
-    // redo key
-    KeyCode REDO = KeyCode(371, "key_redo", "KEY_REDO");
-
-    // reference key
-    KeyCode REFERENCE = KeyCode(372, "key_reference", "KEY_REFERENCE");
-
-    // refresh key
-    KeyCode REFRESH = KeyCode(373, "key_refresh", "KEY_REFRESH");
-
-    // replace key
-    KeyCode REPLACE = KeyCode(374, "key_replace", "KEY_REPLACE");
-
-    // restart key
-    KeyCode RESTART = KeyCode(375, "key_restart", "KEY_RESTART");
-
-    // resume key
-    KeyCode RESUME = KeyCode(376, "key_resume", "KEY_RESUME");
-
-    // save key
-    KeyCode SAVE = KeyCode(377, "key_save", "KEY_SAVE");
-
-    // shifted begin key
-    KeyCode SBEG = KeyCode(378, "key_sbeg", "KEY_SBEG");
-
-    // shifted cancel key
-    KeyCode SCANCEL = KeyCode(379, "key_scancel", "KEY_SCANCEL");
-
-    // shifted command key
-    KeyCode SCOMMAND = KeyCode(380, "key_scommand", "KEY_SCOMMAND");
-
-    // shifted copy key
-    KeyCode SCOPY = KeyCode(381, "key_scopy", "KEY_SCOPY");
-
-    // shifted create key
-    KeyCode SCREATE = KeyCode(382, "key_screate", "KEY_SCREATE");
-
-    // shifted delete-character key
-    KeyCode SDC = KeyCode(383, "key_sdc", "KEY_SDC");
-
-    // shifted delete-line key
-    KeyCode SDL = KeyCode(384, "key_sdl", "KEY_SDL");
-
-    // select key
-    KeyCode SELECT = KeyCode(385, "key_select", "KEY_SELECT");
-
-    // shifted end key
-    KeyCode SEND = KeyCode(386, "key_send", "KEY_SEND");
-
-    // shifted clear-to-end-of-line key
-    KeyCode SEOL = KeyCode(387, "key_seol", "KEY_SEOL");
-
-    // shifted exit key
-    KeyCode SEXIT = KeyCode(388, "key_sexit", "KEY_SEXIT");
-
-    // shifted find key
-    KeyCode SFIND = KeyCode(389, "key_sfind", "KEY_SFIND");
-
-    // shifted help key
-    KeyCode SHELP = KeyCode(390, "key_shelp", "KEY_SHELP");
-
-    // shifted home key
-    KeyCode SHOME = KeyCode(391, "key_shome", "KEY_SHOME");
-
-    // shifted insert-character key
-    KeyCode SIC = KeyCode(392, "key_sic", "KEY_SIC");
-
-    // shifted left-arrow key
-    KeyCode SLEFT = KeyCode(393, "key_sleft", "KEY_SLEFT");
-
-    // shifted message key
-    KeyCode SMESSAGE = KeyCode(394, "key_smessage", "KEY_SMESSAGE");
-
-    // shifted move key
-    KeyCode SMOVE = KeyCode(395, "key_smove", "KEY_SMOVE");
-
-    // shifted next key
-    KeyCode SNEXT = KeyCode(396, "key_snext", "KEY_SNEXT");
-
-    // shifted options key
-    KeyCode SOPTIONS = KeyCode(397, "key_soptions", "KEY_SOPTIONS");
-
-    // shifted previous key
-    KeyCode SPREVIOUS = KeyCode(398, "key_sprevious", "KEY_SPREVIOUS");
-
-    // shifted print key
-    KeyCode SPRINT = KeyCode(399, "key_sprint", "KEY_SPRINT");
-
-    // shifted redo key
-    KeyCode SREDO = KeyCode(400, "key_sredo", "KEY_SREDO");
-
-    // shifted replace key
-    KeyCode SREPLACE = KeyCode(401, "key_sreplace", "KEY_SREPLACE");
-
-    // shifted right-arrow key
-    KeyCode SRIGHT = KeyCode(402, "key_sright", "KEY_SRIGHT");
-
-    // shifted resume key
-    KeyCode SRSUME = KeyCode(403, "key_srsume", "KEY_SRSUME");
-
-    // shifted save key
-    KeyCode SSAVE = KeyCode(404, "key_ssave", "KEY_SSAVE");
-
-    // shifted suspend key
-    KeyCode SSUSPEND = KeyCode(405, "key_ssuspend", "KEY_SSUSPEND");
-
-    // shifted undo key
-    KeyCode SUNDO = KeyCode(406, "key_sundo", "KEY_SUNDO");
-
-    // suspend key
-    KeyCode SUSPEND = KeyCode(407, "key_suspend", "KEY_SUSPEND");
-
-    // undo key
-    KeyCode UNDO = KeyCode(408, "key_undo", "KEY_UNDO");
-
-    // Mouse event has occurred
-    KeyCode MOUSE = KeyCode(409, "key_mouse", "KEY_MOUSE");
-
+    const size_t max_code = 409;
+    KeyCode keycode_arr[max_code + 1] = {
+      KeyCode(0),
+      KeyCode(1),
+      KeyCode(2),
+      KeyCode(3),
+      KeyCode(4),
+      KeyCode(5),
+      KeyCode(6),
+      KeyCode(7),
+      KeyCode(8),
+      KeyCode(9),
+      KeyCode(10),
+      KeyCode(11),
+      KeyCode(12),
+      KeyCode(13),
+      KeyCode(14),
+      KeyCode(15),
+      KeyCode(16),
+      KeyCode(17),
+      KeyCode(18),
+      KeyCode(19),
+      KeyCode(20),
+      KeyCode(21),
+      KeyCode(22),
+      KeyCode(23),
+      KeyCode(24),
+      KeyCode(25),
+      KeyCode(26),
+      KeyCode(27),
+      KeyCode(28),
+      KeyCode(29),
+      KeyCode(30),
+      KeyCode(31),
+      KeyCode(32),
+      KeyCode(33),
+      KeyCode(34),
+      KeyCode(35),
+      KeyCode(36),
+      KeyCode(37),
+      KeyCode(38),
+      KeyCode(39),
+      KeyCode(40),
+      KeyCode(41),
+      KeyCode(42),
+      KeyCode(43),
+      KeyCode(44),
+      KeyCode(45),
+      KeyCode(46),
+      KeyCode(47),
+      KeyCode(48),
+      KeyCode(49),
+      KeyCode(50),
+      KeyCode(51),
+      KeyCode(52),
+      KeyCode(53),
+      KeyCode(54),
+      KeyCode(55),
+      KeyCode(56),
+      KeyCode(57),
+      KeyCode(58),
+      KeyCode(59),
+      KeyCode(60),
+      KeyCode(61),
+      KeyCode(62),
+      KeyCode(63),
+      KeyCode(64),
+      KeyCode(65),
+      KeyCode(66),
+      KeyCode(67),
+      KeyCode(68),
+      KeyCode(69),
+      KeyCode(70),
+      KeyCode(71),
+      KeyCode(72),
+      KeyCode(73),
+      KeyCode(74),
+      KeyCode(75),
+      KeyCode(76),
+      KeyCode(77),
+      KeyCode(78),
+      KeyCode(79),
+      KeyCode(80),
+      KeyCode(81),
+      KeyCode(82),
+      KeyCode(83),
+      KeyCode(84),
+      KeyCode(85),
+      KeyCode(86),
+      KeyCode(87),
+      KeyCode(88),
+      KeyCode(89),
+      KeyCode(90),
+      KeyCode(91),
+      KeyCode(92),
+      KeyCode(93),
+      KeyCode(94),
+      KeyCode(95),
+      KeyCode(96),
+      KeyCode(97),
+      KeyCode(98),
+      KeyCode(99),
+      KeyCode(100),
+      KeyCode(101),
+      KeyCode(102),
+      KeyCode(103),
+      KeyCode(104),
+      KeyCode(105),
+      KeyCode(106),
+      KeyCode(107),
+      KeyCode(108),
+      KeyCode(109),
+      KeyCode(110),
+      KeyCode(111),
+      KeyCode(112),
+      KeyCode(113),
+      KeyCode(114),
+      KeyCode(115),
+      KeyCode(116),
+      KeyCode(117),
+      KeyCode(118),
+      KeyCode(119),
+      KeyCode(120),
+      KeyCode(121),
+      KeyCode(122),
+      KeyCode(123),
+      KeyCode(124),
+      KeyCode(125),
+      KeyCode(126),
+      KeyCode(127),
+      KeyCode(128),
+      KeyCode(129),
+      KeyCode(130),
+      KeyCode(131),
+      KeyCode(132),
+      KeyCode(133),
+      KeyCode(134),
+      KeyCode(135),
+      KeyCode(136),
+      KeyCode(137),
+      KeyCode(138),
+      KeyCode(139),
+      KeyCode(140),
+      KeyCode(141),
+      KeyCode(142),
+      KeyCode(143),
+      KeyCode(144),
+      KeyCode(145),
+      KeyCode(146),
+      KeyCode(147),
+      KeyCode(148),
+      KeyCode(149),
+      KeyCode(150),
+      KeyCode(151),
+      KeyCode(152),
+      KeyCode(153),
+      KeyCode(154),
+      KeyCode(155),
+      KeyCode(156),
+      KeyCode(157),
+      KeyCode(158),
+      KeyCode(159),
+      KeyCode(160),
+      KeyCode(161),
+      KeyCode(162),
+      KeyCode(163),
+      KeyCode(164),
+      KeyCode(165),
+      KeyCode(166),
+      KeyCode(167),
+      KeyCode(168),
+      KeyCode(169),
+      KeyCode(170),
+      KeyCode(171),
+      KeyCode(172),
+      KeyCode(173),
+      KeyCode(174),
+      KeyCode(175),
+      KeyCode(176),
+      KeyCode(177),
+      KeyCode(178),
+      KeyCode(179),
+      KeyCode(180),
+      KeyCode(181),
+      KeyCode(182),
+      KeyCode(183),
+      KeyCode(184),
+      KeyCode(185),
+      KeyCode(186),
+      KeyCode(187),
+      KeyCode(188),
+      KeyCode(189),
+      KeyCode(190),
+      KeyCode(191),
+      KeyCode(192),
+      KeyCode(193),
+      KeyCode(194),
+      KeyCode(195),
+      KeyCode(196),
+      KeyCode(197),
+      KeyCode(198),
+      KeyCode(199),
+      KeyCode(200),
+      KeyCode(201),
+      KeyCode(202),
+      KeyCode(203),
+      KeyCode(204),
+      KeyCode(205),
+      KeyCode(206),
+      KeyCode(207),
+      KeyCode(208),
+      KeyCode(209),
+      KeyCode(210),
+      KeyCode(211),
+      KeyCode(212),
+      KeyCode(213),
+      KeyCode(214),
+      KeyCode(215),
+      KeyCode(216),
+      KeyCode(217),
+      KeyCode(218),
+      KeyCode(219),
+      KeyCode(220),
+      KeyCode(221),
+      KeyCode(222),
+      KeyCode(223),
+      KeyCode(224),
+      KeyCode(225),
+      KeyCode(226),
+      KeyCode(227),
+      KeyCode(228),
+      KeyCode(229),
+      KeyCode(230),
+      KeyCode(231),
+      KeyCode(232),
+      KeyCode(233),
+      KeyCode(234),
+      KeyCode(235),
+      KeyCode(236),
+      KeyCode(237),
+      KeyCode(238),
+      KeyCode(239),
+      KeyCode(240),
+      KeyCode(241),
+      KeyCode(242),
+      KeyCode(243),
+      KeyCode(244),
+      KeyCode(245),
+      KeyCode(246),
+      KeyCode(247),
+      KeyCode(248),
+      KeyCode(249),
+      KeyCode(250),
+      KeyCode(251),
+      KeyCode(252),
+      KeyCode(253),
+      KeyCode(254),
+      KeyCode(255),
+      KeyCode(256),
+      KeyCode(257),
+      KeyCode(258, "key_down"),  // down-arrow key
+      KeyCode(259, "key_up"),  // up-arrow key
+      KeyCode(260, "key_left"),  // left-arrow key
+      KeyCode(261, "key_right"),  // right-arrow key
+      KeyCode(262, "key_home"),  // home key
+      KeyCode(263, "key_backspace"),  // backspace key
+      KeyCode(264, "key_f0"),  // F0 function key
+      KeyCode(265),
+      KeyCode(266),
+      KeyCode(267),
+      KeyCode(268),
+      KeyCode(269),
+      KeyCode(270),
+      KeyCode(271),
+      KeyCode(272),
+      KeyCode(273),
+      KeyCode(274),
+      KeyCode(275),
+      KeyCode(276),
+      KeyCode(277),
+      KeyCode(278),
+      KeyCode(279),
+      KeyCode(280),
+      KeyCode(281),
+      KeyCode(282),
+      KeyCode(283),
+      KeyCode(284),
+      KeyCode(285),
+      KeyCode(286),
+      KeyCode(287),
+      KeyCode(288),
+      KeyCode(289),
+      KeyCode(290),
+      KeyCode(291),
+      KeyCode(292),
+      KeyCode(293),
+      KeyCode(294),
+      KeyCode(295),
+      KeyCode(296),
+      KeyCode(297),
+      KeyCode(298),
+      KeyCode(299),
+      KeyCode(300),
+      KeyCode(301),
+      KeyCode(302),
+      KeyCode(303),
+      KeyCode(304),
+      KeyCode(305),
+      KeyCode(306),
+      KeyCode(307),
+      KeyCode(308),
+      KeyCode(309),
+      KeyCode(310),
+      KeyCode(311),
+      KeyCode(312),
+      KeyCode(313),
+      KeyCode(314),
+      KeyCode(315),
+      KeyCode(316),
+      KeyCode(317),
+      KeyCode(318),
+      KeyCode(319),
+      KeyCode(320),
+      KeyCode(321),
+      KeyCode(322),
+      KeyCode(323),
+      KeyCode(324),
+      KeyCode(325),
+      KeyCode(326),
+      KeyCode(327),
+      KeyCode(328, "key_dl"),  // delete-line key
+      KeyCode(329, "key_il"),  // insert-line key
+      KeyCode(330, "key_dc"),  // delete-character key
+      KeyCode(331, "key_ic"),  // insert-character key
+      KeyCode(332, "key_eic"),  // sent by rmir or smir in insert mode
+      KeyCode(333, "key_clear"),  // clear-screen or erase key
+      KeyCode(334, "key_eos"),  // clear-to-end-of-screen key
+      KeyCode(335, "key_eol"),  // clear-to-end-of-line key
+      KeyCode(336, "key_sf"),  // scroll-forward key
+      KeyCode(337, "key_sr"),  // scroll-backward key
+      KeyCode(338, "key_npage"),  // next-page key
+      KeyCode(339, "key_ppage"),  // previous-page key
+      KeyCode(340, "key_stab"),  // set-tab key
+      KeyCode(341, "key_ctab"),  // clear-tab key
+      KeyCode(342, "key_catab"),  // clear-all-tabs key
+      KeyCode(343, "key_enter"),  // enter/send key
+      KeyCode(344),
+      KeyCode(345),
+      KeyCode(346, "key_print"),  // print key
+      KeyCode(347, "key_ll"),  // lower-left key (home down)
+      KeyCode(348, "key_a1"),  // upper left of keypad
+      KeyCode(349, "key_a3"),  // upper right of keypad
+      KeyCode(350, "key_b2"),  // center of keypad
+      KeyCode(351, "key_c1"),  // lower left of keypad
+      KeyCode(352, "key_c3"),  // lower right of keypad
+      KeyCode(353, "key_btab"),  // back-tab key
+      KeyCode(354, "key_beg"),  // begin key
+      KeyCode(355, "key_cancel"),  // cancel key
+      KeyCode(356, "key_close"),  // close key
+      KeyCode(357, "key_command"),  // command key
+      KeyCode(358, "key_copy"),  // copy key
+      KeyCode(359, "key_create"),  // create key
+      KeyCode(360, "key_end"),  // end key
+      KeyCode(361, "key_exit"),  // exit key
+      KeyCode(362, "key_find"),  // find key
+      KeyCode(363, "key_help"),  // help key
+      KeyCode(364, "key_mark"),  // mark key
+      KeyCode(365, "key_message"),  // message key
+      KeyCode(366, "key_move"),  // move key
+      KeyCode(367, "key_next"),  // next key
+      KeyCode(368, "key_open"),  // open key
+      KeyCode(369, "key_options"),  // options key
+      KeyCode(370, "key_previous"),  // previous key
+      KeyCode(371, "key_redo"),  // redo key
+      KeyCode(372, "key_reference"),  // reference key
+      KeyCode(373, "key_refresh"),  // refresh key
+      KeyCode(374, "key_replace"),  // replace key
+      KeyCode(375, "key_restart"),  // restart key
+      KeyCode(376, "key_resume"),  // resume key
+      KeyCode(377, "key_save"),  // save key
+      KeyCode(378, "key_sbeg"),  // shifted begin key
+      KeyCode(379, "key_scancel"),  // shifted cancel key
+      KeyCode(380, "key_scommand"),  // shifted command key
+      KeyCode(381, "key_scopy"),  // shifted copy key
+      KeyCode(382, "key_screate"),  // shifted create key
+      KeyCode(383, "key_sdc"),  // shifted delete-character key
+      KeyCode(384, "key_sdl"),  // shifted delete-line key
+      KeyCode(385, "key_select"),  // select key
+      KeyCode(386, "key_send"),  // shifted end key
+      KeyCode(387, "key_seol"),  // shifted clear-to-end-of-line key
+      KeyCode(388, "key_sexit"),  // shifted exit key
+      KeyCode(389, "key_sfind"),  // shifted find key
+      KeyCode(390, "key_shelp"),  // shifted help key
+      KeyCode(391, "key_shome"),  // shifted home key
+      KeyCode(392, "key_sic"),  // shifted insert-character key
+      KeyCode(393, "key_sleft"),  // shifted left-arrow key
+      KeyCode(394, "key_smessage"),  // shifted message key
+      KeyCode(395, "key_smove"),  // shifted move key
+      KeyCode(396, "key_snext"),  // shifted next key
+      KeyCode(397, "key_soptions"),  // shifted options key
+      KeyCode(398, "key_sprevious"),  // shifted previous key
+      KeyCode(399, "key_sprint"),  // shifted print key
+      KeyCode(400, "key_sredo"),  // shifted redo key
+      KeyCode(401, "key_sreplace"),  // shifted replace key
+      KeyCode(402, "key_sright"),  // shifted right-arrow key
+      KeyCode(403, "key_srsume"),  // shifted resume key
+      KeyCode(404, "key_ssave"),  // shifted save key
+      KeyCode(405, "key_ssuspend"),  // shifted suspend key
+      KeyCode(406, "key_sundo"),  // shifted undo key
+      KeyCode(407, "key_suspend"),  // suspend key
+      KeyCode(408, "key_undo"),  // undo key
+      KeyCode(409, "key_mouse"),  // Mouse event has occurred
+    };
 
     const KeyCode&
-    curses_code_to_keycode(int code, int *err) {
-      *err = 0;
-      switch (code) {
-      case 0:
-        return ASCII_000;
-        break;
-      case 1:
-        return ASCII_001;
-        break;
-      case 2:
-        return ASCII_002;
-        break;
-      case 3:
-        return ASCII_003;
-        break;
-      case 4:
-        return ASCII_004;
-        break;
-      case 5:
-        return ASCII_005;
-        break;
-      case 6:
-        return ASCII_006;
-        break;
-      case 7:
-        return ASCII_007;
-        break;
-      case 8:
-        return ASCII_008;
-        break;
-      case 9:
-        return ASCII_009;
-        break;
-      case 10:
-        return ASCII_010;
-        break;
-      case 11:
-        return ASCII_011;
-        break;
-      case 12:
-        return ASCII_012;
-        break;
-      case 13:
-        return ASCII_013;
-        break;
-      case 14:
-        return ASCII_014;
-        break;
-      case 15:
-        return ASCII_015;
-        break;
-      case 16:
-        return ASCII_016;
-        break;
-      case 17:
-        return ASCII_017;
-        break;
-      case 18:
-        return ASCII_018;
-        break;
-      case 19:
-        return ASCII_019;
-        break;
-      case 20:
-        return ASCII_020;
-        break;
-      case 21:
-        return ASCII_021;
-        break;
-      case 22:
-        return ASCII_022;
-        break;
-      case 23:
-        return ASCII_023;
-        break;
-      case 24:
-        return ASCII_024;
-        break;
-      case 25:
-        return ASCII_025;
-        break;
-      case 26:
-        return ASCII_026;
-        break;
-      case 27:
-        return ASCII_027;
-        break;
-      case 28:
-        return ASCII_028;
-        break;
-      case 29:
-        return ASCII_029;
-        break;
-      case 30:
-        return ASCII_030;
-        break;
-      case 31:
-        return ASCII_031;
-        break;
-      case 32:
-        return ASCII_032;
-        break;
-      case 33:
-        return ASCII_033;
-        break;
-      case 34:
-        return ASCII_034;
-        break;
-      case 35:
-        return ASCII_035;
-        break;
-      case 36:
-        return ASCII_036;
-        break;
-      case 37:
-        return ASCII_037;
-        break;
-      case 38:
-        return ASCII_038;
-        break;
-      case 39:
-        return ASCII_039;
-        break;
-      case 40:
-        return ASCII_040;
-        break;
-      case 41:
-        return ASCII_041;
-        break;
-      case 42:
-        return ASCII_042;
-        break;
-      case 43:
-        return ASCII_043;
-        break;
-      case 44:
-        return ASCII_044;
-        break;
-      case 45:
-        return ASCII_045;
-        break;
-      case 46:
-        return ASCII_046;
-        break;
-      case 47:
-        return ASCII_047;
-        break;
-      case 48:
-        return ASCII_048;
-        break;
-      case 49:
-        return ASCII_049;
-        break;
-      case 50:
-        return ASCII_050;
-        break;
-      case 51:
-        return ASCII_051;
-        break;
-      case 52:
-        return ASCII_052;
-        break;
-      case 53:
-        return ASCII_053;
-        break;
-      case 54:
-        return ASCII_054;
-        break;
-      case 55:
-        return ASCII_055;
-        break;
-      case 56:
-        return ASCII_056;
-        break;
-      case 57:
-        return ASCII_057;
-        break;
-      case 58:
-        return ASCII_058;
-        break;
-      case 59:
-        return ASCII_059;
-        break;
-      case 60:
-        return ASCII_060;
-        break;
-      case 61:
-        return ASCII_061;
-        break;
-      case 62:
-        return ASCII_062;
-        break;
-      case 63:
-        return ASCII_063;
-        break;
-      case 64:
-        return ASCII_064;
-        break;
-      case 65:
-        return ASCII_065;
-        break;
-      case 66:
-        return ASCII_066;
-        break;
-      case 67:
-        return ASCII_067;
-        break;
-      case 68:
-        return ASCII_068;
-        break;
-      case 69:
-        return ASCII_069;
-        break;
-      case 70:
-        return ASCII_070;
-        break;
-      case 71:
-        return ASCII_071;
-        break;
-      case 72:
-        return ASCII_072;
-        break;
-      case 73:
-        return ASCII_073;
-        break;
-      case 74:
-        return ASCII_074;
-        break;
-      case 75:
-        return ASCII_075;
-        break;
-      case 76:
-        return ASCII_076;
-        break;
-      case 77:
-        return ASCII_077;
-        break;
-      case 78:
-        return ASCII_078;
-        break;
-      case 79:
-        return ASCII_079;
-        break;
-      case 80:
-        return ASCII_080;
-        break;
-      case 81:
-        return ASCII_081;
-        break;
-      case 82:
-        return ASCII_082;
-        break;
-      case 83:
-        return ASCII_083;
-        break;
-      case 84:
-        return ASCII_084;
-        break;
-      case 85:
-        return ASCII_085;
-        break;
-      case 86:
-        return ASCII_086;
-        break;
-      case 87:
-        return ASCII_087;
-        break;
-      case 88:
-        return ASCII_088;
-        break;
-      case 89:
-        return ASCII_089;
-        break;
-      case 90:
-        return ASCII_090;
-        break;
-      case 91:
-        return ASCII_091;
-        break;
-      case 92:
-        return ASCII_092;
-        break;
-      case 93:
-        return ASCII_093;
-        break;
-      case 94:
-        return ASCII_094;
-        break;
-      case 95:
-        return ASCII_095;
-        break;
-      case 96:
-        return ASCII_096;
-        break;
-      case 97:
-        return ASCII_097;
-        break;
-      case 98:
-        return ASCII_098;
-        break;
-      case 99:
-        return ASCII_099;
-        break;
-      case 100:
-        return ASCII_100;
-        break;
-      case 101:
-        return ASCII_101;
-        break;
-      case 102:
-        return ASCII_102;
-        break;
-      case 103:
-        return ASCII_103;
-        break;
-      case 104:
-        return ASCII_104;
-        break;
-      case 105:
-        return ASCII_105;
-        break;
-      case 106:
-        return ASCII_106;
-        break;
-      case 107:
-        return ASCII_107;
-        break;
-      case 108:
-        return ASCII_108;
-        break;
-      case 109:
-        return ASCII_109;
-        break;
-      case 110:
-        return ASCII_110;
-        break;
-      case 111:
-        return ASCII_111;
-        break;
-      case 112:
-        return ASCII_112;
-        break;
-      case 113:
-        return ASCII_113;
-        break;
-      case 114:
-        return ASCII_114;
-        break;
-      case 115:
-        return ASCII_115;
-        break;
-      case 116:
-        return ASCII_116;
-        break;
-      case 117:
-        return ASCII_117;
-        break;
-      case 118:
-        return ASCII_118;
-        break;
-      case 119:
-        return ASCII_119;
-        break;
-      case 120:
-        return ASCII_120;
-        break;
-      case 121:
-        return ASCII_121;
-        break;
-      case 122:
-        return ASCII_122;
-        break;
-      case 123:
-        return ASCII_123;
-        break;
-      case 124:
-        return ASCII_124;
-        break;
-      case 125:
-        return ASCII_125;
-        break;
-      case 126:
-        return ASCII_126;
-        break;
-      case 127:
-        return ASCII_127;
-        break;
-      case 128:
-        return ASCII_128;
-        break;
-      case 129:
-        return ASCII_129;
-        break;
-      case 130:
-        return ASCII_130;
-        break;
-      case 131:
-        return ASCII_131;
-        break;
-      case 132:
-        return ASCII_132;
-        break;
-      case 133:
-        return ASCII_133;
-        break;
-      case 134:
-        return ASCII_134;
-        break;
-      case 135:
-        return ASCII_135;
-        break;
-      case 136:
-        return ASCII_136;
-        break;
-      case 137:
-        return ASCII_137;
-        break;
-      case 138:
-        return ASCII_138;
-        break;
-      case 139:
-        return ASCII_139;
-        break;
-      case 140:
-        return ASCII_140;
-        break;
-      case 141:
-        return ASCII_141;
-        break;
-      case 142:
-        return ASCII_142;
-        break;
-      case 143:
-        return ASCII_143;
-        break;
-      case 144:
-        return ASCII_144;
-        break;
-      case 145:
-        return ASCII_145;
-        break;
-      case 146:
-        return ASCII_146;
-        break;
-      case 147:
-        return ASCII_147;
-        break;
-      case 148:
-        return ASCII_148;
-        break;
-      case 149:
-        return ASCII_149;
-        break;
-      case 150:
-        return ASCII_150;
-        break;
-      case 151:
-        return ASCII_151;
-        break;
-      case 152:
-        return ASCII_152;
-        break;
-      case 153:
-        return ASCII_153;
-        break;
-      case 154:
-        return ASCII_154;
-        break;
-      case 155:
-        return ASCII_155;
-        break;
-      case 156:
-        return ASCII_156;
-        break;
-      case 157:
-        return ASCII_157;
-        break;
-      case 158:
-        return ASCII_158;
-        break;
-      case 159:
-        return ASCII_159;
-        break;
-      case 160:
-        return ASCII_160;
-        break;
-      case 161:
-        return ASCII_161;
-        break;
-      case 162:
-        return ASCII_162;
-        break;
-      case 163:
-        return ASCII_163;
-        break;
-      case 164:
-        return ASCII_164;
-        break;
-      case 165:
-        return ASCII_165;
-        break;
-      case 166:
-        return ASCII_166;
-        break;
-      case 167:
-        return ASCII_167;
-        break;
-      case 168:
-        return ASCII_168;
-        break;
-      case 169:
-        return ASCII_169;
-        break;
-      case 170:
-        return ASCII_170;
-        break;
-      case 171:
-        return ASCII_171;
-        break;
-      case 172:
-        return ASCII_172;
-        break;
-      case 173:
-        return ASCII_173;
-        break;
-      case 174:
-        return ASCII_174;
-        break;
-      case 175:
-        return ASCII_175;
-        break;
-      case 176:
-        return ASCII_176;
-        break;
-      case 177:
-        return ASCII_177;
-        break;
-      case 178:
-        return ASCII_178;
-        break;
-      case 179:
-        return ASCII_179;
-        break;
-      case 180:
-        return ASCII_180;
-        break;
-      case 181:
-        return ASCII_181;
-        break;
-      case 182:
-        return ASCII_182;
-        break;
-      case 183:
-        return ASCII_183;
-        break;
-      case 184:
-        return ASCII_184;
-        break;
-      case 185:
-        return ASCII_185;
-        break;
-      case 186:
-        return ASCII_186;
-        break;
-      case 187:
-        return ASCII_187;
-        break;
-      case 188:
-        return ASCII_188;
-        break;
-      case 189:
-        return ASCII_189;
-        break;
-      case 190:
-        return ASCII_190;
-        break;
-      case 191:
-        return ASCII_191;
-        break;
-      case 192:
-        return ASCII_192;
-        break;
-      case 193:
-        return ASCII_193;
-        break;
-      case 194:
-        return ASCII_194;
-        break;
-      case 195:
-        return ASCII_195;
-        break;
-      case 196:
-        return ASCII_196;
-        break;
-      case 197:
-        return ASCII_197;
-        break;
-      case 198:
-        return ASCII_198;
-        break;
-      case 199:
-        return ASCII_199;
-        break;
-      case 200:
-        return ASCII_200;
-        break;
-      case 201:
-        return ASCII_201;
-        break;
-      case 202:
-        return ASCII_202;
-        break;
-      case 203:
-        return ASCII_203;
-        break;
-      case 204:
-        return ASCII_204;
-        break;
-      case 205:
-        return ASCII_205;
-        break;
-      case 206:
-        return ASCII_206;
-        break;
-      case 207:
-        return ASCII_207;
-        break;
-      case 208:
-        return ASCII_208;
-        break;
-      case 209:
-        return ASCII_209;
-        break;
-      case 210:
-        return ASCII_210;
-        break;
-      case 211:
-        return ASCII_211;
-        break;
-      case 212:
-        return ASCII_212;
-        break;
-      case 213:
-        return ASCII_213;
-        break;
-      case 214:
-        return ASCII_214;
-        break;
-      case 215:
-        return ASCII_215;
-        break;
-      case 216:
-        return ASCII_216;
-        break;
-      case 217:
-        return ASCII_217;
-        break;
-      case 218:
-        return ASCII_218;
-        break;
-      case 219:
-        return ASCII_219;
-        break;
-      case 220:
-        return ASCII_220;
-        break;
-      case 221:
-        return ASCII_221;
-        break;
-      case 222:
-        return ASCII_222;
-        break;
-      case 223:
-        return ASCII_223;
-        break;
-      case 224:
-        return ASCII_224;
-        break;
-      case 225:
-        return ASCII_225;
-        break;
-      case 226:
-        return ASCII_226;
-        break;
-      case 227:
-        return ASCII_227;
-        break;
-      case 228:
-        return ASCII_228;
-        break;
-      case 229:
-        return ASCII_229;
-        break;
-      case 230:
-        return ASCII_230;
-        break;
-      case 231:
-        return ASCII_231;
-        break;
-      case 232:
-        return ASCII_232;
-        break;
-      case 233:
-        return ASCII_233;
-        break;
-      case 234:
-        return ASCII_234;
-        break;
-      case 235:
-        return ASCII_235;
-        break;
-      case 236:
-        return ASCII_236;
-        break;
-      case 237:
-        return ASCII_237;
-        break;
-      case 238:
-        return ASCII_238;
-        break;
-      case 239:
-        return ASCII_239;
-        break;
-      case 240:
-        return ASCII_240;
-        break;
-      case 241:
-        return ASCII_241;
-        break;
-      case 242:
-        return ASCII_242;
-        break;
-      case 243:
-        return ASCII_243;
-        break;
-      case 244:
-        return ASCII_244;
-        break;
-      case 245:
-        return ASCII_245;
-        break;
-      case 246:
-        return ASCII_246;
-        break;
-      case 247:
-        return ASCII_247;
-        break;
-      case 248:
-        return ASCII_248;
-        break;
-      case 249:
-        return ASCII_249;
-        break;
-      case 250:
-        return ASCII_250;
-        break;
-      case 251:
-        return ASCII_251;
-        break;
-      case 252:
-        return ASCII_252;
-        break;
-      case 253:
-        return ASCII_253;
-        break;
-      case 254:
-        return ASCII_254;
-        break;
-      case 255:
-        return ASCII_255;
-        break;
-      case 258:
-        return DOWN;
-        break;
-      case 259:
-        return UP;
-        break;
-      case 260:
-        return LEFT;
-        break;
-      case 261:
-        return RIGHT;
-        break;
-      case 262:
-        return HOME;
-        break;
-      case 263:
-        return BACKSPACE;
-        break;
-      case 264:
-        return F0;
-        break;
-      case 328:
-        return DL;
-        break;
-      case 329:
-        return IL;
-        break;
-      case 330:
-        return DC;
-        break;
-      case 331:
-        return IC;
-        break;
-      case 332:
-        return EIC;
-        break;
-      case 333:
-        return CLEAR;
-        break;
-      case 334:
-        return EOS;
-        break;
-      case 335:
-        return EOL;
-        break;
-      case 336:
-        return SF;
-        break;
-      case 337:
-        return SR;
-        break;
-      case 338:
-        return NPAGE;
-        break;
-      case 339:
-        return PPAGE;
-        break;
-      case 340:
-        return STAB;
-        break;
-      case 341:
-        return CTAB;
-        break;
-      case 342:
-        return CATAB;
-        break;
-      case 343:
-        return ENTER;
-        break;
-      case 346:
-        return PRINT;
-        break;
-      case 347:
-        return LL;
-        break;
-      case 348:
-        return A1;
-        break;
-      case 349:
-        return A3;
-        break;
-      case 350:
-        return B2;
-        break;
-      case 351:
-        return C1;
-        break;
-      case 352:
-        return C3;
-        break;
-      case 353:
-        return BTAB;
-        break;
-      case 354:
-        return BEG;
-        break;
-      case 355:
-        return CANCEL;
-        break;
-      case 356:
-        return CLOSE;
-        break;
-      case 357:
-        return COMMAND;
-        break;
-      case 358:
-        return COPY;
-        break;
-      case 359:
-        return CREATE;
-        break;
-      case 360:
-        return END;
-        break;
-      case 361:
-        return EXIT;
-        break;
-      case 362:
-        return FIND;
-        break;
-      case 363:
-        return HELP;
-        break;
-      case 364:
-        return MARK;
-        break;
-      case 365:
-        return MESSAGE;
-        break;
-      case 366:
-        return MOVE;
-        break;
-      case 367:
-        return NEXT;
-        break;
-      case 368:
-        return OPEN;
-        break;
-      case 369:
-        return OPTIONS;
-        break;
-      case 370:
-        return PREVIOUS;
-        break;
-      case 371:
-        return REDO;
-        break;
-      case 372:
-        return REFERENCE;
-        break;
-      case 373:
-        return REFRESH;
-        break;
-      case 374:
-        return REPLACE;
-        break;
-      case 375:
-        return RESTART;
-        break;
-      case 376:
-        return RESUME;
-        break;
-      case 377:
-        return SAVE;
-        break;
-      case 378:
-        return SBEG;
-        break;
-      case 379:
-        return SCANCEL;
-        break;
-      case 380:
-        return SCOMMAND;
-        break;
-      case 381:
-        return SCOPY;
-        break;
-      case 382:
-        return SCREATE;
-        break;
-      case 383:
-        return SDC;
-        break;
-      case 384:
-        return SDL;
-        break;
-      case 385:
-        return SELECT;
-        break;
-      case 386:
-        return SEND;
-        break;
-      case 387:
-        return SEOL;
-        break;
-      case 388:
-        return SEXIT;
-        break;
-      case 389:
-        return SFIND;
-        break;
-      case 390:
-        return SHELP;
-        break;
-      case 391:
-        return SHOME;
-        break;
-      case 392:
-        return SIC;
-        break;
-      case 393:
-        return SLEFT;
-        break;
-      case 394:
-        return SMESSAGE;
-        break;
-      case 395:
-        return SMOVE;
-        break;
-      case 396:
-        return SNEXT;
-        break;
-      case 397:
-        return SOPTIONS;
-        break;
-      case 398:
-        return SPREVIOUS;
-        break;
-      case 399:
-        return SPRINT;
-        break;
-      case 400:
-        return SREDO;
-        break;
-      case 401:
-        return SREPLACE;
-        break;
-      case 402:
-        return SRIGHT;
-        break;
-      case 403:
-        return SRSUME;
-        break;
-      case 404:
-        return SSAVE;
-        break;
-      case 405:
-        return SSUSPEND;
-        break;
-      case 406:
-        return SUNDO;
-        break;
-      case 407:
-        return SUSPEND;
-        break;
-      case 408:
-        return UNDO;
-        break;
-      case 409:
-        return MOUSE;
-        break;
-      }
-      *err = 1;
-      return ASCII_000;
+    curses_code_to_keycode(int code) {
+      return keycode_arr[static_cast<size_t>(code)];
     }
   }
 }
