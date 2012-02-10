@@ -5,58 +5,13 @@
 #include <cassert>
 #include <string>
 
+#include "./js.h"
 #include "./log.h"
 #include "./state.h"
 
 using namespace v8;
 
 namespace e {
-
-  namespace js {
-
-    // Reads a file into a v8 string.
-    Handle<String> ReadFile(const std::string& name) {
-      FILE* file = fopen(name.c_str(), "rb");
-      if (file == NULL) {
-        return Handle<String>();
-      }
-
-      fseek(file, 0, SEEK_END);
-      int size = ftell(file);
-      rewind(file);
-
-      char* chars = new char[size + 1];
-      chars[size] = '\0';
-      for (int i = 0; i < size;) {
-        int read = fread(&chars[i], 1, size - i, file);
-        i += read;
-      }
-      fclose(file);
-
-      Handle<String> result = String::New(chars, size);
-      delete[] chars;
-      return result;
-    }
-
-    static Handle<Value> LogCallback(const Arguments& args) {
-      if (args.Length() < 1) {
-        return Undefined();
-      }
-      HandleScope scope;
-      Handle<Value> arg = args[0];
-      String::Utf8Value value(arg);
-      e::log::log_string(*value);
-      return Undefined();
-    }
-
-    static Handle<Value> windowEventListener(const Arguments& arg) {
-      if (args.Length() < 2) {
-        return Undefined();
-      }
-      HandleScope scope;
-
-    }
-  }
 
   State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")) {
@@ -65,7 +20,6 @@ namespace e {
 
 
     Handle<ObjectTemplate> window_obj = ObjectTemplate::New();
-    global->Set(String::New("addEventListener"), FunctionTemplate::New(js::windowEventListener));
 
 
     Handle<ObjectTemplate> global = ObjectTemplate::New();
