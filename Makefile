@@ -1,6 +1,6 @@
 CC := g++
 CFLAGS := -g -Wall
-LDFLAGS := -fuse-ld=gold -lncurses -lpthread -lv8 -lgflags
+LDFLAGS := -fuse-ld=gold -lncurses -lpthread $(shell if [ -f ./libv8.a ]; then echo ./libv8.a; else echo -lv8; fi) -lgflags
 SOURCES=main.cc curses_window.cc state.cc buffer.cc js.cc keycode.cc log.cc
 OBJECTS=$(SOURCES:.cc=.o)
 EXECUTABLE=e
