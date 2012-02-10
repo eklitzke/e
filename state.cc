@@ -48,6 +48,14 @@ namespace e {
       e::log::log_string(*value);
       return Undefined();
     }
+
+    static Handle<Value> windowEventListener(const Arguments& arg) {
+      if (args.Length() < 2) {
+        return Undefined();
+      }
+      HandleScope scope;
+
+    }
   }
 
   State::State(const std::string &script_name)
@@ -55,8 +63,14 @@ namespace e {
 
     HandleScope handle_scope;
 
+
+    Handle<ObjectTemplate> window_obj = ObjectTemplate::New();
+    global->Set(String::New("addEventListener"), FunctionTemplate::New(js::windowEventListener));
+
+
     Handle<ObjectTemplate> global = ObjectTemplate::New();
     global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback));
+    global->Set(String::New("window"), window_obj);
 
     // set up the global script context
     context_ = Context::New(NULL, global);
