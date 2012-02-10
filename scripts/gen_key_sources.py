@@ -17,23 +17,23 @@ h_template = """
 #include <string>
 
 namespace e {
-  class KeyCode {
-    private:
-      int code_;
-      std::string short_name_;
-    public:
-      explicit KeyCode(int code,
-                       const std::string &short_name);
-      explicit KeyCode(int code);
-      const std::string& get_name(void) const;
-      bool is_ascii(void) const;
-      int get_code(void) const;
-      char get_char(void) const;
-  };
+class KeyCode {
+  private:
+    int code_;
+    std::string short_name_;
+  public:
+    explicit KeyCode(int code,
+                     const std::string &short_name);
+    explicit KeyCode(int code);
+    const std::string& get_name(void) const;
+    bool is_ascii(void) const;
+    int get_code(void) const;
+    char get_char(void) const;
+};
 
-  namespace keycode {
-    const KeyCode& curses_code_to_keycode(int code);
-  }
+namespace keycode {
+const KeyCode& curses_code_to_keycode(int code);
+}
 }
 
 #endif  // KEYCODE_H_
@@ -50,54 +50,54 @@ cc_template = """
 #include "./%(h_name)s"
 
 namespace e {
-  KeyCode::KeyCode(int code, const std::string &short_name)
-    :code_(code), short_name_(short_name) {
-  }
+KeyCode::KeyCode(int code, const std::string &short_name)
+  :code_(code), short_name_(short_name) {
+}
 
-  KeyCode::KeyCode(int code)
-    :code_(code) {
-    if (code <= 127) {
-      const char name[2] = { static_cast<char>(code), 0 };
-      short_name_ = name;
-    }
+KeyCode::KeyCode(int code)
+  :code_(code) {
+  if (code <= 127) {
+    const char name[2] = { static_cast<char>(code), 0 };
+    short_name_ = name;
   }
+}
 
-  const std::string&
-  KeyCode::get_name(void) const {
-    return short_name_;
+const std::string&
+KeyCode::get_name(void) const {
+  return short_name_;
+}
+
+bool
+KeyCode::is_ascii(void) const {
+  return code_ <= 0xff;
+}
+
+int
+KeyCode::get_code(void) const {
+  return code_;
+}
+
+// XXX: it's unspecified whether this is a signed or unsigned char!
+char
+KeyCode::get_char(void) const {
+  if (code_ > 0xff) {
+    return static_cast<char>(code_ & 0xff);
+  } else {
+    return static_cast<char>(code_);
   }
+}
 
-  bool
-  KeyCode::is_ascii(void) const {
-    return code_ <= 0xff;
-  }
-
-  int
-  KeyCode::get_code(void) const {
-    return code_;
-  }
-
-  // XXX: it's unspecified whether this is a signed or unsigned char!
-  char
-  KeyCode::get_char(void) const {
-    if (code_ > 0xff) {
-      return static_cast<char>(code_ & 0xff);
-    } else {
-      return static_cast<char>(code_);
-    }
-  }
-
-  namespace keycode {
-    const size_t max_code = %(max_code)d;
-    KeyCode keycode_arr[max_code + 1] = {
+namespace keycode {
+  const size_t max_code = %(max_code)d;
+  KeyCode keycode_arr[max_code + 1] = {
 %(codes)s
-    };
+  };
 
-    const KeyCode&
-    curses_code_to_keycode(int code) {
-      return keycode_arr[static_cast<size_t>(code)];
-    }
+  const KeyCode&
+  curses_code_to_keycode(int code) {
+    return keycode_arr[static_cast<size_t>(code)];
   }
+}
 }
 """
 

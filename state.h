@@ -13,24 +13,24 @@
 #include "./keycode.h"
 
 namespace e {
-  class State {
-  private:
-    std::vector<Buffer *> buffers_;
-    Buffer *active_buffer_;
+class State {
+ private:
+  std::vector<Buffer *> buffers_;
+  Buffer *active_buffer_;
 
-    v8::Persistent<v8::Context> context_;
-    v8::Persistent<v8::Function> onkeypress_;
+  v8::Persistent<v8::Context> context_;
+  v8::Persistent<v8::Function> onkeypress_;
 
-  public:
-    explicit State(const std::string &script);
-    ~State();
+ public:
+  explicit State(const std::string &script);
+  ~State();
 
-    Buffer* get_active_buffer(void);
-    std::vector<Buffer *>* get_buffers(void);
+  Buffer* get_active_buffer(void);
+  std::vector<Buffer *>* get_buffers(void);
 
-    // returns true if the mainloop should keep going, false otherwise
-    bool handle_key(const KeyCode &);
-  };
+  // returns true if the mainloop should keep going, false otherwise
+  bool handle_key(const KeyCode &);
+};
 }
 
 #endif  // STATE_H_

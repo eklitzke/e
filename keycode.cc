@@ -8,46 +8,46 @@
 #include "./keycode.h"
 
 namespace e {
-  KeyCode::KeyCode(int code, const std::string &short_name)
-    :code_(code), short_name_(short_name) {
-  }
+KeyCode::KeyCode(int code, const std::string &short_name)
+  :code_(code), short_name_(short_name) {
+}
 
-  KeyCode::KeyCode(int code)
-    :code_(code) {
-    if (code <= 127) {
-      const char name[2] = { static_cast<char>(code), 0 };
-      short_name_ = name;
-    }
+KeyCode::KeyCode(int code)
+  :code_(code) {
+  if (code <= 127) {
+    const char name[2] = { static_cast<char>(code), 0 };
+    short_name_ = name;
   }
+}
 
-  const std::string&
-  KeyCode::get_name(void) const {
-    return short_name_;
+const std::string&
+KeyCode::get_name(void) const {
+  return short_name_;
+}
+
+bool
+KeyCode::is_ascii(void) const {
+  return code_ <= 0xff;
+}
+
+int
+KeyCode::get_code(void) const {
+  return code_;
+}
+
+// XXX: it's unspecified whether this is a signed or unsigned char!
+char
+KeyCode::get_char(void) const {
+  if (code_ > 0xff) {
+    return static_cast<char>(code_ & 0xff);
+  } else {
+    return static_cast<char>(code_);
   }
+}
 
-  bool
-  KeyCode::is_ascii(void) const {
-    return code_ <= 0xff;
-  }
-
-  int
-  KeyCode::get_code(void) const {
-    return code_;
-  }
-
-  // XXX: it's unspecified whether this is a signed or unsigned char!
-  char
-  KeyCode::get_char(void) const {
-    if (code_ > 0xff) {
-      return static_cast<char>(code_ & 0xff);
-    } else {
-      return static_cast<char>(code_);
-    }
-  }
-
-  namespace keycode {
-    const size_t max_code = 409;
-    KeyCode keycode_arr[max_code + 1] = {
+namespace keycode {
+  const size_t max_code = 409;
+  KeyCode keycode_arr[max_code + 1] = {
       KeyCode(0),
       KeyCode(1),
       KeyCode(2),
@@ -458,11 +458,11 @@ namespace e {
       KeyCode(407, "key_suspend"),  // suspend key
       KeyCode(408, "key_undo"),  // undo key
       KeyCode(409, "key_mouse"),  // Mouse event has occurred
-    };
+  };
 
-    const KeyCode&
-    curses_code_to_keycode(int code) {
-      return keycode_arr[static_cast<size_t>(code)];
-    }
+  const KeyCode&
+  curses_code_to_keycode(int code) {
+    return keycode_arr[static_cast<size_t>(code)];
   }
+}
 }

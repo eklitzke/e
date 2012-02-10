@@ -8,16 +8,16 @@
 #include "./state.h"
 
 namespace e {
-  class Window {
-  protected:
-    State *state_;
-  public:
-    virtual ~Window() {}
-    virtual void loop(void) = 0;
-    virtual void draw_tabs(void) = 0;
-    virtual void draw_buffer(void) = 0;
-    virtual void draw_status(void) = 0;
-  };
+class Window {
+ protected:
+  State *state_;
+ public:
+  virtual ~Window() {}
+  virtual void loop(void) = 0;
+  virtual void draw_tabs(void) = 0;
+  virtual void draw_buffer(void) = 0;
+  virtual void draw_status(void) = 0;
+};
 }
 
 #endif  // WINDOW_H_

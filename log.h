@@ -7,10 +7,10 @@
 #include <string>
 
 namespace e {
-  namespace log {
-    void init(const std::string &);
-    void log_string(const std::string &);
-  }
+namespace log {
+void init(const std::string &);
+void log_string(const std::string &);
+}
 }
 
 #endif  // LOG_H_

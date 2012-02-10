@@ -10,23 +10,24 @@
 #include <vector>
 
 namespace e {
-  namespace js {
-    class EventListener {
-    public:
-      bool add(const std::string&, v8::Handle<v8::Object> *, bool);
-      bool remove(const std::string&, v8::Handle<v8::Object> *, bool);
-      void dispatch(const std::string&, const v8::Arguments&);
-    private:
-      std::map<std::string, std::vector<v8::Handle<v8::Object>*> > capture_;
-      std::map<std::string, std::vector<v8::Handle<v8::Object>*> > bubble_;
+namespace js {
+class EventListener {
+ public:
+  bool add(const std::string&, v8::Handle<v8::Object> *, bool);
+  bool remove(const std::string&, v8::Handle<v8::Object> *, bool);
+  void dispatch(const std::string&, const v8::Arguments&);
+ private:
+  std::map<std::string, std::vector<v8::Handle<v8::Object>*> > capture_;
+  std::map<std::string, std::vector<v8::Handle<v8::Object>*> > bubble_;
 
-	  std::vector<v8::Handle<v8::Object>*> & callback_map(const std::string &, bool);
-    };
+  std::vector<v8::Handle<v8::Object>*> & callback_map(const std::string &,
+                                                      bool);
+};
 
-    // Reads a file into a v8 string.
-    v8::Handle<v8::String> ReadFile(const std::string& name);
-    v8::Handle<v8::Value> LogCallback(const v8::Arguments& args);
-  }
+// Reads a file into a v8 string.
+v8::Handle<v8::String> ReadFile(const std::string& name);
+v8::Handle<v8::Value> LogCallback(const v8::Arguments& args);
+}
 }
 
 #endif  // JS_H_
