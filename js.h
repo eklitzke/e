@@ -22,6 +22,10 @@ namespace e {
 
 	  std::vector<v8::Handle<v8::Object>*> & callback_map(const std::string &, bool);
     };
+
+    // Reads a file into a v8 string.
+    v8::Handle<v8::String> ReadFile(const std::string& name);
+    v8::Handle<v8::Value> LogCallback(const v8::Arguments& args);
   }
 }
 

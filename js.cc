@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "./js.h"
+#include "./log.h"
 
 using namespace v8;
 
@@ -74,7 +75,7 @@ namespace e {
       return result;
     }
 
-    static Handle<Value> LogCallback(const Arguments& args) {
+    Handle<Value> LogCallback(const Arguments& args) {
       if (args.Length() < 1) {
         return Undefined();
       }
