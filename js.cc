@@ -8,10 +8,16 @@
 #include "./js.h"
 #include "./log.h"
 
-using namespace v8;
-
 namespace e {
 namespace js {
+
+using v8::Arguments;
+using v8::Handle;
+using v8::HandleScope;
+using v8::Object;
+using v8::String;
+using v8::Undefined;
+using v8::Value;
 
 std::vector<Handle<Object> *> &
 EventListener::callback_map(const std::string &callback_name,

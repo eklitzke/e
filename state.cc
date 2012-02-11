@@ -9,9 +9,19 @@
 #include "./log.h"
 #include "./state.h"
 
-using namespace v8;
-
 namespace e {
+
+using v8::Context;
+using v8::Handle;
+using v8::HandleScope;
+using v8::Function;
+using v8::FunctionTemplate;
+using v8::Integer;
+using v8::ObjectTemplate;
+using v8::Persistent;
+using v8::Script;
+using v8::String;
+using v8::Value;
 
 State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")) {
