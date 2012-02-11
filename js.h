@@ -15,7 +15,9 @@ class EventListener {
  public:
   bool add(const std::string&, v8::Handle<v8::Object> *, bool);
   bool remove(const std::string&, v8::Handle<v8::Object> *, bool);
-  void dispatch(const std::string&, const v8::Arguments&);
+  void dispatch(const std::string&, v8::Handle<v8::Value> *,
+                const std::vector<v8::Handle<v8::Value>*> &);
+  void install_in_prototype(v8::Object *);
  private:
   std::map<std::string, std::vector<v8::Handle<v8::Object>*> > capture_;
   std::map<std::string, std::vector<v8::Handle<v8::Object>*> > bubble_;

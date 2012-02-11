@@ -28,9 +28,7 @@ State::State(const std::string &script_name)
 
   HandleScope handle_scope;
 
-
   Handle<ObjectTemplate> window_obj = ObjectTemplate::New();
-
 
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback));

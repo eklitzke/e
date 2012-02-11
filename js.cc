@@ -1,11 +1,14 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include "./js.h"
+
+#include <boost/scoped_array.hpp>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "./js.h"
 #include "./log.h"
 
 namespace e {
@@ -60,6 +63,31 @@ EventListener::remove(const std::string &callback_name,
   return false;
 }
 
+void
+EventListener::dispatch(const std::string &name, Handle<Value> *this_argument,
+                        const std::vector<Handle<Value>*> &arguments) {
+  std::vector<Handle<Object>*> &captures = capture_[name];
+  std::vector<Handle<Object>*> &bubbles = bubble_[name];
+
+  std::vector<Handle<Object>*>::iterator it;
+  std::vector<Handle<Value>*>::const_iterator cit;
+
+  const size_t argc = arguments.size();
+  boost::scoped_array<Handle<Value> > argv(new Handle<Value>[argc]);
+  int i = 0;
+  for (cit = arguments.begin();
+       cit != arguments.end(); ++cit ) {
+    argv[i++] = Handle<Value>(**cit);
+  }
+
+  for (it = capture_.begin(); it != capture_.end(); ++it) {
+    (*it)->Call(this_argument, argc, argv.get());
+  }
+  for (it = bubble_.begin(); it != bubble_.end(); ++it) {
+    (*it)->Call(this_argument, argc, argv.get());
+  }
+}
+
 // Reads a file into a v8 string.
 Handle<String> ReadFile(const std::string& name) {
   FILE* file = fopen(name.c_str(), "rb");
@@ -71,7 +99,7 @@ Handle<String> ReadFile(const std::string& name) {
   int size = ftell(file);
   rewind(file);
 
-  char* chars = new char[size + 1];
+  boost::scoped_array<char> chars(new char[size + 1]);
   chars[size] = '\0';
   for (int i = 0; i < size;) {
     int read = fread(&chars[i], 1, size - i, file);
@@ -79,8 +107,7 @@ Handle<String> ReadFile(const std::string& name) {
   }
   fclose(file);
 
-  Handle<String> result = String::New(chars, size);
-  delete[] chars;
+  Handle<String> result = String::New(chars.get(), size);
   return result;
 }
 
