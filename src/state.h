@@ -10,20 +10,33 @@
 #include <vector>
 
 #include "./buffer.h"
+#include "./embeddable.h"
+#include "./js.h"
 #include "./keycode.h"
 
 namespace e {
-class State {
+
+using v8::Arguments;
+using v8::Context;
+using v8::Function;
+using v8::Handle;
+using v8::Persistent;
+using v8::Value;
+
+class State: public Embeddable {
  private:
   std::vector<Buffer *> buffers_;
   Buffer *active_buffer_;
 
-  v8::Persistent<v8::Context> context_;
-  v8::Persistent<v8::Function> onkeypress_;
+  js::EventListener listener_;
+
+  Persistent<Function> onkeypress_;
+
+  Handle<Value> addEventListener(const Arguments&);
+
 
  public:
   explicit State(const std::string &script);
-  ~State();
 
   Buffer* get_active_buffer(void);
   std::vector<Buffer *>* get_buffers(void);

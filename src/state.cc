@@ -6,38 +6,42 @@
 #include <string>
 
 #include "./js.h"
-#include "./log.h"
 #include "./state.h"
 
 namespace e {
 
+using v8::Arguments;
 using v8::Context;
 using v8::Handle;
 using v8::HandleScope;
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::Integer;
+using v8::Local;
+using v8::Object;
 using v8::ObjectTemplate;
 using v8::Persistent;
 using v8::Script;
 using v8::String;
+using v8::Template;
+using v8::Undefined;
 using v8::Value;
+
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")) {
 
   HandleScope handle_scope;
 
-  Handle<ObjectTemplate> window_obj = ObjectTemplate::New();
+  Handle<FunctionTemplate> window_obj = FunctionTemplate::New();
+  //Local<Template> proto_t = window_obj->PrototypeTemplate();
+  //proto_t->Set("addEventListener", v8::FunctionTemplate::New(addEventListener));
+
 
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback));
   global->Set(String::New("window"), window_obj);
-
-  // set up the global script context
-  context_ = Context::New(NULL, global);
-
-  Context::Scope context_scope(context_);
 
   // compile the JS source code, and run it once
   Handle<String> source = js::ReadFile(script_name);
@@ -58,10 +62,30 @@ State::State(const std::string &script_name)
   onkeypress_ = Persistent<Function>::New(onkeypress_fun);
 }
 
-State::~State() {
-  context_.Dispose();
-}
+Handle<Value>
+State::addEventListener(const Arguments& args) {
+  if (args.Length() < 2) {
+    return Undefined();
+  }
+  HandleScope scope;
 
+  // XXX: just cast the first argument to a string?
+  Handle<String> event_name = args[0]->ToString();
+
+  Handle<Value> callback = args[1];
+  if (!callback->IsObject()) {
+    return Undefined();
+  }
+  Handle<Object> callback_o = callback->ToObject();
+
+  bool use_capture = true;
+  if (args.Length() >= 3) {
+    use_capture = args[2]->BooleanValue();
+  }
+
+  //listener_.add(js::ValueToString(event_name), callback_o, use_capture);
+  return Undefined();
+}
 
 Buffer *
 State::get_active_buffer(void) {

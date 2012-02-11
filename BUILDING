@@ -1,0 +1,2 @@
+You'll need gyp installed (http://code.google.com/p/gyp/). Then generate a
+Makefile from e.gyp.

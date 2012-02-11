@@ -3,5 +3,7 @@
 *.o
 \.#*
 *.log
-e
-e_opt
+out
+Makefile
+*.Makefile
+*.mk
