@@ -23,12 +23,12 @@ int main(int argc, char **argv) {
     fprintf(stderr, "cannot access script \"%s\"\n", FLAGS_script.c_str());
     return 1;
   }
-  
+
   // create the world state
   e::State world(FLAGS_script);
-  
+
   e::CursesWindow w(&world);
   w.loop();
-  
+
   return 0;
 }

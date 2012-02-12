@@ -1,8 +1,8 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef STATE_H_
-#define STATE_H_
+#ifndef SRC_STATE_H_
+#define SRC_STATE_H_
 
 #include <v8.h>
 
@@ -30,11 +30,6 @@ class State: public Embeddable {
 
   js::EventListener listener_;
 
-  Persistent<Function> onkeypress_;
-
-  Handle<Value> addEventListener(const Arguments&);
-
-
  public:
   explicit State(const std::string &script);
 
@@ -46,4 +41,4 @@ class State: public Embeddable {
 };
 }
 
-#endif  // STATE_H_
+#endif  // SRC_STATE_H_

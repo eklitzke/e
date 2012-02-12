@@ -1,6 +1,7 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
 #include <v8.h>
+#include <glog/logging.h>
 
 #include <cassert>
 #include <string>
@@ -12,6 +13,7 @@ namespace e {
 
 using v8::Arguments;
 using v8::Context;
+using v8::External;
 using v8::Handle;
 using v8::HandleScope;
 using v8::Function;
@@ -27,21 +29,42 @@ using v8::Template;
 using v8::Undefined;
 using v8::Value;
 
-#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+namespace {
+Handle<Value> testFunction(const Arguments& args) {
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  void* ptr = wrap->Value();
+  LOG(INFO) << "inside of testFunction() C++ method, this is " << ptr;
+  return Undefined();
+}
+}
 
 State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")) {
 
   HandleScope handle_scope;
 
-  Handle<FunctionTemplate> window_obj = FunctionTemplate::New();
-  //Local<Template> proto_t = window_obj->PrototypeTemplate();
-  //proto_t->Set("addEventListener", v8::FunctionTemplate::New(addEventListener));
+  // Local<Template> proto_t = window_obj->PrototypeTemplate();
+  // proto_t->Set("addEventListener", v8::FunctionTemplate::New(addEventListener));
+
+  LOG(INFO) << "this pointer in State() is " << this;
 
 
   Handle<ObjectTemplate> global = ObjectTemplate::New();
-  global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback));
-  global->Set(String::New("window"), window_obj);
+  global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
+
+  Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
+  window_templ->SetInternalFieldCount(1);
+  window_templ->Set(String::New("test"), FunctionTemplate::New(testFunction), v8::ReadOnly);
+
+  context_ = Context::New(NULL, global);
+  Context::Scope context_scope(context_);
+  
+  Local<Object> window = window_templ->NewInstance();
+  window->SetInternalField(0, External::New(this));
+  //window->Set(String::New("test"), FunctionTemplate::New(testFunction), v8::ReadOnly);
+  context_->Global()->Set(String::New("window"), window);
+
 
   // compile the JS source code, and run it once
   Handle<String> source = js::ReadFile(script_name);
@@ -49,19 +72,18 @@ State::State(const std::string &script_name)
   scr->Run();
 
   // get the onKeyPress function
-  Handle<String> keypress_cb_name = String::New("onKeyPress");
-  Handle<Value> onkeypress_val = context_->Global()->Get(keypress_cb_name);
-  if (!onkeypress_val->IsFunction()) {
-    assert(false);
-  }
+  //Handle<String> keypress_cb_name = String::New("onKeyPress");
+  //Handle<Value> onkeypress_val = context_->Global()->Get(keypress_cb_name);
+  //if (!onkeypress_val->IsFunction()) {
+  //  assert(false);
+  //}
 
   // cast it to a function
-  Handle<Function> onkeypress_fun = Handle<Function>::Cast(onkeypress_val);
+  //Handle<Function> onkeypress_fun = Handle<Function>::Cast(onkeypress_val);
 
-  // that to remain after this call returns
-  onkeypress_ = Persistent<Function>::New(onkeypress_fun);
 }
 
+#if 0
 Handle<Value>
 State::addEventListener(const Arguments& args) {
   if (args.Length() < 2) {
@@ -86,6 +108,7 @@ State::addEventListener(const Arguments& args) {
   //listener_.add(js::ValueToString(event_name), callback_o, use_capture);
   return Undefined();
 }
+#endif
 
 Buffer *
 State::get_active_buffer(void) {
@@ -103,11 +126,13 @@ State::handle_key(const KeyCode &k) {
     return false;
   }
 
+  /*
   HandleScope scope;
 
   const int argc = 1;
   Handle<Value> argv[argc] = { Integer::New(k.get_code()) };
   onkeypress_->Call(context_->Global(), argc, argv);
+  */
 
   return true;
 }

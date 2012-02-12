@@ -1,8 +1,8 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef CURSES_WINDOW_H_
-#define CURSES_WINDOW_H_
+#ifndef SRC_CURSES_WINDOW_H_
+#define SRC_CURSES_WINDOW_H_
 
 #include <curses.h>
 #include <string>
@@ -36,4 +36,4 @@ class CursesWindow : public Window {
 };
 }
 
-#endif  // CURSES_WINDOW_H_
+#endif  // SRC_CURSES_WINDOW_H_

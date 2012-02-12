@@ -1,8 +1,8 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef JS_H_
-#define JS_H_
+#ifndef SRC_JS_H_
+#define SRC_JS_H_
 
 #include <v8.h>
 #include <map>
@@ -29,8 +29,6 @@ class EventListener {
   bool remove(const std::string&, Handle<Object>, bool);
   void dispatch(const std::string&, Handle<Object>,
                 const std::vector<Handle<Value> >&);
-  //void install_in_prototype(Handle<Object>);
-  void install_in_object(Handle<Object>);
  private:
   std::map<std::string, std::vector<Handle<Object> > > capture_;
   std::map<std::string, std::vector<Handle<Object> > > bubble_;
@@ -43,8 +41,7 @@ class EventListener {
 Handle<v8::String> ReadFile(const std::string& name);
 Handle<Value> LogCallback(const Arguments& args);
 std::string ValueToString(Local<Value>);
-
 }
 }
 
-#endif  // JS_H_
+#endif  // SRC_JS_H_

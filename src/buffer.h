@@ -1,8 +1,8 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef BUFFER_H_
-#define BUFFER_H_
+#ifndef SRC_BUFFER_H_
+#define SRC_BUFFER_H_
 
 #include <string>
 #include <vector>
@@ -61,4 +61,4 @@ class Buffer {
 };
 }
 
-#endif  // BUFFER_H_
+#endif  // SRC_BUFFER_H_

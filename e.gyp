@@ -7,7 +7,9 @@
       'conditions': [
         ['OS=="linux"', {
           'ldflags': [
-            '-lpthread',
+            '-pthread',
+          ],
+          'libraries': [
             '-lgflags',
             '-lglog',
             '-lncurses',
@@ -21,6 +23,7 @@
         'src/main.cc',
         'src/buffer.cc',
         'src/curses_window.cc',
+        'src/embeddable.cc',
         'src/js.cc',
         'src/keycode.cc',
         'src/state.cc',

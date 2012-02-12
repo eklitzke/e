@@ -1,8 +1,8 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#ifndef WINDOW_H_
-#define WINDOW_H_
+#ifndef SRC_WINDOW_H_
+#define SRC_WINDOW_H_
 
 #include "./buffer.h"
 #include "./state.h"
@@ -20,4 +20,4 @@ class Window {
 };
 }
 
-#endif  // WINDOW_H_
+#endif  // SRC_WINDOW_H_

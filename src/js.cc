@@ -14,7 +14,7 @@ namespace e {
 namespace js {
 
 using v8::Arguments;
-using v8::External;;
+using v8::External;
 using v8::Handle;
 using v8::HandleScope;
 using v8::Object;
@@ -74,7 +74,7 @@ EventListener::call_handler(Handle<Value> h,
       o->CallAsFunction(this_argument, argc, argv);
       return true;
     }
-    
+
     Handle<String> handle_event_string = String::NewSymbol("handleEvent");
     Handle<Value> handle_event = o->Get(handle_event_string);
     if (handle_event->IsObject()) {
@@ -101,7 +101,7 @@ EventListener::dispatch(const std::string &name, Handle<Object> this_argument,
   const size_t argc = arguments.size();
   boost::scoped_array<Handle<Value> > argv(new Handle<Value>[argc]);
   int i = 0;
-  for (cit = arguments.begin(); cit != arguments.end(); ++cit ) {
+  for (cit = arguments.begin(); cit != arguments.end(); ++cit) {
     argv[i++] = Handle<Value>(*cit);
   }
 
@@ -156,6 +156,5 @@ std::string ValueToString(Local<Value> value) {
   String::Utf8Value utf8_value(value);
   return std::string(*utf8_value);
 }
-
 }
 }
