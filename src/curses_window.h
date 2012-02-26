@@ -7,11 +7,13 @@
 #include <curses.h>
 #include <string>
 
-#include "./window.h"
+//#include "./window.h"
+#include "./state.h"
 
 namespace e {
 
-class CursesWindow : public Window {
+//class CursesWindow : public Window {
+class CursesWindow {
  private:
   State *state_;
   char *c_clearscreen_;
@@ -21,7 +23,6 @@ class CursesWindow : public Window {
   void clear(void);
   void reset_cursor(void);
   int scr_lines(void);
-  void loop_once(void);
   void update(void);
   void render_line(int, const std::string &);
 
@@ -29,7 +30,8 @@ class CursesWindow : public Window {
   explicit CursesWindow(State *state);
   ~CursesWindow();
 
-  void loop(void);
+  bool loop_once();
+  void loop();
   void draw_tabs(void);
   void draw_buffer(void);
   void draw_status(void);

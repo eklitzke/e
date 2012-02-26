@@ -6,6 +6,8 @@
 
 #include <v8.h>
 
+#include <boost/function.hpp>
+
 #include <string>
 #include <vector>
 
@@ -21,23 +23,30 @@ using v8::Context;
 using v8::Function;
 using v8::Handle;
 using v8::Persistent;
+using v8::Script;
 using v8::Value;
 
 class State: public Embeddable {
+ public:
+  explicit State(const std::string &script_name);
+  void RunScript(boost::function<void ()>);
+
+  js::EventListener* GetListener(void) { return &listener_; }
+
+  Buffer* GetActiveBuffer(void);
+  std::vector<Buffer *>* GetBuffers(void);
+
+  // returns true if the mainloop should keep going, false otherwise
+  bool HandleKey(const KeyCode &);
+
+  v8::Persistent<v8::Object> callback_o;
  private:
   std::vector<Buffer *> buffers_;
   Buffer *active_buffer_;
-
   js::EventListener listener_;
+  std::string script_name_;
 
- public:
-  explicit State(const std::string &script);
 
-  Buffer* get_active_buffer(void);
-  std::vector<Buffer *>* get_buffers(void);
-
-  // returns true if the mainloop should keep going, false otherwise
-  bool handle_key(const KeyCode &);
 };
 }
 

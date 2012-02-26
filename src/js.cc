@@ -68,7 +68,11 @@ EventListener::call_handler(Handle<Value> h,
                             Handle<Object> this_argument,
                             size_t argc,
                             Handle<Value> argv[]) {
+  HandleScope scope;
+  Local<String> s = h->ToString();
+  LOG(INFO) << ValueToString(s);
   if (h->IsObject()) {
+    LOG(INFO) << "it's an object";
     Handle<Object> o = Handle<Object>::Cast(h);
     if (o->IsCallable()) {
       o->CallAsFunction(this_argument, argc, argv);
@@ -84,6 +88,8 @@ EventListener::call_handler(Handle<Value> h,
         return false;
       }
     }
+  } else {
+    LOG(INFO) << "h is not an object";
   }
   return false;
 }
@@ -94,6 +100,7 @@ EventListener::dispatch(const std::string &name, Handle<Object> this_argument,
   std::vector<Handle<Object> > &captures = capture_[name];
   std::vector<Handle<Object> > &bubbles = bubble_[name];
 
+  LOG(INFO) << "dispatching, captures.length is " << captures.size() << ", bubbles is " << bubbles.size();
   std::vector<Handle<Object> >::iterator it;
   std::vector<Handle<Value> >::const_iterator cit;
 

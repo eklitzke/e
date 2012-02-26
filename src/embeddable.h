@@ -20,13 +20,14 @@ using v8::Persistent;
 using v8::Value;
 
 class Embeddable {
- protected:
-  Persistent<Context> context_;
  public:
   virtual ~Embeddable() { context_.Dispose(); }
   Local<FunctionTemplate> ToCallable(InvocationCallback);
   Local<Value> ToExternal();
   template <typename T> static T *FromExternal(Handle<Value>);
+
+ protected:
+  Persistent<Context> context_;
 };
 }
 

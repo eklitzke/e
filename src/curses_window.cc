@@ -1,11 +1,19 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+
 #include <curses.h>
 #include <string.h>
 #include <sys/time.h>
 
+#include <v8.h>
+
 #include "./keycode.h"
 #include "./curses_window.h"
+
+using v8::HandleScope;
+using v8::Script;
 
 namespace e {
 
@@ -45,29 +53,29 @@ CursesWindow::init() {
 }
 
 
-void
+bool
 CursesWindow::loop_once() {
   draw_tabs();
   draw_buffer();
   draw_status();
   reset_cursor();
   doupdate();
+
+  int c = wgetch(window_);
+  if (c == ERR) {
+    // this probably means a timeout fired during wgetch(), no big deal
+    return true;
+  }
+
+  const KeyCode &k = keycode::curses_code_to_keycode(c);
+  return state_->HandleKey(k);
+
 }
 
 void
 CursesWindow::loop() {
-  bool keep_going = true;
-  while (keep_going) {
-    loop_once();
-    int c = wgetch(window_);
-    if (c == ERR) {
-      // this probably means a timeout fired during wgetch(), no big deal
-      continue;
-    }
-
-    const KeyCode &k = keycode::curses_code_to_keycode(c);
-    keep_going = state_->handle_key(k);
-  }
+  boost::function<bool ()> f = boost::bind(&CursesWindow::loop_once, this);
+  state_->RunScript(f);
 }
 
 int
@@ -105,8 +113,8 @@ CursesWindow::draw_tabs(void) {
   attron(A_REVERSE);
 
   mvprintw(0, 0, "");
-  const Buffer *active_buffer = state_->get_active_buffer();
-  std::vector<Buffer *> *buffers = state_->get_buffers();
+  const Buffer *active_buffer = state_->GetActiveBuffer();
+  std::vector<Buffer *> *buffers = state_->GetBuffers();
   std::vector<Buffer *>::iterator it;
   for (it = buffers->begin(); it != buffers->end(); ++it) {
     if ((*it) == active_buffer) {
@@ -131,7 +139,7 @@ CursesWindow::draw_buffer(void) {
   int height, width;
   getmaxyx(window_, height, width);
 
-  const Buffer *active_buffer = state_->get_active_buffer();
+  const Buffer *active_buffer = state_->GetActiveBuffer();
   const std::vector<std::string *> *lines =
       active_buffer->get_lines(height - 3);
 
@@ -150,10 +158,10 @@ CursesWindow::draw_status(void) {
   attron(A_BOLD);
   attron(A_REVERSE);
 
-  const Buffer *buf = state_->get_active_buffer();
+  const Buffer *buf = state_->GetActiveBuffer();
 
   std::string dirty_status;
-  if (state_->get_active_buffer()->is_dirty()) {
+  if (state_->GetActiveBuffer()->is_dirty()) {
     dirty_status = "**";
   } else {
     dirty_status = "--";

@@ -30,32 +30,69 @@ using v8::Undefined;
 using v8::Value;
 
 namespace {
-Handle<Value> testFunction(const Arguments& args) {
+Handle<Value>
+testFunction(const Arguments& args) {
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   void* ptr = wrap->Value();
   LOG(INFO) << "inside of testFunction() C++ method, this is " << ptr;
   return Undefined();
 }
+
+Handle<Value>
+AddEventListener(const Arguments& args) {
+  if (args.Length() < 2) {
+    return Undefined();
+  }
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  State* state = reinterpret_cast<State*>(wrap->Value());
+  
+  HandleScope scope;
+
+  // XXX: just cast the first argument to a string?
+  Local<String> event_name = args[0]->ToString();
+
+  Handle<Value> callback = args[1];
+  if (!callback->IsObject()) {
+    return Undefined();
+  }
+  state->callback_o = Persistent<Object>::New(callback->ToObject());
+  google::FlushLogFiles(google::INFO);
+
+  bool use_capture = true;
+  if (args.Length() >= 3) {
+    use_capture = args[2]->BooleanValue();
+  }
+
+  //state->GetListener()->add(js::ValueToString(event_name), scope.Close(callback_o), use_capture);
+  state->GetListener()->add(js::ValueToString(event_name), state->callback_o, use_capture);
+
+  return Undefined();
+}
+
 }
 
 State::State(const std::string &script_name)
-    :active_buffer_(new Buffer("*temp*")) {
-
-  HandleScope handle_scope;
+    :active_buffer_(new Buffer("*temp*")), script_name_(script_name) {
 
   // Local<Template> proto_t = window_obj->PrototypeTemplate();
   // proto_t->Set("addEventListener", v8::FunctionTemplate::New(addEventListener));
+}
+
+void State::RunScript(boost::function<void ()> then) {
 
   LOG(INFO) << "this pointer in State() is " << this;
 
-
+  HandleScope handle_scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
 
   Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
   window_templ->SetInternalFieldCount(1);
   window_templ->Set(String::New("test"), FunctionTemplate::New(testFunction), v8::ReadOnly);
+  window_templ->Set(String::New("addEventListener"), FunctionTemplate::New(AddEventListener), v8::ReadOnly);
 
   context_ = Context::New(NULL, global);
   Context::Scope context_scope(context_);
@@ -63,76 +100,39 @@ State::State(const std::string &script_name)
   Local<Object> window = window_templ->NewInstance();
   window->SetInternalField(0, External::New(this));
   //window->Set(String::New("test"), FunctionTemplate::New(testFunction), v8::ReadOnly);
-  context_->Global()->Set(String::New("window"), window);
+  context_->Global()->Set(String::New("window"), window, v8::ReadOnly);
 
 
   // compile the JS source code, and run it once
-  Handle<String> source = js::ReadFile(script_name);
+  Handle<String> source = js::ReadFile(script_name_);
   Handle<Script> scr = Script::Compile(source);
+
   scr->Run();
-
-  // get the onKeyPress function
-  //Handle<String> keypress_cb_name = String::New("onKeyPress");
-  //Handle<Value> onkeypress_val = context_->Global()->Get(keypress_cb_name);
-  //if (!onkeypress_val->IsFunction()) {
-  //  assert(false);
-  //}
-
-  // cast it to a function
-  //Handle<Function> onkeypress_fun = Handle<Function>::Cast(onkeypress_val);
-
+  then();
 }
-
-#if 0
-Handle<Value>
-State::addEventListener(const Arguments& args) {
-  if (args.Length() < 2) {
-    return Undefined();
-  }
-  HandleScope scope;
-
-  // XXX: just cast the first argument to a string?
-  Handle<String> event_name = args[0]->ToString();
-
-  Handle<Value> callback = args[1];
-  if (!callback->IsObject()) {
-    return Undefined();
-  }
-  Handle<Object> callback_o = callback->ToObject();
-
-  bool use_capture = true;
-  if (args.Length() >= 3) {
-    use_capture = args[2]->BooleanValue();
-  }
-
-  //listener_.add(js::ValueToString(event_name), callback_o, use_capture);
-  return Undefined();
-}
-#endif
 
 Buffer *
-State::get_active_buffer(void) {
+State::GetActiveBuffer(void) {
   return active_buffer_;
 }
 
 std::vector<Buffer *> *
-State::get_buffers(void) {
+State::GetBuffers(void) {
   return &buffers_;
 }
 
 bool
-State::handle_key(const KeyCode &k) {
+State::HandleKey(const KeyCode &k) {
   if (k.is_ascii() && k.get_char() == 'q') {
     return false;
   }
 
-  /*
+  LOG(INFO) << "in HandleKey";
   HandleScope scope;
 
-  const int argc = 1;
-  Handle<Value> argv[argc] = { Integer::New(k.get_code()) };
-  onkeypress_->Call(context_->Global(), argc, argv);
-  */
+  std::vector<Handle<Value> > args;
+  args.push_back(Integer::New(k.get_code()));
+  listener_.dispatch("keypress", context_->Global(), args);
 
   return true;
 }
