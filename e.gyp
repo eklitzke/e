@@ -26,7 +26,8 @@
         'src/keycode.cc',
         'src/state.cc',
         'src/termios_window.cc',
-    ]
+    ],
+    'defines': [ 'USE_CURSES', ],
   },
   'targets': [
     {

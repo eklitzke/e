@@ -10,6 +10,10 @@
 #include <string>
 #include <vector>
 
+#ifdef USE_CURSES
+#include <curses.h>
+#endif
+
 namespace e {
 namespace js {
 
@@ -156,6 +160,20 @@ Handle<Value> LogCallback(const Arguments& args) {
   LOG(INFO) << (*value);
   return Undefined();
 }
+
+//#ifdef USE_CURSES
+Handle<Value> CursesAddstr(const Arguments& args) {
+  if (args.Length() < 1) {
+    return Undefined();
+  }
+  HandleScope scope;
+  Handle<Value> arg = args[0];
+  String::Utf8Value value(arg);
+  addnstr(*value, value.length());
+  refresh(); // FIXME(eklitzke): is this necessary?
+  return Undefined();
+}
+//#endif
 
 // Convert a JavaScript string to a std::string.  To not bother too
 // much with string encodings we just use ascii.

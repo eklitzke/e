@@ -19,6 +19,12 @@ using v8::Local;
 using v8::Persistent;
 using v8::Value;
 
+#define GET_SELF2(a, tp) Local<Object> s = a.Holder();\
+  Local<External> wrap = Local<External>::Cast(s->GetInternalField(0));\
+  KeyCode* self = static_cast<tp*>(wrap->Value())
+
+#define GET_SELF(tp) GET_SELF2(args, tp)
+
 class Embeddable {
  public:
   virtual ~Embeddable() { context_.Dispose(); }

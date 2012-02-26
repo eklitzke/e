@@ -50,8 +50,8 @@ void TermiosWindow::EstablishReadLoop() {
                   boost::asio::placeholders::bytes_transferred));
 }
 
-bool TermiosWindow::HandleKey(const KeyCode &keycode) {
-  if (keycode.is_ascii() && keycode.get_char() == 'q') {
+bool TermiosWindow::HandleKey(KeyCode *keycode) {
+  if (keycode->is_ascii() && keycode->get_char() == 'q') {
     return false;
   }
   state_.HandleKey(keycode);
@@ -69,7 +69,7 @@ void TermiosWindow::OnRead(const boost::system::error_code& error,
       break;
 
     KeyCode keycode = e::keycode::curses_code_to_keycode(key);
-    keep_going = HandleKey(keycode);
+    keep_going = HandleKey(&keycode);
     if (!keep_going)
       break;
   }

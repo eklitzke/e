@@ -41,6 +41,9 @@ class EventListener {
 Handle<v8::String> ReadFile(const std::string& name);
 Handle<Value> LogCallback(const Arguments& args);
 std::string ValueToString(Local<Value>);
+#ifdef USE_CURSES
+Handle<Value> CursesAddstr(const Arguments& args);
+#endif
 }
 }
 

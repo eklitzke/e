@@ -37,7 +37,7 @@ class State: public Embeddable {
   std::vector<Buffer *>* GetBuffers(void);
 
   // returns true if the mainloop should keep going, false otherwise
-  bool HandleKey(const KeyCode &);
+  bool HandleKey(KeyCode *);
 
   v8::Persistent<v8::Object> callback_o;
  private:

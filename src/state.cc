@@ -88,6 +88,11 @@ void State::RunScript(boost::function<void ()> then) {
   HandleScope handle_scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
+#ifdef USE_CURSES
+  Handle<ObjectTemplate> curses_obj = ObjectTemplate::New();
+  curses_obj->Set(String::New("addstr"), FunctionTemplate::New(js::CursesAddstr), v8::ReadOnly);
+  global->Set(String::New("curses"), curses_obj, v8::ReadOnly);
+#endif
 
   Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
   window_templ->SetInternalFieldCount(1);
@@ -122,16 +127,11 @@ State::GetBuffers(void) {
 }
 
 bool
-State::HandleKey(const KeyCode &k) {
-  if (k.is_ascii() && k.get_char() == 'q') {
-    return false;
-  }
-
-  LOG(INFO) << "in HandleKey";
+State::HandleKey(KeyCode *k) {
   HandleScope scope;
 
   std::vector<Handle<Value> > args;
-  args.push_back(Integer::New(k.get_code()));
+  args.push_back(k->ToScript());
   listener_.dispatch("keypress", context_->Global(), args);
 
   return true;

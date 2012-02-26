@@ -32,7 +32,7 @@ class TermiosWindow {
   void Initialize();
   void InnerLoop();
   void OnRead(const boost::system::error_code& error, std::size_t bytes_transferred);
-  bool HandleKey(const KeyCode &);
+  bool HandleKey(KeyCode *);
   void EstablishReadLoop();
 };
 }

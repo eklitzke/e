@@ -6,13 +6,16 @@
 #ifndef SRC_KEYCODE_H_
 #define SRC_KEYCODE_H_
 
+#include <v8.h>
 #include <string>
+#include "./embeddable.h"
+
+using v8::Arguments;
+using v8::Handle;
+using v8::Value;
 
 namespace e {
-class KeyCode {
-  private:
-    int code_;
-    std::string short_name_;
+class KeyCode: public Embeddable {
   public:
     explicit KeyCode(int code,
                      const std::string &short_name);
@@ -21,7 +24,14 @@ class KeyCode {
     bool is_ascii(void) const;
     int get_code(void) const;
     char get_char(void) const;
+    Handle<Value> ToScript();
+  private:
+    int code_;
+    std::string short_name_;
+    void Initialize();
 };
+
+Handle<Value> JSToCode(const Arguments& args);
 
 namespace keycode {
 const KeyCode& curses_code_to_keycode(int code);
