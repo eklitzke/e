@@ -4,21 +4,42 @@ Overview
 This is the source code for e, a text editor. It's implemented using C++ and
 JavaScript (via Google's [V8](http://code.google.com/p/v8/)).
 
-How Well Does It Work?
+How well does it work?
 ----------------------
 
 It doesn't work very well at all. You can compile it and type stuff, but it's
 not very functional. The project is not yet self-hosting (I'm editing the code
 in Emacs).
 
-What Does It Look Like?
+Why this project? Why not use Node.js?
+--------------------------------------
+
+I think Node.js is a great project. It has I/O capabilities, and there's at
+least one curses binding floating around, so there's no reason you couldn't
+write the same thing using node.
+
+The main answer is I wanted a project to expand my C++ skills, hence this
+project. That said, I think there are some other advantages to a separate V8
+embedding for an editor:
+
+* After compiling, you get a real bona-fide binary; you can copy it around on
+  different machines if they have the right shared libraries built.
+* It's easy to statically link things, creating a stand-alone binary; this makes
+  it even easier to copy around and install on different machines.
+* The I/O model is a lot simpler (mostly due to doing synchronous I/O).
+* You can still do asynchronous I/O if you want; as a matter of fact, behind the
+  scenes e is using boost::asio to process keypresses asynchronously (to allow
+  various timers to run in the background). Look at the implementation of
+  `TermiosWindow::Loop` if you want to learn more about this.
+
+What does it look like?
 -----------------------
 
 Here's a screenshot. It's not very exciting.
 
 ![](http://github.com/eklitzke/e/raw/master/static/hello_from_e.png) 
 
-Help! How Do I Quit?
+Help! How do I quit?
 --------------------
 
 Uses Ctrl-Q to exit the editor.
