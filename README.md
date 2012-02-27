@@ -11,6 +11,19 @@ It doesn't work very well at all. You can compile it and type stuff, but it's
 not very functional. The project is not yet self-hosting (I'm editing the code
 in Emacs).
 
+What Does It Look Like?
+-----------------------
+
+Here's a screenshot. It's not very exciting.
+
+![](http://github.com/eklitzke/e/raw/master/static/hello_from_e.png) 
+
+Help! How Do I Quit?
+--------------------
+
+Uses Ctrl-Q to exit the editor.
+
+
 Javascript API
 ==============
 
