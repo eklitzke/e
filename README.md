@@ -15,21 +15,30 @@ Why JavaScript?
 ---------------
 
 Love it or hate it, one of the things that makes Emacs a really, really great
-editor is because it's not written in C or C++, it's written in elisp. Only the
+editor is that it's not written in C or C++, it's written in elisp. Only the
 lowest-level I/O bits are written in C, and exported to elisp code.
 
 This makes Emacs really extensible. The author of e normally uses Emacs, and
 runs it using viper-mode, a minor mode that makes Emacs behave like vi. That's
 pretty crazy -- using Emacs, you can pretend like you're using vi, but also tap
-into this huge millions-of-lines-of-code Emacs elisp ecosystem.
+into this huge millions-of-lines-of-code Emacs elisp ecosystem. The fact that
+you can completely customize Emacs down to the lowest level of keyboard handling
+to tack on a brand new editing system -- and have it still be fast -- shows the
+power of this approach.
 
 That said, if you've written much elisp you know it's not a very good
 language. It's very antiquated, and very complicated (and I'm not just saying
 that because it's a Lisp -- it's antiquated and complicated compared to pretty
 much every other Lisp implementation in wide use today). Elisp also has the
-problem that it doesn't have the state-of-the-art bytecode interpreter. This can
+problem that it doesn't have a state-of-the-art bytecode interpreter. This can
 make elisp rather slow, particularly when loading new files and while garbage
 collections are running.
+
+Editors like [vim](http://www.vim.org/) feel fast and have great editing
+capabilities, but are hard to customize. If you've ever tried to really dive
+into [vimscript](http://vimdoc.sourceforge.net/htmldoc/usr_41.html) or its
+Python bindings you'll recognize that the scripting features feel tacked on and
+clunky.
 
 JavaScript solves all (or nearly all of these problems). It's really easy (and
 fun!) to use. Tons of people already know how to read, write, and debug
@@ -42,7 +51,7 @@ JavaScript.
 
 The goal of e is to keep the amount of C/C++ code to a minimum, and try to
 provide a super-fast ultra-customizable text editor using JavaScript. Out of the
-box it will probably look and feel like [vim](http://www.vim.org/).
+box it will probably look and feel like a lot like [vim](http://www.vim.org/).
 
 Why this project? Why not use Node.js?
 --------------------------------------
