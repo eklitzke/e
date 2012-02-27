@@ -11,6 +11,39 @@ It doesn't work very well at all. You can compile it and type stuff, but it's
 not very functional. The project is not yet self-hosting (I'm editing the code
 in Emacs).
 
+Why JavaScript?
+---------------
+
+Love it or hate it, one of the things that makes Emacs a really, really great
+editor is because it's not written in C or C++, it's written in elisp. Only the
+lowest-level I/O bits are written in C, and exported to elisp code.
+
+This makes Emacs really extensible. The author of e normally uses Emacs, and
+runs it using viper-mode, a minor mode that makes Emacs behave like vi. That's
+pretty crazy -- using Emacs, you can pretend like you're using vi, but also tap
+into this huge millions-of-lines-of-code Emacs elisp ecosystem.
+
+That said, if you've written much elisp you know it's not a very good
+language. It's very antiquated, and very complicated (and I'm not just saying
+that because it's a Lisp -- it's antiquated and complicated compared to pretty
+much every other Lisp implementation in wide use today). Elisp also has the
+problem that it doesn't have the state-of-the-art bytecode interpreter. This can
+make elisp rather slow, particularly when loading new files and while garbage
+collections are running.
+
+JavaScript solves all (or nearly all of these problems). It's really easy (and
+fun!) to use. Tons of people already know how to read, write, and debug
+JavaScript. And there are a
+[number](https://developer.mozilla.org/en/SpiderMonkey) of
+[great](http://www.webkit.org/projects/javascript/index.html) open source
+[implementations](http://trac.webkit.org/wiki/SquirrelFish). This project uses
+[Google's V8](http://code.google.com/apis/v8/intro.html) implementation of
+JavaScript.
+
+The goal of e is to keep the amount of C/C++ code to a minimum, and try to
+provide a super-fast ultra-customizable text editor using JavaScript. Out of the
+box it will probably look and feel like [vim](http://www.vim.org/).
+
 Why this project? Why not use Node.js?
 --------------------------------------
 
