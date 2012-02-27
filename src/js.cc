@@ -11,10 +11,6 @@
 #include <string>
 #include <vector>
 
-#ifdef USE_CURSES
-#include <curses.h>
-#endif
-
 namespace e {
 namespace js {
 
@@ -22,6 +18,7 @@ using v8::Arguments;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
+using v8::Integer;
 using v8::Object;
 using v8::String;
 using v8::Undefined;
@@ -157,25 +154,15 @@ Handle<Value> LogCallback(const Arguments& args) {
   return Undefined();
 }
 
-//#ifdef USE_CURSES
-Handle<Value> CursesAddstr(const Arguments& args) {
-  if (args.Length() < 1) {
-    return Undefined();
-  }
-  HandleScope scope;
-  Handle<Value> arg = args[0];
-  String::Utf8Value value(arg);
-  addnstr(*value, value.length());
-  refresh(); // FIXME(eklitzke): is this necessary?
-  return Undefined();
-}
-//#endif
-
 // Convert a JavaScript string to a std::string.  To not bother too
 // much with string encodings we just use ascii.
 std::string ValueToString(Local<Value> value) {
   String::Utf8Value utf8_value(value);
   return std::string(*utf8_value);
 }
+
+#ifdef USE_CURSES
+#include "js_curses.cc"
+#endif
 }
 }

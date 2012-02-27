@@ -9,9 +9,6 @@
 #include <string>
 #include <vector>
 
-namespace e {
-namespace js {
-
 using v8::Arguments;
 using v8::Context;
 using v8::External;
@@ -22,6 +19,11 @@ using v8::Local;
 using v8::Object;
 using v8::Persistent;
 using v8::Value;
+
+namespace e {
+namespace js {
+
+typedef Handle<Value>(*JSCallback)(const Arguments&);
 
 class EventListener {
  public:
@@ -41,9 +43,8 @@ class EventListener {
 Handle<v8::String> ReadFile(const std::string& name);
 Handle<Value> LogCallback(const Arguments& args);
 std::string ValueToString(Local<Value>);
-#ifdef USE_CURSES
-Handle<Value> CursesAddstr(const Arguments& args);
-#endif
+
+std::map<std::string, JSCallback> GetCallbacks(); // all of the callbacks
 }
 }
 

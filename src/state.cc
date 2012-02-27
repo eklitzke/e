@@ -80,22 +80,25 @@ State::State(const std::string &script_name)
 }
 
 void State::RunScript(boost::function<void ()> then) {
-
-  LOG(INFO) << "this pointer in State() is " << this;
-
   HandleScope handle_scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
-  global->Set(String::New("log"), FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
-#ifdef USE_CURSES
-  Handle<ObjectTemplate> curses_obj = ObjectTemplate::New();
-  curses_obj->Set(String::New("addstr"), FunctionTemplate::New(js::CursesAddstr), v8::ReadOnly);
-  global->Set(String::New("curses"), curses_obj, v8::ReadOnly);
-#endif
+  global->Set(String::NewSymbol("log"), FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
 
   Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
   window_templ->SetInternalFieldCount(1);
-  window_templ->Set(String::New("addEventListener"), FunctionTemplate::New(AddEventListener), v8::ReadOnly);
-  window_templ->Set(String::New("stopLoop"), FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
+  window_templ->Set(String::NewSymbol("addEventListener"),
+                    FunctionTemplate::New(AddEventListener), v8::ReadOnly);
+  window_templ->Set(String::NewSymbol("stopLoop"),
+                    FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
+
+  // add in all of the movement callbacks
+  std::map<std::string, e::js::JSCallback> callbacks = e::js::GetCallbacks();
+  std::map<std::string, e::js::JSCallback>::iterator cit;
+  for (cit = callbacks.begin(); cit != callbacks.end(); ++cit) {
+    DLOG(INFO) << "added JS function: window." << cit->first;
+    window_templ->Set(String::NewSymbol(cit->first.c_str()),
+                      FunctionTemplate::New(cit->second), v8::ReadOnly);
+  }
 
   context_ = Context::New(NULL, global);
   Context::Scope context_scope(context_);

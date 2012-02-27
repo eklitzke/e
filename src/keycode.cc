@@ -77,20 +77,13 @@ Handle<ObjectTemplate> MakeKeyCodeTemplate() {
 
 KeyCode::KeyCode(int code, const std::string &short_name)
     :code_(code), short_name_(short_name) {
-  Initialize();
 }
 
 KeyCode::KeyCode(int code)
     :code_(code) {
   if (code <= 127) {
-    const char name[2] = { static_cast<char>(code), 0 };
-    short_name_ = name;
+    short_name_ = std::string(1, static_cast<char>(code));
   }
-  Initialize();
-}
-
-void
-KeyCode::Initialize() {
 }
 
 Handle<Value>

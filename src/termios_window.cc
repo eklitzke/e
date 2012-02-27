@@ -22,7 +22,8 @@ TermiosWindow::TermiosWindow(const std::string &script_name)
   refresh();
 
   noecho();
-  cbreak();
+  nonl(); // don't turn LF into CRLF
+  cbreak(); // read characters one at a time
   keypad(window_, TRUE);
   clearok(window_, TRUE);
   notimeout(window_, TRUE);
@@ -32,10 +33,6 @@ TermiosWindow::TermiosWindow(const std::string &script_name)
 }
 
 TermiosWindow::~TermiosWindow() {
-  nocbreak();
-  echo();
-
-  refresh();
   endwin();
 }
 
@@ -51,7 +48,10 @@ void TermiosWindow::EstablishReadLoop() {
 }
 
 bool TermiosWindow::HandleKey(KeyCode *keycode) {
-  return state_.HandleKey(keycode);
+  bool result = state_.HandleKey(keycode);
+  if (result)
+    refresh();
+  return result;
 }
 
 void TermiosWindow::OnRead(const boost::system::error_code& error,

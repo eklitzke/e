@@ -13,16 +13,15 @@
             '-lboost_program_options',
             '-lglog',
             '-lncurses',
-            #'-ltermcap',
             '-lv8',
           ]
     }]],
     'sources': [
         'src/main.cc',
         'src/buffer.cc',
-        #'src/curses_window.cc',
         'src/embeddable.cc',
         'src/js.cc',
+        'src/js_curses.cc',
         'src/keycode.cc',
         'src/state.cc',
         'src/termios_window.cc',
