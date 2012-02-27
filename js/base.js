@@ -7,18 +7,25 @@ window.addEventListener("keypress", function (event) {
 	var name = event.getName();
 	log("got keypress, code is " + code + ", name is \"" + name + "\", name length is " + name.length);
 	if (event.isASCII()) {
-        var print = true;
 		switch (code) {
-		case 13:
-			window.move(cury + 1, 0);
-			print = false;
+		case 1: // Ctrl-A
+			window.move(cury, 0);
 			break;
-		}
-		if (print) {
-			if (name === "q")
-				window.stopLoop();
-			else
-				window.addstr(name);
+		case 5: // Ctrl-E
+			window.move(cury, window.getmaxx() - 1);
+			break;
+		case 12: // Ctrl-L
+			window.redrawwin();
+			break;
+		case 13: // Ctrl-M, carriage return
+			window.move(cury + 1, 0);
+			break;
+		case 17: // Ctrl-Q
+			window.stopLoop();
+			break;
+		default:
+			window.addstr(name);
+			break;
 		}
 	} else {
 		switch (name) {
@@ -28,9 +35,15 @@ window.addEventListener("keypress", function (event) {
 			}
 			break;
 		case "key_down":
-			if (cury < window.getmaxy()) {
+			if (cury < window.getmaxy() - 1) {
 				window.move(cury + 1, curx);
 			}
+			break;
+		case "key_end":
+			window.move(cury, window.getmaxx() - 1);
+			break;
+		case "key_home":
+			window.move(cury, 0);
 			break;
 		case "key_left":
 			if (curx > 0) {
@@ -38,7 +51,7 @@ window.addEventListener("keypress", function (event) {
 			}
 			break;
 		case "key_right":
-			if (curx < window.getmaxx()) {
+			if (curx < window.getmaxx() - 1) {
 				window.move(cury, curx + 1);
 			}
 			break;

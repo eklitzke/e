@@ -58,6 +58,7 @@ CURSES_WINDOW_FUNC(Getmaxx, getmaxx);
 CURSES_WINDOW_FUNC(Getmaxy, getmaxy);
 CURSES_WINDOW_FUNC(Getparx, getparx);
 CURSES_WINDOW_FUNC(Getpary, getpary);
+CURSES_WINDOW_FUNC(Redrawwin, redrawwin)
 
 Handle<Value> CursesGetcurx(const Arguments& args) {
   HandleScope scope;
@@ -123,6 +124,7 @@ std::map<std::string, JSCallback> GetCallbacks() {
   callbacks["getpary"] = &CursesGetpary;
   callbacks["move"] = &CursesMove;
   callbacks["mvdelch"] = &CursesMvdelch;
+  callbacks["redrawwin"] = &CursesRedrawwin;
   return callbacks;
 }
 }

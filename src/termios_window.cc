@@ -29,6 +29,11 @@ TermiosWindow::TermiosWindow(const std::string &script_name)
   notimeout(window_, TRUE);
   nodelay(window_, true);
 
+  struct termios ttystate;
+  tcgetattr(STDIN_FILENO, &ttystate);
+  ttystate.c_iflag &= ~IXON ;    /* XON/XOFF Enabled    */
+  tcsetattr(0, TCSANOW, &ttystate);
+
   term_in_.assign(STDIN_FILENO);
 }
 
