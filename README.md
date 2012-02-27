@@ -1,3 +1,50 @@
-e, a text editor
+Overview
+========
 
-Look at `js/README.md` for the JS API. Look at `js/base.js` for the default JS script.
+This is the source code for e, a text editor. It's implemented using C++ and
+JavaScript (via Google's [v8](http://code.google.com/p/v8/)).
+
+Javascript API
+==============
+
+The JavaScript API is somewhat (poorly) documented at `js/README.md`. The best
+places in the code to look is at `src/js_curses.cc` (particularly the
+implementation of `GetCallbacks()`), and to a lesser degree in `src/state.cc`.
+
+Code Layout
+===========
+
+C++ code all lives in the `src` directory. From time to time I process the
+source files there with `third_party/cpplint.py` and ensure that they pass all
+of the checks (even when it's annoying to do so).
+
+JavaScript code (well, ECMAScript really) lives in the `js/` directory.
+
+Third party code, regardless of language or origin, is in the `third_party/`
+directory. This also inclused some third party "data", such as the terminfo
+capabilities file.
+
+Building
+========
+
+You'll need [gyp](http://code.google.com/p/gyp/) installed. You ought to then be
+able to run something like
+
+    gyp --depth=src/ e.gyp
+
+and get a `Makefile`. Then use `make` as usual. If you have build problems, you
+might want to try invoking `make` as
+
+    make V=1
+
+which sets verbose build output.
+
+You'll probably also need at least the following libraries:
+
+* http://www.boost.org/ (any recent-ish version)
+* http://code.google.com/p/google-glog/ (you might need an older version)
+* http://code.google.com/p/v8/ (build as shared library, `v8.so`)
+* http://www.gnu.org/software/ncurses/ (you probably already have this)
+
+There might be more or fewer libraries as the code changes; check out `e.gyp` to
+see what shared libraries it's trying to link in.
