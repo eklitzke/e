@@ -30,12 +30,10 @@ using v8::Undefined;
 using v8::Value;
 
 namespace {
-Handle<Value>
-testFunction(const Arguments& args) {
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  void* ptr = wrap->Value();
-  LOG(INFO) << "inside of testFunction() C++ method, this is " << ptr;
+bool keep_going = true;
+
+Handle<Value> JSStopLoop(const Arguments& args) {
+  keep_going = false;
   return Undefined();
 }
 
@@ -96,8 +94,8 @@ void State::RunScript(boost::function<void ()> then) {
 
   Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
   window_templ->SetInternalFieldCount(1);
-  window_templ->Set(String::New("test"), FunctionTemplate::New(testFunction), v8::ReadOnly);
   window_templ->Set(String::New("addEventListener"), FunctionTemplate::New(AddEventListener), v8::ReadOnly);
+  window_templ->Set(String::New("stopLoop"), FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
 
   context_ = Context::New(NULL, global);
   Context::Scope context_scope(context_);
@@ -134,6 +132,6 @@ State::HandleKey(KeyCode *k) {
   args.push_back(k->ToScript());
   listener_.dispatch("keypress", context_->Global(), args);
 
-  return true;
+  return keep_going;
 }
 }

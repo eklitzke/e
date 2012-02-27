@@ -51,11 +51,7 @@ void TermiosWindow::EstablishReadLoop() {
 }
 
 bool TermiosWindow::HandleKey(KeyCode *keycode) {
-  if (keycode->is_ascii() && keycode->get_char() == 'q') {
-    return false;
-  }
-  state_.HandleKey(keycode);
-  return true;
+  return state_.HandleKey(keycode);
 }
 
 void TermiosWindow::OnRead(const boost::system::error_code& error,

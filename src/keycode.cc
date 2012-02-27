@@ -13,6 +13,7 @@
 #include "./keycode.h"
 
 using v8::Arguments;
+using v8::Boolean;
 using v8::External;
 using v8::FunctionTemplate;
 using v8::Handle;
@@ -25,6 +26,40 @@ using v8::Value;
 
 namespace e {
 namespace {
+Handle<Value> JSGetChar(const Arguments& args) {
+  GET_SELF(KeyCode);
+  
+  HandleScope scope;
+  char c = self->GetChar();
+  Local<String> ch = String::NewSymbol(&c, 1);
+  return scope.Close(ch);
+}
+
+Handle<Value> JSGetCode(const Arguments& args) {
+  GET_SELF(KeyCode);
+  
+  HandleScope scope;
+  Local<Integer> code = Integer::New(self->GetCode());
+  return scope.Close(code);
+}
+
+Handle<Value> JSGetName(const Arguments& args) {
+  GET_SELF(KeyCode);
+  
+  HandleScope scope;
+  std::string s = self->GetName();
+  Local<String> name = String::NewSymbol(s.c_str(), s.length());
+  return scope.Close(name);
+}
+
+Handle<Value> JSIsASCII(const Arguments& args) {
+  GET_SELF(KeyCode);
+  
+  HandleScope scope;
+  Handle<Boolean> b = Boolean::New(self->IsASCII());
+  return scope.Close(b);
+}
+
 Persistent<ObjectTemplate> keycode_template;
 
 // Create a raw template to assign to keycode_template
@@ -32,7 +67,10 @@ Handle<ObjectTemplate> MakeKeyCodeTemplate() {
   HandleScope handle_scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
-  result->Set(String::New("toCode"), FunctionTemplate::New(JSToCode), v8::ReadOnly);
+  result->Set(String::New("getChar"), FunctionTemplate::New(JSGetChar), v8::ReadOnly);
+  result->Set(String::New("getCode"), FunctionTemplate::New(JSGetCode), v8::ReadOnly);
+  result->Set(String::New("getName"), FunctionTemplate::New(JSGetName), v8::ReadOnly);
+  result->Set(String::New("isASCII"), FunctionTemplate::New(JSIsASCII), v8::ReadOnly);
   return handle_scope.Close(result);
 }
 }
@@ -71,33 +109,25 @@ KeyCode::ToScript() {
   return handle_scope.Close(kc);
 }
 
-Handle<Value>
-JSToCode(const Arguments& args) {
-  GET_SELF(KeyCode);
-  
-  HandleScope scope;
-  Local<Integer> code = Integer::New(self->get_code());
-  return scope.Close(code);
-}
 
 const std::string&
-KeyCode::get_name(void) const {
+KeyCode::GetName(void) const {
   return short_name_;
 }
 
 bool
-KeyCode::is_ascii(void) const {
+KeyCode::IsASCII(void) const {
   return code_ <= 0xff;
 }
 
 int
-KeyCode::get_code(void) const {
+KeyCode::GetCode(void) const {
   return code_;
 }
 
 // XXX: it's unspecified whether this is a signed or unsigned char!
 char
-KeyCode::get_char(void) const {
+KeyCode::GetChar(void) const {
   if (code_ > 0xff) {
     return static_cast<char>(code_ & 0xff);
   } else {

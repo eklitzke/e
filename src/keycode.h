@@ -20,18 +20,16 @@ class KeyCode: public Embeddable {
     explicit KeyCode(int code,
                      const std::string &short_name);
     explicit KeyCode(int code);
-    const std::string& get_name(void) const;
-    bool is_ascii(void) const;
-    int get_code(void) const;
-    char get_char(void) const;
+    const std::string& GetName(void) const;
+    bool IsASCII(void) const;
+    int GetCode(void) const;
+    char GetChar(void) const;
     Handle<Value> ToScript();
   private:
     int code_;
     std::string short_name_;
     void Initialize();
 };
-
-Handle<Value> JSToCode(const Arguments& args);
 
 namespace keycode {
 const KeyCode& curses_code_to_keycode(int code);
