@@ -1,14 +1,3 @@
 e, a text editor
 
-JavaScript API
-==============
-
-* window.addEventHandler()
-* window.stopLoop()
-
-* curses.addstr()
-
-* keycode.isASCII()
-* keycode.getChar()
-* keycode.getCode()
-* keycode.getName()
+Look at `js/README.md` for the JS API. Look at `js/base.js` for the default JS script.
