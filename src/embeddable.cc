@@ -16,7 +16,8 @@ using v8::Value;
 Local<FunctionTemplate>
 Embeddable::ToCallable(InvocationCallback func) {
   HandleScope scope;
-  Local<FunctionTemplate> func_template = FunctionTemplate::New(func, ToExternal());
+  Local<FunctionTemplate> func_template = FunctionTemplate::New(
+      func, ToExternal());
   return scope.Close(func_template);
 }
 

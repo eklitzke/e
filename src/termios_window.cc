@@ -22,8 +22,8 @@ TermiosWindow::TermiosWindow(const std::string &script_name)
   refresh();
 
   noecho();
-  nonl(); // don't turn LF into CRLF
-  cbreak(); // read characters one at a time
+  nonl();  // don't turn LF into CRLF
+  cbreak();  // read characters one at a time
   keypad(window_, TRUE);
   clearok(window_, TRUE);
   notimeout(window_, TRUE);
@@ -31,7 +31,7 @@ TermiosWindow::TermiosWindow(const std::string &script_name)
 
   struct termios ttystate;
   tcgetattr(STDIN_FILENO, &ttystate);
-  ttystate.c_iflag &= ~IXON ;    /* XON/XOFF Enabled    */
+  ttystate.c_iflag &= ~IXON;  // allow capturs Ctrl-Q/Ctrl-S
   tcsetattr(0, TCSANOW, &ttystate);
 
   term_in_.assign(STDIN_FILENO);
@@ -86,5 +86,4 @@ void TermiosWindow::InnerLoop() {
   EstablishReadLoop();
   io_service_.run();
 }
-
 }

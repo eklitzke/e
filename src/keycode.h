@@ -28,7 +28,6 @@ class KeyCode: public Embeddable {
   private:
     int code_;
     std::string short_name_;
-    void Initialize();
 };
 
 namespace keycode {

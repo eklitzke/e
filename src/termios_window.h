@@ -4,14 +4,12 @@
 #ifndef SRC_TERMIOS_WINDOW_H_
 #define SRC_TERMIOS_WINDOW_H_
 
-#include <string>
-
-#include <v8.h>
-
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
-
 #include <curses.h>
+#include <v8.h>
+
+#include <string>
 
 #include "./keycode.h"
 #include "./state.h"
@@ -31,8 +29,8 @@ class TermiosWindow {
 
   void Initialize();
   void InnerLoop();
-  void OnRead(const boost::system::error_code& error, std::size_t bytes_transferred);
-  bool HandleKey(KeyCode *);
+  void OnRead(const boost::system::error_code&, std::size_t);
+  bool HandleKey(KeyCode *k);
   void EstablishReadLoop();
 };
 }

@@ -29,7 +29,7 @@ using v8::Value;
 class State: public Embeddable {
  public:
   explicit State(const std::string &script_name);
-  void RunScript(boost::function<void ()>);
+  void RunScript(boost::function<void()>);
 
   js::EventListener* GetListener(void) { return &listener_; }
 
@@ -37,7 +37,7 @@ class State: public Embeddable {
   std::vector<Buffer *>* GetBuffers(void);
 
   // returns true if the mainloop should keep going, false otherwise
-  bool HandleKey(KeyCode *);
+  bool HandleKey(KeyCode *k);
 
   v8::Persistent<v8::Object> callback_o;
  private:
@@ -45,8 +45,6 @@ class State: public Embeddable {
   Buffer *active_buffer_;
   js::EventListener listener_;
   std::string script_name_;
-
-
 };
 }
 

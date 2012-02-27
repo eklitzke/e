@@ -1,12 +1,13 @@
-#include <map>
-#include <string>
+// -*- C++ -*-
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
 #include <curses.h>
-
 #include <v8.h>
-
 #include <glog/logging.h>
 #include <glog/log_severity.h>
+
+#include <map>
+#include <string>
 
 #include "./js.h"
 
@@ -20,13 +21,15 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
-#define CURSES_VOID_FUNC(capname, func) Handle<Value> Curses ## capname(const Arguments& args) {\
+#define CURSES_VOID_FUNC(capname, func)\
+Handle<Value> Curses ## capname(const Arguments& args) {  \
   HandleScope scope;\
   Local<Integer> ret = Integer::New(func());\
   return scope.Close(ret);\
 }
 
-#define CURSES_WINDOW_FUNC(capname, func) Handle<Value> Curses ## capname(const Arguments& args) {\
+#define CURSES_WINDOW_FUNC(capname, func)\
+Handle<Value> Curses ## capname(const Arguments& args) {  \
   HandleScope scope;\
   Local<Integer> ret = Integer::New(func(stdscr));\
   return scope.Close(ret);\

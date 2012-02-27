@@ -46,7 +46,7 @@ AddEventListener(const Arguments& args) {
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   State* state = reinterpret_cast<State*>(wrap->Value());
-  
+
   HandleScope scope;
 
   // XXX: just cast the first argument to a string?
@@ -64,25 +64,22 @@ AddEventListener(const Arguments& args) {
     use_capture = args[2]->BooleanValue();
   }
 
-  //state->GetListener()->add(js::ValueToString(event_name), scope.Close(callback_o), use_capture);
-  state->GetListener()->add(js::ValueToString(event_name), state->callback_o, use_capture);
+  state->GetListener()->add(
+      js::ValueToString(event_name), state->callback_o, use_capture);
 
   return Undefined();
 }
-
 }
 
 State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")), script_name_(script_name) {
-
-  // Local<Template> proto_t = window_obj->PrototypeTemplate();
-  // proto_t->Set("addEventListener", v8::FunctionTemplate::New(addEventListener));
 }
 
-void State::RunScript(boost::function<void ()> then) {
+void State::RunScript(boost::function<void()> then) {
   HandleScope handle_scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
-  global->Set(String::NewSymbol("log"), FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
+  global->Set(String::NewSymbol("log"),
+              FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
 
   Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
   window_templ->SetInternalFieldCount(1);
@@ -102,12 +99,10 @@ void State::RunScript(boost::function<void ()> then) {
 
   context_ = Context::New(NULL, global);
   Context::Scope context_scope(context_);
-  
+
   Local<Object> window = window_templ->NewInstance();
   window->SetInternalField(0, External::New(this));
-  //window->Set(String::New("test"), FunctionTemplate::New(testFunction), v8::ReadOnly);
   context_->Global()->Set(String::New("window"), window, v8::ReadOnly);
-
 
   // compile the JS source code, and run it once
   Handle<String> source = js::ReadFile(script_name_);
