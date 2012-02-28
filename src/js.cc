@@ -25,7 +25,7 @@ using v8::Undefined;
 using v8::Value;
 
 std::vector<Handle<Object> > &
-EventListener::callback_map(const std::string &callback_name,
+EventListener::CallbackMap(const std::string &callback_name,
                             bool use_capture) {
   if (use_capture)
     return capture_[callback_name];
@@ -34,11 +34,11 @@ EventListener::callback_map(const std::string &callback_name,
 }
 
 bool
-EventListener::add(const std::string& callback_name,
+EventListener::Add(const std::string& callback_name,
                    Handle<Object> callback,
                    bool use_capture) {
-  std::vector<Handle<Object> > &callback_list = callback_map(callback_name,
-                                                             use_capture);
+  std::vector<Handle<Object> > &callback_list = CallbackMap(callback_name,
+                                                            use_capture);
   std::vector<Handle<Object> >::iterator it;
   for (it = callback_list.begin(); it != callback_list.end(); ++it) {
     if ((*it) == callback) {
@@ -50,11 +50,11 @@ EventListener::add(const std::string& callback_name,
 }
 
 bool
-EventListener::remove(const std::string &callback_name,
+EventListener::Remove(const std::string &callback_name,
                       Handle<Object>  callback,
                       bool use_capture) {
-  std::vector<Handle<Object> > &callback_list = callback_map(callback_name,
-                                                             use_capture);
+  std::vector<Handle<Object> > &callback_list = CallbackMap(callback_name,
+                                                            use_capture);
   std::vector<Handle<Object> >::iterator it;
   for (it = callback_list.begin(); it != callback_list.end(); ++it) {
     if (*it == callback) {
@@ -66,7 +66,7 @@ EventListener::remove(const std::string &callback_name,
 }
 
 bool
-EventListener::call_handler(Handle<Value> h,
+EventListener::CallHandler(Handle<Value> h,
                             Handle<Object> this_argument,
                             size_t argc,
                             Handle<Value> argv[]) {
@@ -92,7 +92,7 @@ EventListener::call_handler(Handle<Value> h,
 }
 
 void
-EventListener::dispatch(const std::string &name, Handle<Object> this_argument,
+EventListener::Dispatch(const std::string &name, Handle<Object> this_argument,
                         const std::vector<Handle<Value> > &arguments) {
   std::vector<Handle<Object> > &captures = capture_[name];
   std::vector<Handle<Object> > &bubbles = bubble_[name];
@@ -110,12 +110,12 @@ EventListener::dispatch(const std::string &name, Handle<Object> this_argument,
 
   // call all of the capture callbacks
   for (it = captures.begin(); it != captures.end(); ++it) {
-    call_handler(*it, this_argument, argc, argv.get());
+    CallHandler(*it, this_argument, argc, argv.get());
   }
 
   // call all of the bubble callbacks
   for (it = bubbles.begin(); it != bubbles.end(); ++it) {
-    call_handler(*it, this_argument, argc, argv.get());
+    CallHandler(*it, this_argument, argc, argv.get());
   }
 }
 

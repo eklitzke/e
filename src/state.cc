@@ -64,7 +64,7 @@ AddEventListener(const Arguments& args) {
     use_capture = args[2]->BooleanValue();
   }
 
-  state->GetListener()->add(
+  state->GetListener()->Add(
       js::ValueToString(event_name), state->callback_o, use_capture);
 
   return Undefined();
@@ -128,7 +128,7 @@ State::HandleKey(KeyCode *k) {
 
   std::vector<Handle<Value> > args;
   args.push_back(k->ToScript());
-  listener_.dispatch("keypress", context_->Global(), args);
+  listener_.Dispatch("keypress", context_->Global(), args);
 
   return keep_going;
 }

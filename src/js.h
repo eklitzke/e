@@ -27,16 +27,16 @@ typedef Handle<Value>(*JSCallback)(const Arguments&);
 
 class EventListener {
  public:
-  bool add(const std::string&, Handle<Object>, bool);
-  bool remove(const std::string&, Handle<Object>, bool);
-  void dispatch(const std::string&, Handle<Object>,
+  bool Add(const std::string&, Handle<Object>, bool);
+  bool Remove(const std::string&, Handle<Object>, bool);
+  void Dispatch(const std::string&, Handle<Object>,
                 const std::vector<Handle<Value> >&);
  private:
   std::map<std::string, std::vector<Handle<Object> > > capture_;
   std::map<std::string, std::vector<Handle<Object> > > bubble_;
 
-  bool call_handler(Handle<Value> h, Handle<Object>, size_t, Handle<Value>[]);
-  std::vector<Handle<Object> >& callback_map(const std::string &, bool);
+  bool CallHandler(Handle<Value> h, Handle<Object>, size_t, Handle<Value>[]);
+  std::vector<Handle<Object> >& CallbackMap(const std::string &, bool);
 };
 
 // Reads a file into a v8 string.
