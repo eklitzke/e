@@ -30,7 +30,7 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
     throw 1;
   }
 
-  char *mmaddr = static_cast<char *>(mmap(NULL, sb.st_size, PROT_READ,
+  char *mmaddr = static_cast<char *>(mmap(nullptr, sb.st_size, PROT_READ,
                                           MAP_PRIVATE, fd, 0));
   madvise(mmaddr, sb.st_size, MADV_SEQUENTIAL);
 

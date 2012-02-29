@@ -97,7 +97,7 @@ void State::RunScript(boost::function<void()> then) {
                       FunctionTemplate::New(cit->second), v8::ReadOnly);
   }
 
-  context_ = Context::New(NULL, global);
+  context_ = Context::New(nullptr, global);
   Context::Scope context_scope(context_);
 
   Local<Object> window = window_templ->NewInstance();

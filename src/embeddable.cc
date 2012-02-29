@@ -31,6 +31,6 @@ template <typename T>
 T* Embeddable::FromExternal(Handle<Value> data) {
   if (!data.IsEmpty() && data->IsExternal())
     return static_cast<T *>(External::Unwrap(data));
-  return NULL;
+  return nullptr;
 }
 }

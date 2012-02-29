@@ -122,7 +122,7 @@ EventListener::Dispatch(const std::string &name, Handle<Object> this_argument,
 // Reads a file into a v8 string.
 Handle<String> ReadFile(const std::string& name) {
   FILE* file = fopen(name.c_str(), "rb");
-  if (file == NULL) {
+  if (file == nullptr) {
     return Handle<String>();
   }
 
