@@ -4,20 +4,22 @@
 #ifndef SRC_BUFFER_H_
 #define SRC_BUFFER_H_
 
+#include <v8.h>
+
 #include <string>
 #include <vector>
 
+#include "./embeddable.h"
 #include "./line.h"
 
+using v8::Handle;
+using v8::Value;
+
 namespace e {
-class Buffer {
+class Buffer: public Embeddable {
  private:
   std::string filepath_;
   std::string name_;
-
-  // cursor line and column
-  int c_line_;
-  int c_col_;
 
   bool dirty_;
 
@@ -40,6 +42,7 @@ class Buffer {
   // is the buffer dirty?
   bool IsDirty(void) const;
 
+  Handle<Value> ToScript();
 };
 }
 

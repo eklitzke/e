@@ -7,11 +7,15 @@
 #define SRC_LINE_H_
 
 #include <boost/function.hpp>
+#include <v8.h>
 
 #include <string>
 #include <vector>
 
 #include "./embeddable.h"
+
+using v8::Handle;
+using v8::Value;
 
 namespace e {
 
@@ -25,8 +29,11 @@ class Line: public Embeddable {
   void Replace(const std::string&);
   const std::string& ToString() const;
   void OnChange(StringCallback);
+  Handle<Value> ToScript();
+
+ public:
+  std::string value;
  private:
-  std::string value_;
   std::vector<StringCallback> callbacks_;
 };
 }

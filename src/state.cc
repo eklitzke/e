@@ -73,6 +73,13 @@ AddEventListener(const Arguments& args) {
 
 State::State(const std::string &script_name)
     :active_buffer_(new Buffer("*temp*")), script_name_(script_name) {
+  buffers_.push_back(active_buffer_);
+}
+
+State::~State() {
+  for (auto it = buffers_.begin(); it != buffers_.end(); ++it) {
+	delete *it;
+  }
 }
 
 void State::RunScript(boost::function<void()> then) {
@@ -117,7 +124,7 @@ State::GetActiveBuffer(void) {
   return active_buffer_;
 }
 
-std::vector<Buffer *> *
+std::vector<Buffer*> *
 State::GetBuffers(void) {
   return &buffers_;
 }
