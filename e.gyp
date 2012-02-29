@@ -23,6 +23,7 @@
         'src/js.cc',
         'src/js_curses.cc',
         'src/keycode.cc',
+        'src/line.cc',
         'src/state.cc',
         'src/termios_window.cc',
     ],
