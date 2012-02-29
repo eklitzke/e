@@ -17,8 +17,8 @@ Line::Line(const std::string &line)
 
 void Line::Replace(const std::string &new_line) {
   value_ = new_line;
-  for (StringCallback &cb : callbacks_) {
-    cb(new_line);
+  for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
+    (*it)(new_line);
   }
 }
 

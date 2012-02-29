@@ -21,8 +21,7 @@ class Buffer {
 
   bool dirty_;
 
- public:
-  std::vector<e::Line> lines;
+  std::vector<Line> lines_;
 
  public:
   // constructors

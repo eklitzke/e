@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "./line.h"
 #include "./buffer.h"
 #include "./embeddable.h"
 #include "./js.h"

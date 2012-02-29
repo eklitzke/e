@@ -39,7 +39,7 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
   while (p < mmaddr + sb.st_size) {
     char *n = static_cast<char *>(memchr(p, '\n', mmaddr + sb.st_size - p));
     Line l(std::string(p, n - p));
-    lines.push_back(l);
+    lines_.push_back(l);
     p = n + sizeof(char);  // NOLINT
   }
 
@@ -49,7 +49,7 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
 
 size_t
 Buffer::Size() const {
-  return lines.size();
+  return lines_.size();
 }
 
 const std::string &
