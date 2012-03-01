@@ -87,7 +87,16 @@ Handle<Value> JSGetLine(const Arguments& args) {
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
   std::vector<Line> l = *(self->Lines());
+  assert(offset < l.size());
   return scope.Close(l[offset].ToScript());
+}
+
+Handle<Value> JSGetName(const Arguments& args) {
+  GET_SELF(Buffer);
+
+  HandleScope scope;
+  std::string buffer_name = self->GetBufferName();
+  return scope.Close(String::New(buffer_name.c_str(), buffer_name.length()));
 }
 
 Handle<Value> JSSize(const Arguments& args) {
@@ -105,6 +114,8 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
   result->Set(String::NewSymbol("getLine"), FunctionTemplate::New(JSGetLine),
+    v8::ReadOnly);
+  result->Set(String::NewSymbol("getName"), FunctionTemplate::New(JSGetName),
     v8::ReadOnly);
   result->Set(String::NewSymbol("size"), FunctionTemplate::New(JSSize),
     v8::ReadOnly);

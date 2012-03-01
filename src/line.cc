@@ -4,6 +4,7 @@
 
 #include "./line.h"
 
+#include <glog/logging.h>
 #include <v8.h>
 
 #include <string>
@@ -21,10 +22,16 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
-#define RETURN_SELF return scope.Close(\
-    String::New(self->value.c_str(), self->value.length()))
+//#define RETURN_SELF return scope.Close(
+//    String::New(self->value.c_str(), self->value.length()))
+#define RETURN_SELF return scope.Close(                   \
+    String::New(self->value.c_str(), self->value.size()))
 
 namespace e {
+
+Line::Line() {
+  LOG(INFO) << "creating line, this is " << this;
+}
 
 Line::Line(const std::string &line)
     :value(line) {
@@ -72,15 +79,34 @@ Handle<Value> JSInsert(const Arguments& args) {
   Handle<Value> arg1 = args[1];
   uint32_t position = arg0->Uint32Value();
   String::Utf8Value chars(arg1);
+  LOG(INFO) << "------";
+  LOG(INFO) << "arg0 is " << position;
+  LOG(INFO) << "arg1 is " << *chars;
+  LOG(INFO) << "capacity is " << self->value.capacity();
+  LOG(INFO) << "length is " << chars.length();
+  LOG(INFO) << "value length is " << self->value.length();
+  google::FlushLogFiles(google::INFO);
 
-  self->value.insert(static_cast<size_t>(position), *chars);
+  //self->value.reserve(self->value.capacity() + chars.length());
+  //self->value.reserve(100);
+
+  self->value.insert(static_cast<size_t>(position), *chars, chars.length());
+  LOG(INFO) << "value length is " << self->value.length();
+  google::FlushLogFiles(google::INFO);
   RETURN_SELF;
 }
 
 Handle<Value> JSValue(const Arguments& args) {
   GET_SELF(Line);
+  LOG(INFO) << "self is " << self;
+
+  google::FlushLogFiles(google::INFO);
+
   HandleScope scope;
+  return Undefined();
+  /*
   RETURN_SELF;
+  */
 }
 
 Persistent<ObjectTemplate> line_template;
@@ -108,6 +134,7 @@ Handle<Value> Line::ToScript() {
   }
   Handle<Object> line = line_template->NewInstance();
   assert(line->InternalFieldCount() == 1);
+  LOG(INFO) << "set this to " << this;
   line->SetInternalField(0, External::New(this));
   return handle_scope.Close(line);
 }

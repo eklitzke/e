@@ -1,11 +1,12 @@
 log("started script!");
-log("first line is " + window.buffer.getLine(0).value());
 
 window.addEventListener("keypress", function (event) {
+	log("first line is " + window.buffer.getLine(0).value());
     var curx = window.getcurx();
     var cury = window.getcury();
 	var code = event.getCode();
 	var name = event.getName();
+	log("buffer name is " + window.buffer.getName());
 	log("got keypress, code is " + code + ", name is \"" + name + "\", name length is " + name.length);
 	if (event.isASCII()) {
 		switch (code) {
@@ -25,6 +26,7 @@ window.addEventListener("keypress", function (event) {
 			window.stopLoop();
 			break;
 		default:
+			window.buffer.getLine(0).insert(curx, name);
 			window.addstr(name);
 			break;
 		}
