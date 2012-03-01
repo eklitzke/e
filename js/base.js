@@ -1,4 +1,5 @@
 log("started script!");
+log("first line is " + window.buffer.getLine(0).value());
 
 window.addEventListener("keypress", function (event) {
     var curx = window.getcurx();

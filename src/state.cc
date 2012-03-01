@@ -78,7 +78,7 @@ State::State(const std::string &script_name)
 
 State::~State() {
   for (auto it = buffers_.begin(); it != buffers_.end(); ++it) {
-	delete *it;
+    delete *it;
   }
 }
 
@@ -109,6 +109,7 @@ void State::RunScript(boost::function<void()> then) {
 
   Local<Object> window = window_templ->NewInstance();
   window->SetInternalField(0, External::New(this));
+  window->Set(String::New("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
   context_->Global()->Set(String::New("window"), window, v8::ReadOnly);
 
   // compile the JS source code, and run it once

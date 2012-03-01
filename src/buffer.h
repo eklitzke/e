@@ -39,6 +39,8 @@ class Buffer: public Embeddable {
   // get the number of lines in the buffer
   size_t Size() const;
 
+  std::vector<Line>* Lines();
+
   // is the buffer dirty?
   bool IsDirty(void) const;
 

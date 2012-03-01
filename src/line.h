@@ -19,7 +19,7 @@ using v8::Value;
 
 namespace e {
 
-typedef boost::function<void(const std::string&)> StringCallback;
+//typedef boost::function<void(const std::string&)> StringCallback;
 
 class Line: public Embeddable {
  public:
@@ -28,13 +28,13 @@ class Line: public Embeddable {
 
   void Replace(const std::string&);
   const std::string& ToString() const;
-  void OnChange(StringCallback);
+  //void OnChange(StringCallback);
   Handle<Value> ToScript();
 
  public:
   std::string value;
  private:
-  std::vector<StringCallback> callbacks_;
+  //std::vector<StringCallback> callbacks_;
 };
 }
 

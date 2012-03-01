@@ -20,7 +20,8 @@ using v8::Persistent;
 using v8::Value;
 
 #define GET_SELF2(a, tp) Local<Object> s_ = a.Holder();\
-  v8::Local<v8::External> wrap = v8::Local<v8::External>::Cast(s_->GetInternalField(0)); \
+  v8::Local<v8::External> wrap = \
+      v8::Local<v8::External>::Cast(s_->GetInternalField(0)); \
   tp* self = static_cast<tp*>(wrap->Value())
 
 #define GET_SELF(tp) GET_SELF2(args, tp)
