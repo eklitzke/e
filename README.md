@@ -90,9 +90,9 @@ Uses Ctrl-Q to exit the editor.
 Javascript API
 ==============
 
-The JavaScript API is somewhat (poorly) documented at `js/README.md`. The best
-places in the code to look is at `src/js_curses.cc` (particularly the
-implementation of `GetCallbacks()`), and to a lesser degree in `src/state.cc`.
+Try running the editor as
+    e --list-api
+to look at the available JavaScript API.
 
 Code Layout
 ===========
