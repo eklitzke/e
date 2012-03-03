@@ -2,8 +2,8 @@ log("started script!");
 
 window.addEventListener("keypress", function (event) {
 	log("first line is " + window.buffer.getLine(0).value());
-    var curx = window.getcurx();
-    var cury = window.getcury();
+    var curx = curses.getcurx();
+    var cury = curses.getcury();
 	var code = event.getCode();
 	var name = event.getName();
 	log("buffer name is " + window.buffer.getName());
@@ -11,56 +11,56 @@ window.addEventListener("keypress", function (event) {
 	if (event.isASCII()) {
 		switch (code) {
 		case 1: // Ctrl-A
-			window.move(cury, 0);
+			curses.move(cury, 0);
 			break;
 		case 5: // Ctrl-E
-			window.move(cury, window.getmaxx() - 1);
+			curses.move(cury, curses.getmaxx() - 1);
 			break;
 		case 12: // Ctrl-L
-			window.redrawwin();
+			curses.redrawwin();
 			break;
 		case 13: // Ctrl-M, carriage return
-			window.move(cury + 1, 0);
+			curses.move(cury + 1, 0);
 			break;
 		case 17: // Ctrl-Q
 			window.stopLoop();
 			break;
 		default:
 			window.buffer.getLine(0).insert(curx, name);
-			window.addstr(name);
+			curses.addstr(name);
 			break;
 		}
 	} else {
 		switch (name) {
 		case "key_backspace":
 			if (curx > 0) {
-				window.mvdelch(cury, curx -1);
+				curses.mvdelch(cury, curx -1);
 			}
 			break;
 		case "key_down":
-			if (cury < window.getmaxy() - 1) {
-				window.move(cury + 1, curx);
+			if (cury < curses.getmaxy() - 1) {
+				curses.move(cury + 1, curx);
 			}
 			break;
 		case "key_end":
-			window.move(cury, window.getmaxx() - 1);
+			curses.move(cury, curses.getmaxx() - 1);
 			break;
 		case "key_home":
-			window.move(cury, 0);
+			curses.move(cury, 0);
 			break;
 		case "key_left":
 			if (curx > 0) {
-				window.move(cury, curx - 1);
+				curses.move(cury, curx - 1);
 			}
 			break;
 		case "key_right":
-			if (curx < window.getmaxx() - 1) {
-				window.move(cury, curx + 1);
+			if (curx < curses.getmaxx() - 1) {
+				curses.move(cury, curx + 1);
 			}
 			break;
 		case "key_up":
 			if (cury > 0) {
-				window.move(cury - 1, curx);
+				curses.move(cury - 1, curx);
 			}
 			break;
 		}

@@ -82,7 +82,7 @@ State::~State() {
   }
 }
 
-void State::RunScript(boost::function<void()> then) {
+void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then) {
   HandleScope handle_scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("log"),
@@ -98,10 +98,10 @@ void State::RunScript(boost::function<void()> then) {
   // add in all of the movement callbacks
   std::map<std::string, e::js::JSCallback> callbacks = e::js::GetCallbacks();
   std::map<std::string, e::js::JSCallback>::iterator cit;
+  Handle<ObjectTemplate> curses = ObjectTemplate::New();
   for (cit = callbacks.begin(); cit != callbacks.end(); ++cit) {
-    DLOG(INFO) << "added JS function: window." << cit->first;
-    window_templ->Set(String::NewSymbol(cit->first.c_str()),
-                      FunctionTemplate::New(cit->second), v8::ReadOnly);
+    curses->Set(String::NewSymbol(cit->first.c_str()),
+                FunctionTemplate::New(cit->second), v8::ReadOnly);
   }
 
   context_ = Context::New(nullptr, global);
@@ -109,15 +109,17 @@ void State::RunScript(boost::function<void()> then) {
 
   Local<Object> window = window_templ->NewInstance();
   window->SetInternalField(0, External::New(this));
-  window->Set(String::New("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
-  context_->Global()->Set(String::New("window"), window, v8::ReadOnly);
+  window->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("window"), window, v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("curses"), curses->NewInstance(), v8::ReadOnly);
 
-  // compile the JS source code, and run it once
-  Handle<String> source = js::ReadFile(script_name_);
-  Handle<Script> scr = Script::Compile(source);
-
-  scr->Run();
-  then();
+  if (run) {
+    // compile the JS source code, and run it once
+    Handle<String> source = js::ReadFile(script_name_);
+    Handle<Script> scr = Script::Compile(source);
+    scr->Run();
+  }
+  then(context_);
 }
 
 Buffer *

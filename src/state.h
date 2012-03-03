@@ -28,9 +28,10 @@ using v8::Value;
 
 class State: public Embeddable {
  public:
+  State() {}
   explicit State(const std::string &script_name);
   ~State();
-  void RunScript(boost::function<void()>);
+  void LoadScript(bool, boost::function<void(Persistent<Context>)>);
 
   js::EventListener* GetListener(void) { return &listener_; }
 

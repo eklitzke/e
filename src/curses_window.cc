@@ -1,22 +1,23 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include "./curses_window.h"
 
 #include <glog/logging.h>
 
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
 #include <boost/bind.hpp>
+#include <v8.h>
 
 #include <curses.h>
 #include <term.h>
 #include <termios.h>
 
 #include "./keycode.h"
-#include "./termios_window.h"
 
 namespace e {
-TermiosWindow::TermiosWindow(const std::string &script_name)
+CursesWindow::CursesWindow(const std::string &script_name)
     :state_(script_name), term_in_(io_service_) {
   window_ = initscr();
   refresh();
@@ -37,29 +38,29 @@ TermiosWindow::TermiosWindow(const std::string &script_name)
   term_in_.assign(STDIN_FILENO);
 }
 
-TermiosWindow::~TermiosWindow() {
+CursesWindow::~CursesWindow() {
   endwin();
 }
 
 /* Add a read-event to the ioservice loop that will fire as soon as keyboard
  * input is available.
  */
-void TermiosWindow::EstablishReadLoop() {
+void CursesWindow::EstablishReadLoop() {
   term_in_.async_read_some(
       boost::asio::null_buffers(),
-      boost::bind(&TermiosWindow::OnRead, this,
+      boost::bind(&CursesWindow::OnRead, this,
                   boost::asio::placeholders::error,
                   boost::asio::placeholders::bytes_transferred));
 }
 
-bool TermiosWindow::HandleKey(KeyCode *keycode) {
+bool CursesWindow::HandleKey(KeyCode *keycode) {
   bool result = state_.HandleKey(keycode);
   if (result)
     refresh();
   return result;
 }
 
-void TermiosWindow::OnRead(const boost::system::error_code& error,
+void CursesWindow::OnRead(const boost::system::error_code& error,
                            std::size_t bytes_transferred) {
   // there should be at least one byte to read (and possibly more); keep reading
   // bytes until getch() returns ERR
@@ -78,11 +79,11 @@ void TermiosWindow::OnRead(const boost::system::error_code& error,
     EstablishReadLoop();
 }
 
-void TermiosWindow::Loop() {
-  state_.RunScript(boost::bind(&TermiosWindow::InnerLoop, this));
+void CursesWindow::Loop() {
+  state_.LoadScript(true, boost::bind(&CursesWindow::InnerLoop, this, _1));
 }
 
-void TermiosWindow::InnerLoop() {
+void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
   EstablishReadLoop();
   io_service_.run();
 }

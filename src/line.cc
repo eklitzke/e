@@ -79,21 +79,25 @@ Handle<Value> JSInsert(const Arguments& args) {
   Handle<Value> arg1 = args[1];
   uint32_t position = arg0->Uint32Value();
   String::Utf8Value chars(arg1);
-  LOG(INFO) << "------";
-  LOG(INFO) << "arg0 is " << position;
-  LOG(INFO) << "arg1 is " << *chars;
-  LOG(INFO) << "capacity is " << self->value.capacity();
-  LOG(INFO) << "length is " << chars.length();
-  LOG(INFO) << "value length is " << self->value.length();
+  LOG(INFO) << "--------------------";
+  LOG(INFO) << "self is " << self;
+  LOG(INFO) << "self->value is " << &(self->value);
+  LOG(INFO) << "arg0 (position) is " << position;
+  LOG(INFO) << "arg0 (position) is " << position;
+  LOG(INFO) << "arg1 (chars) is \"" << *chars << "\"";
+  LOG(INFO) << "self->value.capacity() is " << self->value.capacity();
+  LOG(INFO) << "chars.length() is " << chars.length();
+  LOG(INFO) << "self->value.length() is " << self->value.length();
   google::FlushLogFiles(google::INFO);
 
   //self->value.reserve(self->value.capacity() + chars.length());
   //self->value.reserve(100);
 
   self->value.insert(static_cast<size_t>(position), *chars, chars.length());
-  LOG(INFO) << "value length is " << self->value.length();
+  LOG(INFO) << "after insert, self->value.length() is " << self->value.length();
   google::FlushLogFiles(google::INFO);
-  RETURN_SELF;
+  //RETURN_SELF;
+  return Undefined();
 }
 
 Handle<Value> JSValue(const Arguments& args) {

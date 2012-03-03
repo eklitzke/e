@@ -1,13 +1,14 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include <stdio.h>
 #include <unistd.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <glog/logging.h>
 
-#include "./buffer.h"
-#include "./termios_window.h"
+#include "./curses_window.h"
+#include "./list_api.h"
 #include "./state.h"
 
 namespace po = boost::program_options;
@@ -15,12 +16,12 @@ namespace po = boost::program_options;
 int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
 
-  std::string script_name = "js/base.js";
+  std::string script = "js/core.js";
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help,h", "produce help message")
-      ("script,s", po::value<std::string>(&script_name),
-       "The JS script to load");
+      ("script,s", po::value<std::string>(&script), "the JS script to load")
+      ("list-api", "list the available JS API");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -33,13 +34,18 @@ int main(int argc, char **argv) {
 
   DLOG(INFO) << "started up";
 
-  if (access(script_name.c_str(), R_OK) != 0) {
-    fprintf(stdout, "cannot access script \"%s\"\n", script_name.c_str());
+  if (access(script.c_str(), R_OK) != 0) {
+    fprintf(stdout, "cannot access script \"%s\"\n", script.c_str());
     return 1;
   }
 
-  e::TermiosWindow window(script_name);
-  window.Loop();
+  if (vm.count("list-api")) {
+    e::State state;
+    state.LoadScript(false, e::ListAPI);
+  } else {
+    e::CursesWindow window(script);
+    window.Loop();
+  }
 
   return 0;
 }
