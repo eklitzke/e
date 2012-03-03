@@ -91,7 +91,9 @@ Javascript API
 ==============
 
 Try running the editor as
+
     e --list-api
+
 to look at the available JavaScript API.
 
 Code Layout
