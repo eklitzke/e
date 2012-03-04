@@ -25,6 +25,7 @@ using v8::Value;
   tp* self = static_cast<tp*>(wrap->Value())
 
 #define GET_SELF(tp) GET_SELF2(args, tp)
+#define ACCESSOR_GET_SELF(tp) GET_SELF2(info, tp)
 
 class Embeddable {
  public:

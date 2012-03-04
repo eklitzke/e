@@ -1,5 +1,7 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include <glog/logging.h>
+
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -27,7 +29,8 @@ using v8::Value;
 namespace e {
 Buffer::Buffer(const std::string &name)
     :name_(name), dirty_(false) {
-  lines_.push_back(Line());
+  Line *l = new Line();
+  lines_.push_back(l);
 }
 
 Buffer::Buffer(const std::string &name, const std::string &filepath)
@@ -51,7 +54,7 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
   char *p = mmaddr;
   while (p < mmaddr + sb.st_size) {
     char *n = static_cast<char *>(memchr(p, '\n', mmaddr + sb.st_size - p));
-    Line l(std::string(p, n - p));
+    Line *l = new Line(std::string(p, n - p));
     lines_.push_back(l);
     p = n + sizeof(char);  // NOLINT
   }
@@ -72,7 +75,7 @@ bool Buffer::IsDirty(void) const {
   return dirty_;
 }
 
-std::vector<Line>* Buffer::Lines() {
+std::vector<Line*>* Buffer::Lines() {
   return &lines_;
 }
 
@@ -86,9 +89,9 @@ Handle<Value> JSGetLine(const Arguments& args) {
   HandleScope scope;
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
-  std::vector<Line> l = *(self->Lines());
+  std::vector<Line *> l = *(self->Lines());
   assert(offset < l.size());
-  return scope.Close(l[offset].ToScript());
+  return scope.Close(l[offset]->ToScript());
 }
 
 Handle<Value> JSGetName(const Arguments& args) {
@@ -110,7 +113,7 @@ Persistent<ObjectTemplate> buffer_template;
 
 // Create a raw template to assign to line_template
 Handle<ObjectTemplate> MakeBufferTemplate() {
-  HandleScope handle_scope;
+  HandleScope scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
   result->Set(String::NewSymbol("getLine"), FunctionTemplate::New(JSGetLine),
@@ -119,12 +122,12 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
     v8::ReadOnly);
   result->Set(String::NewSymbol("size"), FunctionTemplate::New(JSSize),
     v8::ReadOnly);
-  return handle_scope.Close(result);
+  return scope.Close(result);
 }
 }
 
 Handle<Value> Buffer::ToScript() {
-  HandleScope handle_scope;
+  HandleScope scope;
   if (buffer_template.IsEmpty()) {
     Handle<ObjectTemplate> raw_template = MakeBufferTemplate();
     buffer_template = Persistent<ObjectTemplate>::New(raw_template);
@@ -132,6 +135,6 @@ Handle<Value> Buffer::ToScript() {
   Handle<Object> buf = buffer_template->NewInstance();
   assert(buf->InternalFieldCount() == 1);
   buf->SetInternalField(0, External::New(this));
-  return handle_scope.Close(buf);
+  return scope.Close(buf);
 }
 }

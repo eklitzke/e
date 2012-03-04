@@ -1,4 +1,5 @@
 log("started script!");
+log("buffer name is " + window.buffer.getName());
 
 window.addEventListener("keypress", function (event) {
 	log("first line is " + window.buffer.getLine(0).value());
@@ -6,8 +7,7 @@ window.addEventListener("keypress", function (event) {
     var cury = curses.getcury();
 	var code = event.getCode();
 	var name = event.getName();
-	log("buffer name is " + window.buffer.getName());
-	log("got keypress, code is " + code + ", name is \"" + name + "\", name length is " + name.length);
+	//log("got keypress, code is " + code + ", name is \"" + name + "\", name length is " + name.length);
 	if (event.isASCII()) {
 		switch (code) {
 		case 1: // Ctrl-A
@@ -26,8 +26,18 @@ window.addEventListener("keypress", function (event) {
 			window.stopLoop();
 			break;
 		default:
-			window.buffer.getLine(0).insert(curx, name);
+			var curline = window.buffer.getLine(cury);
+			var val = curline.value();
+			curline.insert(curx, name);
 			curses.addstr(name);
+			log(curline.length);
+			if (curx < curline.length) {
+				// need to redraw the rest of the string to prevent overwrite
+				// FIXME: this is slow
+				curses.clrtoeol();
+				curses.addstr(val.substr(curx));
+				curses.move(cury, curx + 1);
+			}
 			break;
 		}
 	} else {

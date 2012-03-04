@@ -23,7 +23,7 @@ namespace e {
 
 class Line: public Embeddable {
  public:
-  Line();
+  Line() {}
   explicit Line(const std::string &line);
 
   void Replace(const std::string&);
@@ -33,7 +33,7 @@ class Line: public Embeddable {
 
  public:
   std::string value;
- private:
+  //private:
   //std::vector<StringCallback> callbacks_;
 };
 }

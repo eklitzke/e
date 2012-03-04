@@ -12,10 +12,12 @@
 
 #include "./embeddable.h"
 
+using v8::AccessorInfo;
 using v8::Arguments;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
+using v8::Integer;
 using v8::Object;
 using v8::ObjectTemplate;
 using v8::String;
@@ -24,14 +26,10 @@ using v8::Value;
 
 //#define RETURN_SELF return scope.Close(
 //    String::New(self->value.c_str(), self->value.length()))
-#define RETURN_SELF return scope.Close(                   \
+#define RETURN_SELF return scope.Close(\
     String::New(self->value.c_str(), self->value.size()))
 
 namespace e {
-
-Line::Line() {
-  LOG(INFO) << "creating line, this is " << this;
-}
 
 Line::Line(const std::string &line)
     :value(line) {
@@ -79,38 +77,29 @@ Handle<Value> JSInsert(const Arguments& args) {
   Handle<Value> arg1 = args[1];
   uint32_t position = arg0->Uint32Value();
   String::Utf8Value chars(arg1);
-  LOG(INFO) << "--------------------";
-  LOG(INFO) << "self is " << self;
-  LOG(INFO) << "self->value is " << &(self->value);
-  LOG(INFO) << "arg0 (position) is " << position;
-  LOG(INFO) << "arg0 (position) is " << position;
-  LOG(INFO) << "arg1 (chars) is \"" << *chars << "\"";
-  LOG(INFO) << "self->value.capacity() is " << self->value.capacity();
-  LOG(INFO) << "chars.length() is " << chars.length();
-  LOG(INFO) << "self->value.length() is " << self->value.length();
-  google::FlushLogFiles(google::INFO);
-
-  //self->value.reserve(self->value.capacity() + chars.length());
-  //self->value.reserve(100);
 
   self->value.insert(static_cast<size_t>(position), *chars, chars.length());
-  LOG(INFO) << "after insert, self->value.length() is " << self->value.length();
-  google::FlushLogFiles(google::INFO);
-  //RETURN_SELF;
-  return Undefined();
+  RETURN_SELF;
 }
 
 Handle<Value> JSValue(const Arguments& args) {
-  GET_SELF(Line);
-  LOG(INFO) << "self is " << self;
-
-  google::FlushLogFiles(google::INFO);
-
   HandleScope scope;
-  return Undefined();
-  /*
+  GET_SELF(Line);
   RETURN_SELF;
-  */
+}
+
+Handle<Value> JSGetLength(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  ACCESSOR_GET_SELF(Line);
+  return scope.Close(Integer::New(self->value.length()));
+}
+
+void JSSetLength(Local<String> property, Local<Value> value,
+               const AccessorInfo& info) {
+  ACCESSOR_GET_SELF(Line);
+  HandleScope scope;
+  uint32_t newsize = value->Uint32Value();
+  self->value.resize(static_cast<std::string::size_type>(newsize));
 }
 
 Persistent<ObjectTemplate> line_template;
@@ -126,20 +115,20 @@ Handle<ObjectTemplate> MakeLineTemplate() {
     v8::ReadOnly);
   result->Set(String::NewSymbol("value"), FunctionTemplate::New(JSValue),
     v8::ReadOnly);
+  result->SetAccessor(String::NewSymbol("length"), JSGetLength, JSSetLength);
   return handle_scope.Close(result);
 }
 }
 
 Handle<Value> Line::ToScript() {
-  HandleScope handle_scope;
+  HandleScope scope;
   if (line_template.IsEmpty()) {
     Handle<ObjectTemplate> raw_template = MakeLineTemplate();
     line_template = Persistent<ObjectTemplate>::New(raw_template);
   }
   Handle<Object> line = line_template->NewInstance();
   assert(line->InternalFieldCount() == 1);
-  LOG(INFO) << "set this to " << this;
   line->SetInternalField(0, External::New(this));
-  return handle_scope.Close(line);
+  return scope.Close(line);
 }
 }

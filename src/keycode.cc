@@ -66,7 +66,7 @@ Persistent<ObjectTemplate> keycode_template;
 
 // Create a raw template to assign to keycode_template
 Handle<ObjectTemplate> MakeKeyCodeTemplate() {
-  HandleScope handle_scope;
+  HandleScope scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
   result->Set(String::New("getChar"), FunctionTemplate::New(JSGetChar),
@@ -77,7 +77,7 @@ Handle<ObjectTemplate> MakeKeyCodeTemplate() {
     v8::ReadOnly);
   result->Set(String::New("isASCII"), FunctionTemplate::New(JSIsASCII),
     v8::ReadOnly);
-  return handle_scope.Close(result);
+  return scope.Close(result);
 }
 }
 
@@ -94,7 +94,7 @@ KeyCode::KeyCode(int code)
 
 Handle<Value>
 KeyCode::ToScript() {
-  HandleScope handle_scope;
+  HandleScope scope;
 
   if (keycode_template.IsEmpty()) {
     Handle<ObjectTemplate> raw_template = MakeKeyCodeTemplate();
@@ -105,7 +105,7 @@ KeyCode::ToScript() {
 
   assert(kc->InternalFieldCount() == 1);
   kc->SetInternalField(0, External::New(this));
-  return handle_scope.Close(kc);
+  return scope.Close(kc);
 }
 
 

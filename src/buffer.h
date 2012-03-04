@@ -23,7 +23,7 @@ class Buffer: public Embeddable {
 
   bool dirty_;
 
-  std::vector<Line> lines_;
+  std::vector<Line *> lines_;
 
  public:
   // constructors
@@ -39,7 +39,7 @@ class Buffer: public Embeddable {
   // get the number of lines in the buffer
   size_t Size() const;
 
-  std::vector<Line>* Lines();
+  std::vector<Line*>* Lines();
 
   // is the buffer dirty?
   bool IsDirty(void) const;

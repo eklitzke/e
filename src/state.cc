@@ -83,7 +83,7 @@ State::~State() {
 }
 
 void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then) {
-  HandleScope handle_scope;
+  HandleScope scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
