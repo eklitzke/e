@@ -15,6 +15,7 @@
 
 #include "./buffer.h"
 
+using v8::AccessorInfo;
 using v8::Arguments;
 using v8::External;
 using v8::Handle;
@@ -80,6 +81,31 @@ std::vector<Line*>* Buffer::Lines() {
 }
 
 namespace {
+Handle<Value> JSAddLine(const Arguments& args) {
+  GET_SELF(Buffer);
+  if (args.Length() < 1) {
+    return Undefined();
+  }
+
+  HandleScope scope;
+  Handle<Value> arg0 = args[0];
+  uint32_t offset = arg0->Uint32Value();
+  std::vector<Line *> *lines = self->Lines();
+  assert(offset <= lines->size());
+
+  Line *line = new Line();
+  if (offset == lines->size()) {
+    LOG(INFO) << "addline, push_back";
+    lines->push_back(line);
+    LOG(INFO) << "addline, push_back, size is now" << lines->size();
+  } else {
+    LOG(INFO) << "addline, insert";
+    lines->insert(lines->begin() + offset, line);
+  }
+
+  return scope.Close(line->ToScript());
+}
+
 Handle<Value> JSGetLine(const Arguments& args) {
   GET_SELF(Buffer);
   if (args.Length() < 1) {
@@ -90,6 +116,7 @@ Handle<Value> JSGetLine(const Arguments& args) {
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
   std::vector<Line *> l = *(self->Lines());
+  LOG(INFO) << "offset is " << offset << ", size is " << l.size();
   assert(offset < l.size());
   return scope.Close(l[offset]->ToScript());
 }
@@ -102,12 +129,21 @@ Handle<Value> JSGetName(const Arguments& args) {
   return scope.Close(String::New(buffer_name.c_str(), buffer_name.length()));
 }
 
-Handle<Value> JSSize(const Arguments& args) {
-  GET_SELF(Buffer);
+Handle<Value> JSGetLength(Local<String> property, const AccessorInfo& info) {
   HandleScope scope;
-  Local<Integer> size = Integer::New(self->Size());
-  return scope.Close(size);
+  ACCESSOR_GET_SELF(Buffer);
+  return scope.Close(Integer::New(self->Size()));
 }
+
+/*
+void JSSetLength(Local<String> property, Local<Value> value,
+               const AccessorInfo& info) {
+  ACCESSOR_GET_SELF(Line);
+  HandleScope scope;
+  uint32_t newsize = value->Uint32Value();
+  self->value.resize(static_cast<std::string::size_type>(newsize));
+}
+*/
 
 Persistent<ObjectTemplate> buffer_template;
 
@@ -116,12 +152,13 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
   HandleScope scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
+  result->Set(String::NewSymbol("addLine"), FunctionTemplate::New(JSAddLine),
+    v8::ReadOnly);
   result->Set(String::NewSymbol("getLine"), FunctionTemplate::New(JSGetLine),
     v8::ReadOnly);
   result->Set(String::NewSymbol("getName"), FunctionTemplate::New(JSGetName),
     v8::ReadOnly);
-  result->Set(String::NewSymbol("size"), FunctionTemplate::New(JSSize),
-    v8::ReadOnly);
+  result->SetAccessor(String::NewSymbol("length"), JSGetLength);
   return scope.Close(result);
 }
 }

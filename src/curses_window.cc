@@ -84,6 +84,10 @@ void CursesWindow::Loop() {
 }
 
 void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
+  std::vector<Handle<Value> > args;
+  state_.GetListener()->Dispatch("load", c->Global(), args);
+  refresh();
+
   EstablishReadLoop();
   io_service_.run();
 }

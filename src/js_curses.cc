@@ -88,7 +88,6 @@ Handle<Value> CursesMove(const Arguments& args) {
   int y = Integer::Cast(*arg1)->Value();
   int x = Integer::Cast(*arg2)->Value();
 
-  LOG(INFO) << "moving to (" << y << ", " << x << ")";
   Local<Integer> ret = Integer::New(move(y, x));
   return scope.Close(ret);
 }

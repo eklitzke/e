@@ -26,8 +26,10 @@ static inline void Indent(int indentation) {
 void InspectValue(int indent, const std::string &name, Handle<Value> val) {
   Indent(indent);
   printf("%s", name.c_str());
-  if (val->IsString()) {
-    //printf(": \"%s\"", js::ValueToString(val).c_str());
+  if (val->IsNumber()) {
+    printf(" [Number]\n");
+  } else if (val->IsString()) {
+    printf(" [String]\n");
   } else if (val->IsFunction()) {
     printf("()\n");
     Local<Object> obj = val->ToObject();
