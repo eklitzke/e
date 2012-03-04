@@ -24,6 +24,7 @@
         'src/embeddable.cc',
         'src/js.cc',
         'src/js_curses.cc',
+        'src/js_curses_window.cc',
         'src/js_errno.cc',
         'src/js_signal.cc',
         'src/js_sys.cc',

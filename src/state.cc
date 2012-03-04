@@ -8,6 +8,8 @@
 #include <string>
 
 #include "./js.h"
+#include "./js_curses.h"
+#include "./js_curses_window.h"
 #include "./js_errno.h"
 #include "./js_signal.h"
 #include "./js_sys.h"
@@ -94,20 +96,18 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
 
-  Handle<ObjectTemplate> window_templ = ObjectTemplate::New();
-  window_templ->SetInternalFieldCount(1);
-  window_templ->Set(String::NewSymbol("addEventListener"),
-                    FunctionTemplate::New(AddEventListener), v8::ReadOnly);
-  window_templ->Set(String::NewSymbol("stopLoop"),
-                    FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
+  Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
+  world_templ->SetInternalFieldCount(1);
+  world_templ->Set(String::NewSymbol("addEventListener"),
+                   FunctionTemplate::New(AddEventListener), v8::ReadOnly);
+  world_templ->Set(String::NewSymbol("stopLoop"),
+                   FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
 
   // add in all of the movement callbacks
-  std::map<std::string, e::js::JSCallback> callbacks = e::js::GetCallbacks();
-  std::map<std::string, e::js::JSCallback>::iterator cit;
+  std::map<std::string, e::js::JSCallback> callbacks = GetCursesCallbacks();
   Handle<ObjectTemplate> curses = ObjectTemplate::New();
-  for (cit = callbacks.begin(); cit != callbacks.end(); ++cit) {
-    curses->Set(String::NewSymbol(cit->first.c_str()),
-                FunctionTemplate::New(cit->second), v8::ReadOnly);
+  for (auto it = callbacks.begin(); it != callbacks.end(); ++it) {
+    js::AddTemplateFunction(curses, it->first, it->second);
   }
   NEW_INTEGER(curses, OK);
   NEW_INTEGER(curses, ERR);
@@ -115,11 +115,16 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   context_ = Context::New(nullptr, global);
   Context::Scope context_scope(context_);
 
-  Local<Object> window = window_templ->NewInstance();
-  window->SetInternalField(0, External::New(this));
-  window->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("window"), window, v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("curses"), curses->NewInstance(), v8::ReadOnly);
+  Local<Object> world = world_templ->NewInstance();
+  world->SetInternalField(0, External::New(this));
+  world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
+
+  Local<Object> curses_obj = curses->NewInstance();
+  JSCursesWindow jcw(stdscr);
+  curses_obj->Set(String::New("stdscr"), jcw.ToScript());
+
+  context_->Global()->Set(String::NewSymbol("curses"), curses_obj, v8::ReadOnly);
 
   context_->Global()->Set(String::NewSymbol("errno"), GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("signal"), GetSignalTemplate()->NewInstance(), v8::ReadOnly);
@@ -128,8 +133,6 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   bool bail = false;
   if (run) {
     // compile the JS source code, and run it once
-
-
     TryCatch trycatch;
     Handle<String> source = js::ReadFile(script_name_);
     Handle<Script> scr = Script::New(

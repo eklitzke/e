@@ -17,14 +17,23 @@ using v8::Handle;
 using v8::InvocationCallback;
 using v8::Local;
 using v8::Object;
+using v8::ObjectTemplate;
 using v8::Persistent;
+using v8::String;
 using v8::Value;
+
+#define CHECK_ARGS(num) if (args.Length() < num) {  \
+    return v8::Undefined();                         \
+  }                                                 \
+  HandleScope scope
 
 #define NEW_INTEGER(obj, sym) obj->Set(v8::String::NewSymbol(#sym),     \
                                        v8::Integer::New(sym), v8::ReadOnly);
 
 namespace e {
 namespace js {
+
+void AddTemplateFunction(Handle<ObjectTemplate>, const std::string &, v8::InvocationCallback);
 
 typedef Handle<Value>(*JSCallback)(const Arguments&);
 

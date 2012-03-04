@@ -7,6 +7,7 @@
 #include <glog/logging.h>
 #include <v8.h>
 
+#include <cassert>
 #include <string>
 #include <vector>
 

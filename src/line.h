@@ -6,7 +6,7 @@
 #ifndef SRC_LINE_H_
 #define SRC_LINE_H_
 
-#include <boost/function.hpp>
+//#include <boost/function.hpp>
 #include <v8.h>
 
 #include <string>
@@ -18,8 +18,6 @@ using v8::Handle;
 using v8::Value;
 
 namespace e {
-
-//typedef boost::function<void(const std::string&)> StringCallback;
 
 class Line: public Embeddable {
  public:

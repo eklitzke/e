@@ -60,7 +60,8 @@ void CursesWindow::EstablishReadLoop() {
 bool CursesWindow::HandleKey(KeyCode *keycode) {
   bool result = state_.HandleKey(keycode);
   if (result)
-    refresh();
+    //refresh();
+    doupdate();
   return result;
 }
 

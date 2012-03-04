@@ -10,6 +10,7 @@
 #include <string>
 
 #include "./js.h"
+#include "./js_curses_window.h"
 
 using v8::Arguments;
 using v8::External;
@@ -36,7 +37,6 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
 }
 
 namespace e {
-namespace js {
 Handle<Value> CursesAddstr(const Arguments& args) {
   if (args.Length() < 1) {
     return Undefined();
@@ -82,11 +82,8 @@ Handle<Value> CursesMove(const Arguments& args) {
     return Undefined();
   }
   HandleScope scope;
-  Handle<Value> arg1 = args[0];
-  Handle<Value> arg2 = args[1];
-
-  int y = Integer::Cast(*arg1)->Value();
-  int x = Integer::Cast(*arg2)->Value();
+  int y = static_cast<int>(args[0]->Int32Value());
+  int x = static_cast<int>(args[1]->Int32Value());
 
   Local<Integer> ret = Integer::New(move(y, x));
   return scope.Close(ret);
@@ -97,18 +94,30 @@ Handle<Value> CursesMvdelch(const Arguments& args) {
     return Undefined();
   }
   HandleScope scope;
-  Handle<Value> arg1 = args[0];
-  Handle<Value> arg2 = args[1];
-
-  int y = Integer::Cast(*arg1)->Value();
-  int x = Integer::Cast(*arg2)->Value();
+  int y = static_cast<int>(args[0]->Int32Value());
+  int x = static_cast<int>(args[1]->Int32Value());
 
   Local<Integer> ret = Integer::New(mvdelch(y, x));
   return scope.Close(ret);
 }
 
-std::map<std::string, JSCallback> GetCallbacks() {
-  std::map<std::string, JSCallback> callbacks;
+Handle<Value> CursesNewwin(const Arguments& args) {
+  CHECK_ARGS(4);
+
+  int nlines = static_cast<int>(args[0]->Int32Value());
+  int ncols = static_cast<int>(args[1]->Int32Value());
+  int begin_y = static_cast<int>(args[2]->Int32Value());
+  int begin_x = static_cast<int>(args[3]->Int32Value());
+
+  LOG(INFO) << "calling newwin";
+  WINDOW *w = newwin(nlines, ncols, begin_y, begin_x);
+  LOG(INFO) << "new window is " << w;
+  JSCursesWindow *cw = new JSCursesWindow(w);
+  return scope.Close(cw->ToScript());
+}
+
+std::map<std::string, js::JSCallback> GetCursesCallbacks() {
+  std::map<std::string, js::JSCallback> callbacks;
   callbacks["addstr"] = &CursesAddstr;
   callbacks["clear"] = &CursesClear;
   callbacks["clrtobot"] = &CursesClrtobot;
@@ -126,8 +135,8 @@ std::map<std::string, JSCallback> GetCallbacks() {
   callbacks["getpary"] = &CursesGetpary;
   callbacks["move"] = &CursesMove;
   callbacks["mvdelch"] = &CursesMvdelch;
+  callbacks["newwin"] = &CursesNewwin;
   callbacks["redrawwin"] = &CursesRedrawwin;
   return callbacks;
-}
 }
 }

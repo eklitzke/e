@@ -1,10 +1,10 @@
 core = { column: 0, line: 0 };
 
 log("started script!");
-log("buffer name is " + window.buffer.getName());
+log("buffer name is " + world.buffer.getName());
 
 core.currentLine = function () {
-    return window.buffer.getLine(core.line);
+    return world.buffer.getLine(core.line);
 }
 
 core.rightmost = function () {
@@ -16,33 +16,42 @@ core.rightmost = function () {
     }
 }
 
+/*
 core.drawTabBar = function (restore) {
     restore = restore || true;
     if (restore) {
         var x = curses.getcurx();
         var y = curses.getcury();
         curses.move(0, 1);
-        curses.addstr(window.buffer.getName());
+        curses.addstr(world.buffer.getName());
         curses.move(y, x);
     } else {
         curses.move(0, 0);
-        curses.addstr(window.buffer.getName());
+        curses.addstr(world.buffer.getName());
     }
 }
+*/
 
-window.addEventListener("load", function (event) {
-    core.drawTabBar();
+world.addEventListener("load", function (event) {
+	log("loaded");
+	core.tabWindow = curses.newwin(1, curses.getmaxx(), 0, 0);
+	log("tab iwndow is");
+	log(core.tabWindow);
+	log("stdscr is ");
+	log(curses.stdscr);
+	log(curses.stdscr.subwin);
+	core.tabWindow.mvaddstr(0, 1, world.buffer.getName());
+    //core.drawTabBar();
 
     // draw tildes on blank lines
     var maxy = curses.getmaxy();
-    for (var i = 2; i < maxy; i++) {
-        curses.move(i, 0);
-        curses.addstr("~");
+    for (var i = 1; i < maxy; i++) {
+        curses.stdscr.mvaddstr(i, 0, "~");
     }
     curses.move(1, 0);
 });
 
-window.addEventListener("keypress", function (event) {
+world.addEventListener("keypress", function (event) {
     var curx = curses.getcurx();
     var cury = curses.getcury();
     var code = event.getCode();
@@ -54,7 +63,7 @@ window.addEventListener("keypress", function (event) {
             curses.move(cury, 0);
             break;
         case 3: // Ctrl-C
-            window.stopLoop();
+            world.stopLoop();
             break;
         case 5: // Ctrl-E
             curses.move(cury, curses.getmaxx() - 1);
@@ -63,23 +72,23 @@ window.addEventListener("keypress", function (event) {
             curses.redrawwin();
             break;
         case 13: // Ctrl-M, carriage return
-            window.buffer.addLine(cury + 1);
+            world.buffer.addLine(cury + 1);
             curses.move(cury + 1, 0);
             curses.clrtoeol();
             core.line++;
             core.column = 0;
             break;
         case 17: // Ctrl-Q
-            window.stopLoop();
+            world.stopLoop();
             break;
         case 26: // Ctrl-Z
             sys.kill(sys.getpid(), sys.SIGTSTP);
             break;
         default:
-            var curline = window.buffer.getLine(cury);
+            var curline = world.buffer.getLine(core.line);
             var val = curline.value();
             curline.insert(curx, name);
-            curses.addstr(name);
+            curses.stdscr.addstr(name);
             log(curline.length);
             if (curx < curline.length) {
                 // need to redraw the rest of the string to prevent overwrite
@@ -102,7 +111,7 @@ window.addEventListener("keypress", function (event) {
             }
             break;
         case "key_down":
-            if (cury < curses.getmaxy() - 1 && (core.line < window.buffer.length - 1)) {
+            if (cury < curses.getmaxy() - 1 && (core.line < world.buffer.length - 1)) {
                 core.line++;
                 curses.move(cury + 1, core.rightmost());
             }

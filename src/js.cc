@@ -161,8 +161,11 @@ std::string ValueToString(Local<Value> value) {
   return std::string(*utf8_value);
 }
 
-#ifdef USE_CURSES
-#include "js_curses.cc"
-#endif
+void AddTemplateFunction(Handle<ObjectTemplate> templ, const std::string &name,
+                         v8::InvocationCallback callback) {
+  templ->Set(String::NewSymbol(name.c_str(), name.size()),
+             FunctionTemplate::New(callback),
+             v8::ReadOnly);
+}
 }
 }

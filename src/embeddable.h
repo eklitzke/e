@@ -12,12 +12,20 @@
 namespace e {
 
 using v8::Context;
+using v8::External;
 using v8::FunctionTemplate;
 using v8::InvocationCallback;
 using v8::Handle;
 using v8::Local;
+using v8::Object;
 using v8::Persistent;
+using v8::String;
 using v8::Value;
+
+template<typename T> T* Unwrap(Handle<Object> holder, int field=0) {
+  Local<External> wrap = Local<External>::Cast(holder->GetInternalField(field));
+  return static_cast<T*>(wrap->Value());
+}
 
 #define GET_SELF2(a, tp) Local<Object> s_ = a.Holder();\
   v8::Local<v8::External> wrap = \

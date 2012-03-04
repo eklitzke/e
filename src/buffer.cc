@@ -11,6 +11,7 @@
 #include <v8.h>
 
 #include <algorithm>
+#include <cassert>
 #include <vector>
 
 #include "./buffer.h"
@@ -116,7 +117,6 @@ Handle<Value> JSGetLine(const Arguments& args) {
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
   std::vector<Line *> l = *(self->Lines());
-  LOG(INFO) << "offset is " << offset << ", size is " << l.size();
   assert(offset < l.size());
   return scope.Close(l[offset]->ToScript());
 }
