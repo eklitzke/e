@@ -109,8 +109,15 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   for (auto it = callbacks.begin(); it != callbacks.end(); ++it) {
     js::AddTemplateFunction(curses, it->first, it->second);
   }
+  // FIXME(eklitzke): make most of these accessors
   NEW_INTEGER(curses, OK);
   NEW_INTEGER(curses, ERR);
+  NEW_INTEGER(curses, COLOR_PAIRS);
+  NEW_INTEGER(curses, COLORS);
+  NEW_INTEGER(curses, COLS);
+  NEW_INTEGER(curses, ESCDELAY);
+  NEW_INTEGER(curses, LINES);
+  NEW_INTEGER(curses, TABSIZE);
 
   context_ = Context::New(nullptr, global);
   Context::Scope context_scope(context_);
@@ -121,8 +128,6 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   context_->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
 
   Local<Object> curses_obj = curses->NewInstance();
-  JSCursesWindow jcw(stdscr);
-  curses_obj->Set(String::New("stdscr"), jcw.ToScript());
 
   context_->Global()->Set(String::NewSymbol("curses"), curses_obj, v8::ReadOnly);
 

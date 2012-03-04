@@ -15,6 +15,7 @@
 #include <termios.h>
 
 #include "./keycode.h"
+#include "./js_curses_window.h"
 
 namespace e {
 CursesWindow::CursesWindow(const std::string &script_name)
@@ -60,8 +61,8 @@ void CursesWindow::EstablishReadLoop() {
 bool CursesWindow::HandleKey(KeyCode *keycode) {
   bool result = state_.HandleKey(keycode);
   if (result)
-    //refresh();
     doupdate();
+  //refresh();
   return result;
 }
 
@@ -91,7 +92,16 @@ void CursesWindow::Loop() {
 void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
   std::vector<Handle<Value> > args;
   Initialize();
+
+  // Once initscr() has been called, we can create an object to hold the stdscr
+  // pointer.
+  JSCursesWindow jcw(stdscr);
+  Local<Object> curses = c->Global()->Get(String::NewSymbol("curses"))->ToObject();
+  curses->Set(String::NewSymbol("stdscr"), jcw.ToScript());
+
   state_.GetListener()->Dispatch("load", c->Global(), args);
+
+  //doupdate();
   refresh();
 
   EstablishReadLoop();

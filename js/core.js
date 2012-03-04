@@ -16,39 +16,26 @@ core.rightmost = function () {
     }
 }
 
-/*
 core.drawTabBar = function (restore) {
-    restore = restore || true;
-    if (restore) {
-        var x = curses.getcurx();
-        var y = curses.getcury();
-        curses.move(0, 1);
-        curses.addstr(world.buffer.getName());
-        curses.move(y, x);
-    } else {
-        curses.move(0, 0);
-        curses.addstr(world.buffer.getName());
-    }
+	core.windows.tab.mvaddstr(0, 1, world.buffer.getName());
+	//core.windows.tab.refresh();
 }
-*/
 
 world.addEventListener("load", function (event) {
-	log("loaded");
-	core.tabWindow = curses.newwin(1, curses.getmaxx(), 0, 0);
-	log("tab iwndow is");
-	log(core.tabWindow);
-	log("stdscr is ");
-	log(curses.stdscr);
-	log(curses.stdscr.subwin);
-	core.tabWindow.mvaddstr(0, 1, world.buffer.getName());
-    //core.drawTabBar();
+	core.windows = {};
+	core.windows.tab = curses.stdscr.subwin(1, curses.getmaxx(), 0, 0);
+	core.windows.buffer = curses.stdscr.subwin(curses.getmaxy() - 1, curses.getmaxx(), 1, 0);
+
+	core.drawTabBar();
 
     // draw tildes on blank lines
     var maxy = curses.getmaxy();
-    for (var i = 1; i < maxy; i++) {
-        curses.stdscr.mvaddstr(i, 0, "~");
+    for (var i = 0; i < maxy; i++) {
+        core.windows.buffer.mvaddstr(i, 0, "~");
     }
-    curses.move(1, 0);
+	//core.windows.buffer.move(1, 0);
+	//core.windows.buffer.refresh();
+	//curses.doupdate();
 });
 
 world.addEventListener("keypress", function (event) {
@@ -87,8 +74,8 @@ world.addEventListener("keypress", function (event) {
         default:
             var curline = world.buffer.getLine(core.line);
             var val = curline.value();
-            curline.insert(curx, name);
-            curses.stdscr.addstr(name);
+            curline.insert(core.column, name);
+            curses.addstr(name);
             log(curline.length);
             if (curx < curline.length) {
                 // need to redraw the rest of the string to prevent overwrite
@@ -96,8 +83,8 @@ world.addEventListener("keypress", function (event) {
                 curses.clrtoeol();
                 curses.addstr(val.substr(curx));
                 curses.move(cury, curx + 1);
-                core.column++;
             }
+            core.column++;
             break;
         }
     } else {

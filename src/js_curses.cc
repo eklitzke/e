@@ -52,6 +52,7 @@ CURSES_VOID_FUNC(Clear, clear)
 CURSES_VOID_FUNC(Clrtobot, clrtobot)
 CURSES_VOID_FUNC(Clrtoeol, clrtoeol)
 CURSES_VOID_FUNC(Delch, delch)
+CURSES_VOID_FUNC(Doupdate, doupdate)
 CURSES_VOID_FUNC(Erase, erase)
 
 CURSES_WINDOW_FUNC(Getattrs, getattrs);
@@ -123,6 +124,7 @@ std::map<std::string, js::JSCallback> GetCursesCallbacks() {
   callbacks["clrtobot"] = &CursesClrtobot;
   callbacks["clrtoeol"] = &CursesClrtoeol;
   callbacks["delch"] = &CursesDelch;
+  callbacks["doupdate"] = &CursesDoupdate;
   callbacks["erase"] = &CursesErase;
   callbacks["getattrs"] = &CursesGetattrs;
   callbacks["getbegx"] = &CursesGetbegx;

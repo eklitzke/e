@@ -48,6 +48,15 @@ Handle<Value> JSAddstr(const Arguments& args) {
   return scope.Close(Integer::New(waddnstr(self->window_, *value, value.length())));
 }
 
+Handle<Value> JSMove(const Arguments& args) {
+  CHECK_ARGS(2);
+  GET_SELF(JSCursesWindow);
+
+  int y = static_cast<int>(args[0]->Int32Value());
+  int x = static_cast<int>(args[1]->Int32Value());
+  return scope.Close(Integer::New(wmove(self->window_, y, x)));
+}
+
 Handle<Value> JSMvaddstr(const Arguments& args) {
   CHECK_ARGS(3);
   GET_SELF(JSCursesWindow);
@@ -93,8 +102,6 @@ Handle<Value> JSRefresh(const Arguments& args) {
   return scope.Close(Undefined());
 }
 
-
-
 Persistent<ObjectTemplate> templ;
 
 // Create a raw template
@@ -103,8 +110,10 @@ Handle<ObjectTemplate> MakeTemplate() {
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
   js::AddTemplateFunction(result, "addstr", JSAddstr);
-  js::AddTemplateFunction(result, "mvaddstr", JSMvwin);
+  js::AddTemplateFunction(result, "move", JSMove);
+  js::AddTemplateFunction(result, "mvaddstr", JSMvaddstr);
   js::AddTemplateFunction(result, "mvwin", JSMvwin);
+  js::AddTemplateFunction(result, "refresh", JSRefresh);
   js::AddTemplateFunction(result, "subwin", JSSubwin);
   return scope.Close(result);
 }
