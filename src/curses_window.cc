@@ -18,7 +18,15 @@
 
 namespace e {
 CursesWindow::CursesWindow(const std::string &script_name)
-    :state_(script_name), term_in_(io_service_) {
+    :state_(script_name), window_(nullptr), term_in_(io_service_) {
+}
+
+CursesWindow::~CursesWindow() {
+  if (window_ != nullptr)
+    endwin();
+}
+
+void CursesWindow::Initialize() {
   window_ = initscr();
   refresh();
 
@@ -36,10 +44,6 @@ CursesWindow::CursesWindow(const std::string &script_name)
   tcsetattr(0, TCSANOW, &ttystate);
 
   term_in_.assign(STDIN_FILENO);
-}
-
-CursesWindow::~CursesWindow() {
-  endwin();
 }
 
 /* Add a read-event to the ioservice loop that will fire as soon as keyboard
@@ -85,6 +89,7 @@ void CursesWindow::Loop() {
 
 void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
   std::vector<Handle<Value> > args;
+  Initialize();
   state_.GetListener()->Dispatch("load", c->Global(), args);
   refresh();
 

@@ -19,7 +19,7 @@ class CursesWindow {
  public:
   explicit CursesWindow(const std::string &script_name);
   ~CursesWindow();
-
+  void Initialize();
   void Loop();
  private:
   State state_;
@@ -27,7 +27,6 @@ class CursesWindow {
   boost::asio::io_service io_service_;
   boost::asio::posix::stream_descriptor term_in_;
 
-  void Initialize();
   void InnerLoop(v8::Persistent<v8::Context>);
 
   void OnRead(const boost::system::error_code&, std::size_t);

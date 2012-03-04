@@ -26,6 +26,7 @@ using v8::Persistent;
 using v8::Script;
 using v8::String;
 using v8::Template;
+using v8::TryCatch;
 using v8::Undefined;
 using v8::Value;
 
@@ -113,13 +114,32 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   context_->Global()->Set(String::NewSymbol("window"), window, v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("curses"), curses->NewInstance(), v8::ReadOnly);
 
+  bool bail = false;
   if (run) {
     // compile the JS source code, and run it once
+
+
+    TryCatch trycatch;
     Handle<String> source = js::ReadFile(script_name_);
-    Handle<Script> scr = Script::Compile(source);
-    scr->Run();
+    Handle<Script> scr = Script::New(
+        source, String::New(script_name_.c_str(), script_name_.size()));
+    if (scr.IsEmpty()) {
+      Handle<Value> exception = trycatch.Exception();
+      String::AsciiValue exception_str(exception);
+      fprintf(stderr, "Exception: %s\n", *exception_str);
+      bail = true;
+    } else {
+      Handle<Value> v = scr->Run();
+      if (v.IsEmpty()) {
+        Handle<Value> exception = trycatch.Exception();
+        String::AsciiValue exception_str(exception);
+        fprintf(stderr, "Exception: %s\n", *exception_str);
+        bail = true;
+      }
+    }
   }
-  then(context_);
+  if (!bail)
+    then(context_);
 }
 
 Buffer *
