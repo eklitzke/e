@@ -32,7 +32,7 @@ void CursesWindow::Initialize() {
 
   noecho();
   nonl();  // don't turn LF into CRLF
-  cbreak();  // read characters one at a time
+  raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
   keypad(window_, TRUE);
   clearok(window_, TRUE);
   notimeout(window_, TRUE);

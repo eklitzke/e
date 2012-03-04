@@ -48,9 +48,13 @@ window.addEventListener("keypress", function (event) {
 			curses.move(cury + 1, 0);
 			curses.clrtoeol();
 			core.line++;
+			core.column = 0;
 			break;
 		case 17: // Ctrl-Q
 			window.stopLoop();
+			break;
+		case 26: // Ctrl-Z
+			sys.kill(sys.getpid(), sys.SIGTSTP);
 			break;
 		default:
 			var curline = window.buffer.getLine(cury);
