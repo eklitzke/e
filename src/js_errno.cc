@@ -1,0 +1,140 @@
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
+
+#include "./js.h"
+#include "./js_errno.h"
+
+#include <v8.h>
+
+using v8::Handle;
+using v8::HandleScope;
+using v8::ObjectTemplate;
+
+namespace e {
+#ifdef USE_LINUX
+Handle<ObjectTemplate> GetErrnoTemplate() {
+  HandleScope scope;
+  Handle<ObjectTemplate> errno_templ = ObjectTemplate::New();
+  NEW_INTEGER(errno_templ, EPERM);
+  NEW_INTEGER(errno_templ, ENOENT);
+  NEW_INTEGER(errno_templ, ESRCH);
+  NEW_INTEGER(errno_templ, EINTR);
+  NEW_INTEGER(errno_templ, EIO);
+  NEW_INTEGER(errno_templ, ENXIO);
+  NEW_INTEGER(errno_templ, E2BIG);
+  NEW_INTEGER(errno_templ, ENOEXEC);
+  NEW_INTEGER(errno_templ, EBADF);
+  NEW_INTEGER(errno_templ, ECHILD);
+  NEW_INTEGER(errno_templ, EAGAIN);
+  NEW_INTEGER(errno_templ, ENOMEM);
+  NEW_INTEGER(errno_templ, EACCES);
+  NEW_INTEGER(errno_templ, EFAULT);
+  NEW_INTEGER(errno_templ, ENOTBLK);
+  NEW_INTEGER(errno_templ, EBUSY);
+  NEW_INTEGER(errno_templ, EEXIST);
+  NEW_INTEGER(errno_templ, EXDEV);
+  NEW_INTEGER(errno_templ, ENODEV);
+  NEW_INTEGER(errno_templ, ENOTDIR);
+  NEW_INTEGER(errno_templ, EISDIR);
+  NEW_INTEGER(errno_templ, EINVAL);
+  NEW_INTEGER(errno_templ, ENFILE);
+  NEW_INTEGER(errno_templ, EMFILE);
+  NEW_INTEGER(errno_templ, ENOTTY);
+  NEW_INTEGER(errno_templ, ETXTBSY);
+  NEW_INTEGER(errno_templ, EFBIG);
+  NEW_INTEGER(errno_templ, ENOSPC);
+  NEW_INTEGER(errno_templ, ESPIPE);
+  NEW_INTEGER(errno_templ, EROFS);
+  NEW_INTEGER(errno_templ, EMLINK);
+  NEW_INTEGER(errno_templ, EPIPE);
+  NEW_INTEGER(errno_templ, EDOM);
+  NEW_INTEGER(errno_templ, ERANGE);
+  NEW_INTEGER(errno_templ, EDEADLOCK);
+  NEW_INTEGER(errno_templ, ENAMETOOLONG);
+  NEW_INTEGER(errno_templ, ENOLCK);
+  NEW_INTEGER(errno_templ, ENOSYS);
+  NEW_INTEGER(errno_templ, ENOTEMPTY);
+  NEW_INTEGER(errno_templ, ELOOP);
+  NEW_INTEGER(errno_templ, ENOMSG);
+  NEW_INTEGER(errno_templ, EIDRM);
+  NEW_INTEGER(errno_templ, ECHRNG);
+  NEW_INTEGER(errno_templ, EL2NSYNC);
+  NEW_INTEGER(errno_templ, EL3HLT);
+  NEW_INTEGER(errno_templ, EL3RST);
+  NEW_INTEGER(errno_templ, ELNRNG);
+  NEW_INTEGER(errno_templ, EUNATCH);
+  NEW_INTEGER(errno_templ, ENOCSI);
+  NEW_INTEGER(errno_templ, EL2HLT);
+  NEW_INTEGER(errno_templ, EBADE);
+  NEW_INTEGER(errno_templ, EBADR);
+  NEW_INTEGER(errno_templ, EXFULL);
+  NEW_INTEGER(errno_templ, ENOANO);
+  NEW_INTEGER(errno_templ, EBADRQC);
+  NEW_INTEGER(errno_templ, EBADSLT);
+  NEW_INTEGER(errno_templ, EBFONT);
+  NEW_INTEGER(errno_templ, ENOSTR);
+  NEW_INTEGER(errno_templ, ENODATA);
+  NEW_INTEGER(errno_templ, ETIME);
+  NEW_INTEGER(errno_templ, ENOSR);
+  NEW_INTEGER(errno_templ, ENONET);
+  NEW_INTEGER(errno_templ, ENOPKG);
+  NEW_INTEGER(errno_templ, EREMOTE);
+  NEW_INTEGER(errno_templ, ENOLINK);
+  NEW_INTEGER(errno_templ, EADV);
+  NEW_INTEGER(errno_templ, ESRMNT);
+  NEW_INTEGER(errno_templ, ECOMM);
+  NEW_INTEGER(errno_templ, EPROTO);
+  NEW_INTEGER(errno_templ, EMULTIHOP);
+  NEW_INTEGER(errno_templ, EDOTDOT);
+  NEW_INTEGER(errno_templ, EBADMSG);
+  NEW_INTEGER(errno_templ, EOVERFLOW);
+  NEW_INTEGER(errno_templ, ENOTUNIQ);
+  NEW_INTEGER(errno_templ, EBADFD);
+  NEW_INTEGER(errno_templ, EREMCHG);
+  NEW_INTEGER(errno_templ, ELIBACC);
+  NEW_INTEGER(errno_templ, ELIBBAD);
+  NEW_INTEGER(errno_templ, ELIBSCN);
+  NEW_INTEGER(errno_templ, ELIBMAX);
+  NEW_INTEGER(errno_templ, ELIBEXEC);
+  NEW_INTEGER(errno_templ, EILSEQ);
+  NEW_INTEGER(errno_templ, ERESTART);
+  NEW_INTEGER(errno_templ, ESTRPIPE);
+  NEW_INTEGER(errno_templ, EUSERS);
+  NEW_INTEGER(errno_templ, ENOTSOCK);
+  NEW_INTEGER(errno_templ, EDESTADDRREQ);
+  NEW_INTEGER(errno_templ, EMSGSIZE);
+  NEW_INTEGER(errno_templ, EPROTOTYPE);
+  NEW_INTEGER(errno_templ, ENOPROTOOPT);
+  NEW_INTEGER(errno_templ, EPROTONOSUPPORT);
+  NEW_INTEGER(errno_templ, ESOCKTNOSUPPORT);
+  NEW_INTEGER(errno_templ, EOPNOTSUPP);
+  NEW_INTEGER(errno_templ, EPFNOSUPPORT);
+  NEW_INTEGER(errno_templ, EAFNOSUPPORT);
+  NEW_INTEGER(errno_templ, EADDRINUSE);
+  NEW_INTEGER(errno_templ, EADDRNOTAVAIL);
+  NEW_INTEGER(errno_templ, ENETDOWN);
+  NEW_INTEGER(errno_templ, ENETUNREACH);
+  NEW_INTEGER(errno_templ, ENETRESET);
+  NEW_INTEGER(errno_templ, ECONNABORTED);
+  NEW_INTEGER(errno_templ, ECONNRESET);
+  NEW_INTEGER(errno_templ, ENOBUFS);
+  NEW_INTEGER(errno_templ, EISCONN);
+  NEW_INTEGER(errno_templ, ENOTCONN);
+  NEW_INTEGER(errno_templ, ESHUTDOWN);
+  NEW_INTEGER(errno_templ, ETOOMANYREFS);
+  NEW_INTEGER(errno_templ, ETIMEDOUT);
+  NEW_INTEGER(errno_templ, ECONNREFUSED);
+  NEW_INTEGER(errno_templ, EHOSTDOWN);
+  NEW_INTEGER(errno_templ, EHOSTUNREACH);
+  NEW_INTEGER(errno_templ, EALREADY);
+  NEW_INTEGER(errno_templ, EINPROGRESS);
+  NEW_INTEGER(errno_templ, ESTALE);
+  NEW_INTEGER(errno_templ, EUCLEAN);
+  NEW_INTEGER(errno_templ, ENOTNAM);
+  NEW_INTEGER(errno_templ, ENAVAIL);
+  NEW_INTEGER(errno_templ, EISNAM);
+  NEW_INTEGER(errno_templ, EREMOTEIO);
+  NEW_INTEGER(errno_templ, EDQUOT);
+  return scope.Close(errno_templ);
+}
+#endif  // USE_LINUX
+}

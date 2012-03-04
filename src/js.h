@@ -20,6 +20,9 @@ using v8::Object;
 using v8::Persistent;
 using v8::Value;
 
+#define NEW_INTEGER(obj, sym) obj->Set(v8::String::NewSymbol(#sym),     \
+                                       v8::Integer::New(sym), v8::ReadOnly);
+
 namespace e {
 namespace js {
 

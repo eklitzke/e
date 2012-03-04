@@ -1,13 +1,16 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include <curses.h> // naughty, for OK and ERR
 #include <v8.h>
 #include <glog/logging.h>
 
 #include <cassert>
-#include <csignal>
 #include <string>
 
 #include "./js.h"
+#include "./js_errno.h"
+#include "./js_signal.h"
+#include "./js_sys.h"
 #include "./state.h"
 
 namespace e {
@@ -37,22 +40,6 @@ bool keep_going = true;
 Handle<Value> JSStopLoop(const Arguments& args) {
   keep_going = false;
   return Undefined();
-}
-
-Handle<Value> JSGetPid(const Arguments& args) {
-  HandleScope scope;
-  return scope.Close(Integer::New(static_cast<int>(getpid())));
-}
-
-Handle<Value> JSKill(const Arguments& args) {
-  HandleScope scope;
-  if (args.Length() < 2) {
-    return Undefined();
-  }
-  uint32_t pid = args[0]->Uint32Value();
-  uint32_t signal = args[1]->Uint32Value();
-  int ret = kill(static_cast<pid_t>(pid), static_cast<int>(signal));
-  return scope.Close(Integer::New(ret));
 }
 
 Handle<Value>
@@ -101,6 +88,7 @@ State::~State() {
 }
 
 void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then) {
+
   HandleScope scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("log"),
@@ -113,14 +101,6 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   window_templ->Set(String::NewSymbol("stopLoop"),
                     FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
 
-  Handle<ObjectTemplate> sys_templ = ObjectTemplate::New();
-  sys_templ->Set(String::NewSymbol("getpid"),
-                    FunctionTemplate::New(JSGetPid), v8::ReadOnly);
-  sys_templ->Set(String::NewSymbol("kill"),
-                    FunctionTemplate::New(JSKill), v8::ReadOnly);
-  sys_templ->Set(String::NewSymbol("SIGTSTP"),
-                 Integer::New(SIGTSTP), v8::ReadOnly);
-
   // add in all of the movement callbacks
   std::map<std::string, e::js::JSCallback> callbacks = e::js::GetCallbacks();
   std::map<std::string, e::js::JSCallback>::iterator cit;
@@ -129,6 +109,8 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
     curses->Set(String::NewSymbol(cit->first.c_str()),
                 FunctionTemplate::New(cit->second), v8::ReadOnly);
   }
+  NEW_INTEGER(curses, OK);
+  NEW_INTEGER(curses, ERR);
 
   context_ = Context::New(nullptr, global);
   Context::Scope context_scope(context_);
@@ -138,7 +120,10 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   window->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("window"), window, v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("curses"), curses->NewInstance(), v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("sys"), sys_templ->NewInstance(), v8::ReadOnly);
+
+  context_->Global()->Set(String::NewSymbol("errno"), GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("signal"), GetSignalTemplate()->NewInstance(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("sys"), GetSysTemplate()->NewInstance(), v8::ReadOnly);
 
   bool bail = false;
   if (run) {

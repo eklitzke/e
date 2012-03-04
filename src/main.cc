@@ -8,7 +8,7 @@
 #include <glog/logging.h>
 
 #include "./curses_window.h"
-#include "./list_api.h"
+#include "./list_environment.h"
 #include "./state.h"
 
 namespace po = boost::program_options;
@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   desc.add_options()
       ("help,h", "produce help message")
       ("script,s", po::value<std::string>(&script), "the JS script to load")
-      ("list-api", "list the available JS API");
+      ("list-environment", "list the default JS environment");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -39,9 +39,9 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (vm.count("list-api")) {
+  if (vm.count("list-environment")) {
     e::State state;
-    state.LoadScript(false, e::ListAPI);
+    state.LoadScript(false, e::ListEnvironment);
   } else {
     e::CursesWindow window(script);
     window.Loop();

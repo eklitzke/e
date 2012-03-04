@@ -14,7 +14,8 @@
             '-lglog',
             '-lncurses',
             '-lv8',
-          ]
+          ],
+         'defines': [ 'USE_LINUX', ],
     }]],
     'sources': [
         'src/main.cc',
@@ -23,9 +24,12 @@
         'src/embeddable.cc',
         'src/js.cc',
         'src/js_curses.cc',
+        'src/js_errno.cc',
+        'src/js_signal.cc',
+        'src/js_sys.cc',
         'src/keycode.cc',
         'src/line.cc',
-        'src/list_api.cc',
+        'src/list_environment.cc',
         'src/state.cc',
     ],
     'defines': [ 'USE_CURSES', ],

@@ -1,6 +1,6 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include "./list_api.h"
+#include "./list_environment.h"
 
 #include <v8.h>
 #include <string>
@@ -15,7 +15,7 @@ using v8::Object;
 using v8::String;
 
 namespace e {
-
+namespace {
 static inline void Indent(int indentation) {
   if (indentation) {
     std::string padding(indentation, ' ');
@@ -27,7 +27,11 @@ void InspectValue(int indent, const std::string &name, Handle<Value> val) {
   Indent(indent);
   printf("%s", name.c_str());
   if (val->IsNumber()) {
-    printf(" [Number]\n");
+    if (val->IsInt32()) {
+      printf(" = %d\n", val->Int32Value());
+    } else {
+      printf(" = %f\n", val->NumberValue());
+    }
   } else if (val->IsString()) {
     printf(" [String]\n");
   } else if (val->IsFunction()) {
@@ -51,9 +55,9 @@ void InspectValue(int indent, const std::string &name, Handle<Value> val) {
     printf("}\n");
   }
 }
+}
 
-
-void ListAPI(Persistent<Context> context) {
+void ListEnvironment(Persistent<Context> context) {
   HandleScope scope;
   Local<Object> globals = context->Global();
   Local<Array> properties = globals->GetPropertyNames();
