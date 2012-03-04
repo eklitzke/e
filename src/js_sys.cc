@@ -9,6 +9,8 @@
 
 #ifdef USE_LINUX
 #include <linux/limits.h>
+#else
+#define PATH_MAX 4096
 #endif
 
 using v8::Arguments;
@@ -20,6 +22,23 @@ using v8::Undefined;
 
 namespace e {
 namespace {
+Handle<Value> JSChdir(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1) {
+    return Undefined();
+  }
+  Local<Value> path = args[0];
+  int ret = chdir(*String::AsciiValue(path));
+  return scope.Close(Integer::New(ret));
+}
+
+Handle<Value> JSGetcwd(const Arguments& args) {
+  HandleScope scope;
+  static char buf[PATH_MAX];
+  getcwd(buf, sizeof(buf));
+  return scope.Close(String::New(buf));
+}
+
 Handle<Value> JSGetpid(const Arguments& args) {
   HandleScope scope;
   return scope.Close(Integer::New(static_cast<int>(getpid())));
@@ -35,18 +54,13 @@ Handle<Value> JSKill(const Arguments& args) {
   int ret = kill(static_cast<pid_t>(pid), static_cast<int>(signal));
   return scope.Close(Integer::New(ret));
 }
-
-Handle<Value> JSGetcwd(const Arguments& args) {
-  HandleScope scope;
-  static char buf[PATH_MAX];
-  getcwd(buf, sizeof(buf));
-  return scope.Close(String::New(buf));
-}
 }
 
 Handle<ObjectTemplate> GetSysTemplate() {
   HandleScope scope;
   Handle<ObjectTemplate> sys_templ = ObjectTemplate::New();
+  sys_templ->Set(String::NewSymbol("chdir"),
+                    FunctionTemplate::New(JSChdir), v8::ReadOnly);
   sys_templ->Set(String::NewSymbol("getcwd"),
                     FunctionTemplate::New(JSGetcwd), v8::ReadOnly);
   sys_templ->Set(String::NewSymbol("getpid"),
