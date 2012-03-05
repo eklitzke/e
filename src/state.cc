@@ -7,6 +7,7 @@
 #include <cassert>
 #include <string>
 
+#include "./bundled_core.h"
 #include "./js.h"
 #include "./js_curses.h"
 #include "./js_curses_window.h"
@@ -78,8 +79,9 @@ AddEventListener(const Arguments& args) {
 }
 }
 
-State::State(const std::string &script_name)
-    :active_buffer_(new Buffer("*temp*")), script_name_(script_name) {
+State::State(bool load_core, const std::vector<std::string> &scripts)
+    :load_core_(load_core), scripts_(scripts),
+     active_buffer_(new Buffer("*temp*")) {
   buffers_.push_back(active_buffer_);
 }
 
@@ -137,23 +139,32 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
 
   bool bail = false;
   if (run) {
-    // compile the JS source code, and run it once
-    TryCatch trycatch;
-    Handle<String> source = js::ReadFile(script_name_);
-    Handle<Script> scr = Script::New(
-        source, String::New(script_name_.c_str(), script_name_.size()));
-    if (scr.IsEmpty()) {
-      Handle<Value> exception = trycatch.Exception();
-      String::AsciiValue exception_str(exception);
-      fprintf(stderr, "Exception: %s\n", *exception_str);
-      bail = true;
-    } else {
+    // compile the JS source code, and run it
+    if (load_core_) {
+      // load the core file; this should be known to be good and not throw
+      // exceptions
+      Local<Script> core_scr = GetCoreScript();
+      core_scr->Run();
+    }
+    for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
+      TryCatch trycatch;
+      Handle<String> source = js::ReadFile(*it);
+      Handle<Script> scr = Script::New(
+          source, String::New(it->c_str(), it->size()));
+      if (scr.IsEmpty()) {
+        Handle<Value> exception = trycatch.Exception();
+        String::AsciiValue exception_str(exception);
+        fprintf(stderr, "Exception: %s\n", *exception_str);
+        bail = true;
+        break;
+      }
       Handle<Value> v = scr->Run();
       if (v.IsEmpty()) {
         Handle<Value> exception = trycatch.Exception();
         String::AsciiValue exception_str(exception);
         fprintf(stderr, "Exception: %s\n", *exception_str);
         bail = true;
+        break;
       }
     }
   }

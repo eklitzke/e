@@ -29,7 +29,7 @@ using v8::Value;
 class State: public Embeddable {
  public:
   State() {}
-  explicit State(const std::string &script_name);
+  explicit State(bool load_core, const std::vector<std::string> &scripts);
   ~State();
   void LoadScript(bool, boost::function<void(Persistent<Context>)>);
 
@@ -43,10 +43,12 @@ class State: public Embeddable {
 
   v8::Persistent<v8::Object> callback_o;
  private:
+  bool load_core_;
+  std::vector<std::string> scripts_;
+
   std::vector<Buffer*> buffers_;
   Buffer *active_buffer_;
   js::EventListener listener_;
-  std::string script_name_;
 };
 }
 

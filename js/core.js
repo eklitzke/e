@@ -7,10 +7,6 @@ core.currentLine = function () {
     return world.buffer.getLine(core.line);
 };
 
-core.checkCall = function (f) {
-	log("calling f, " + f());
-}
-
 core.rightmost = function () {
     var l = core.currentLine();
     if (l.length < core.column) {
@@ -64,7 +60,6 @@ world.addEventListener("load", function (event) {
 });
 
 world.addEventListener("keypress", function (event) {
-	log(core.windows.buffer);
     var curx = core.windows.buffer.getcurx();
     var cury = core.windows.buffer.getcury();
     var code = event.getCode();
@@ -163,6 +158,14 @@ world.addEventListener("keypress", function (event) {
             break;
         }
     }
+});
+
+world.addEventListener("keypress", function (e) {
+	log("===============");
+	var lines = world.buffer.getContents();
+	for (var i = 0; i < lines.length; i++) {
+		log(lines[i]);
+	}
 });
 
 world.addEventListener("keypress", function (e) {

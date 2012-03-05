@@ -12,6 +12,7 @@
 #include "./js.h"
 #include "./js_curses_window.h"
 
+using v8::AccessorInfo;
 using v8::Arguments;
 using v8::External;
 using v8::Handle;
@@ -37,6 +38,47 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
 }
 
 namespace e {
+
+Handle<Value> JSGetColorPairs(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(COLOR_PAIRS));
+}
+
+Handle<Value> JSGetColors(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(COLORS));
+}
+
+Handle<Value> JSGetCols(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(COLS));
+}
+
+Handle<Value> JSGetEscDelay(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(ESCDELAY));
+}
+
+Handle<Value> JSGetLines(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(LINES));
+}
+
+Handle<Value> JSGetTabSize(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(TABSIZE));
+}
+
+/*
+void JSSetLength(Local<String> property, Local<Value> value,
+               const AccessorInfo& info) {
+  ACCESSOR_GET_SELF(Line);
+  HandleScope scope;
+  uint32_t newsize = value->Uint32Value();
+  self->value.resize(static_cast<std::string::size_type>(newsize));
+}
+*/
+
 
 CURSES_VOID_FUNC(Doupdate, doupdate)
 CURSES_VOID_FUNC(Refresh, refresh)

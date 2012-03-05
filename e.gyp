@@ -20,6 +20,7 @@
     'sources': [
         'src/main.cc',
         'src/buffer.cc',
+        'src/bundled_core.cc',
         'src/curses_window.cc',
         'src/embeddable.cc',
         'src/js.cc',

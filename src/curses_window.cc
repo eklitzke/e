@@ -18,8 +18,9 @@
 #include "./js_curses_window.h"
 
 namespace e {
-CursesWindow::CursesWindow(const std::string &script_name)
-    :state_(script_name), window_(nullptr), term_in_(io_service_) {
+CursesWindow::CursesWindow(bool load_core,
+                           const std::vector<std::string> &scripts)
+    :state_(load_core, scripts), window_(nullptr), term_in_(io_service_) {
 }
 
 CursesWindow::~CursesWindow() {

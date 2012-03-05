@@ -17,7 +17,8 @@
 namespace e {
 class CursesWindow {
  public:
-  explicit CursesWindow(const std::string &script_name);
+  explicit CursesWindow(bool load_core,
+                        const std::vector<std::string> &scripts);
   ~CursesWindow();
   void Initialize();
   void Loop();

@@ -18,6 +18,7 @@
 
 using v8::AccessorInfo;
 using v8::Arguments;
+using v8::Array;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
@@ -121,6 +122,19 @@ Handle<Value> JSGetLine(const Arguments& args) {
   return scope.Close(l[offset]->ToScript());
 }
 
+// returns the buffer content as an array of strings
+Handle<Value> JSGetContents(const Arguments& args) {
+  GET_SELF(Buffer);
+  HandleScope scope;
+  const std::vector<Line *> l = *(self->Lines());
+  Local<Array> arr = Array::New(l.size());
+  for (size_t i = 0; i < l.size(); i++) {
+    const std::string &s = l[i]->ToString();
+    arr->Set(i, String::New(s.c_str(), s.size()));
+  }
+  return scope.Close(arr);
+}
+
 Handle<Value> JSGetName(const Arguments& args) {
   GET_SELF(Buffer);
 
@@ -154,6 +168,8 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
   result->SetInternalFieldCount(1);
   result->Set(String::NewSymbol("addLine"), FunctionTemplate::New(JSAddLine),
     v8::ReadOnly);
+  result->Set(String::NewSymbol("getContents"),
+              FunctionTemplate::New(JSGetContents), v8::ReadOnly);
   result->Set(String::NewSymbol("getLine"), FunctionTemplate::New(JSGetLine),
     v8::ReadOnly);
   result->Set(String::NewSymbol("getName"), FunctionTemplate::New(JSGetName),
