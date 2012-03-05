@@ -54,6 +54,7 @@ CURSES_VOID_FUNC(Clrtoeol, clrtoeol)
 CURSES_VOID_FUNC(Delch, delch)
 CURSES_VOID_FUNC(Doupdate, doupdate)
 CURSES_VOID_FUNC(Erase, erase)
+CURSES_VOID_FUNC(Refresh, refresh)
 
 CURSES_WINDOW_FUNC(Getattrs, getattrs);
 CURSES_WINDOW_FUNC(Getbegx, getbegx);
@@ -139,6 +140,7 @@ std::map<std::string, js::JSCallback> GetCursesCallbacks() {
   callbacks["mvdelch"] = &CursesMvdelch;
   callbacks["newwin"] = &CursesNewwin;
   callbacks["redrawwin"] = &CursesRedrawwin;
+  callbacks["refresh"] = &CursesRefresh;
   return callbacks;
 }
 }

@@ -29,7 +29,6 @@ CursesWindow::~CursesWindow() {
 
 void CursesWindow::Initialize() {
   window_ = initscr();
-  refresh();
 
   noecho();
   nonl();  // don't turn LF into CRLF
@@ -59,11 +58,7 @@ void CursesWindow::EstablishReadLoop() {
 }
 
 bool CursesWindow::HandleKey(KeyCode *keycode) {
-  bool result = state_.HandleKey(keycode);
-  if (result)
-    doupdate();
-  //refresh();
-  return result;
+  return state_.HandleKey(keycode);
 }
 
 void CursesWindow::OnRead(const boost::system::error_code& error,
@@ -100,9 +95,6 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
   curses->Set(String::NewSymbol("stdscr"), jcw.ToScript());
 
   state_.GetListener()->Dispatch("load", c->Global(), args);
-
-  //doupdate();
-  refresh();
 
   EstablishReadLoop();
   io_service_.run();

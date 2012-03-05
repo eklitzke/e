@@ -1,10 +1,14 @@
-core = { column: 0, line: 0 };
+core = { column: 0, line: 0, windowTop: 0 };
 
 log("started script!");
 log("buffer name is " + world.buffer.getName());
 
 core.currentLine = function () {
     return world.buffer.getLine(core.line);
+};
+
+core.checkCall = function (f) {
+	log("calling f, " + f());
 }
 
 core.rightmost = function () {
@@ -14,12 +18,33 @@ core.rightmost = function () {
     } else {
         return core.column;
     }
-}
+};
 
 core.drawTabBar = function (restore) {
 	core.windows.tab.mvaddstr(0, 1, world.buffer.getName());
-	//core.windows.tab.refresh();
-}
+};
+
+core.updateAllWindows = function (doupdate) {
+	if (doupdate === undefined)
+		doupdate = true;
+	var w;
+	for (w in core.windows) {
+		if (core.windows.hasOwnProperty(w) && core.windows[w].noutrefresh) {
+			core.windows[w].noutrefresh();
+		}
+	}
+	curses.doupdate();
+};
+
+// This function is called when the terminal needs to be scrolled (e.g. after
+// using an arrow key, after hitting a newline, etc.). The screen contents may
+// or may not be scolled, but the cursor will generally move.
+core.scrollTo = function (lineNumber) {
+	if (lineNumber === undefined) {
+		lineNumber = core.line;
+	}
+	curses.move(1 + lineNumber, core.rightmost());
+};
 
 world.addEventListener("load", function (event) {
 	core.windows = {};
@@ -30,12 +55,12 @@ world.addEventListener("load", function (event) {
 
     // draw tildes on blank lines
     var maxy = curses.getmaxy();
-    for (var i = 0; i < maxy; i++) {
+    for (var i = 1; i < maxy; i++) {
         core.windows.buffer.mvaddstr(i, 0, "~");
     }
-	//core.windows.buffer.move(1, 0);
-	//core.windows.buffer.refresh();
-	//curses.doupdate();
+	core.windows.buffer.move(0, 0);
+	curses.move(1, 0);
+	core.updateAllWindows();
 });
 
 world.addEventListener("keypress", function (event) {
@@ -59,7 +84,7 @@ world.addEventListener("keypress", function (event) {
             curses.redrawwin();
             break;
         case 13: // Ctrl-M, carriage return
-            world.buffer.addLine(cury + 1);
+            world.buffer.addLine(core.line + 1);
             curses.move(cury + 1, 0);
             curses.clrtoeol();
             core.line++;
@@ -75,14 +100,13 @@ world.addEventListener("keypress", function (event) {
             var curline = world.buffer.getLine(core.line);
             var val = curline.value();
             curline.insert(core.column, name);
-            curses.addstr(name);
-            log(curline.length);
+			core.windows.buffer.addstr(name);
+            //curses.addstr(name);
             if (curx < curline.length) {
                 // need to redraw the rest of the string to prevent overwrite
-                // FIXME: this is slow
-                curses.clrtoeol();
-                curses.addstr(val.substr(curx));
-                curses.move(cury, curx + 1);
+				core.windows.buffer.clrtoeol();
+				core.windows.buffer.addstr(val.substr(core.column));
+                curses.move(cury, curx + 1); // XXX: need to check curxhere
             }
             core.column++;
             break;
@@ -132,4 +156,8 @@ world.addEventListener("keypress", function (event) {
             break;
         }
     }
+});
+
+world.addEventListener("keypress", function (e) {
+	core.updateAllWindows();
 });
