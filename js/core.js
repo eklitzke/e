@@ -89,7 +89,7 @@ core.move.right = function (pastText, updateBuffer) {
 	}
 };
 
-core.drawTabBar = function (restore) {
+core.drawTabBar = function () {
 	core.windows.tab.standend();
 	core.windows.tab.attron(curses.A_BOLD);
 	core.windows.tab.addstr(" " + world.buffer.getName() + " ");
@@ -107,7 +107,22 @@ core.drawTabBar = function (restore) {
 	core.windows.tab.attron(curses.A_BOLD);
 	core.windows.tab.attron(curses.A_UNDERLINE);
 	core.windows.tab.addstr("X");
-	core.windows.tab.refresh();
+};
+
+core.drawStatus = function () {
+	core.windows.status.standout();
+	core.windows.status.mvaddstr(0, 0, "  ");
+	core.windows.status.addstr(core.line + "," + core.column);
+
+	var spaces = "";
+	var curx = core.windows.status.getcurx();
+	var maxx = core.windows.status.getmaxx();
+	while (spaces.length < maxx - curx) {
+		spaces += " ";
+	}
+	core.windows.status.addstr(spaces);
+	core.windows.status.standend();
+	core.moveAbsolute(core.windows.buffer.getcury(), core.windows.buffer.getcurx());
 };
 
 core.updateAllWindows = function (doupdate) {
@@ -138,8 +153,12 @@ world.addEventListener("load", function (event) {
 	core.windows = {};
 	core.windows.tab = curses.stdscr.subwin(1, curses.stdscr.getmaxx(), 0, 0);
 	core.drawTabBar();
-	core.windows.buffer = curses.stdscr.subwin(curses.stdscr.getmaxy() - 1, curses.stdscr.getmaxx(), 1, 0);
+
+	core.windows.buffer = curses.stdscr.subwin(curses.stdscr.getmaxy() - 3, curses.stdscr.getmaxx(), 1, 0);
 	core.windows.buffer.scrollok(true);
+
+	core.windows.status = curses.stdscr.subwin(2, curses.stdscr.getmaxx(), curses.stdscr.getmaxy() - 2, 0);
+	core.drawStatus();
 
 	// draw tildes on blank lines
 	var maxy = core.windows.buffer.getmaxy();
@@ -241,6 +260,10 @@ world.addEventListener("keypress", function (event) {
 			break;
 		}
 	}
+});
+
+world.addEventListener("keypress", function (e) {
+	core.drawStatus();
 });
 
 world.addEventListener("keypress", function (e) {
