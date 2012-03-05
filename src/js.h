@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+using v8::AccessorInfo;
 using v8::Arguments;
 using v8::Context;
 using v8::External;
@@ -36,6 +37,7 @@ namespace js {
 void AddTemplateFunction(Handle<ObjectTemplate>, const std::string &, v8::InvocationCallback);
 
 typedef Handle<Value>(*JSCallback)(const Arguments&);
+typedef Handle<Value>(*JSAccessor)(Local<String>, const AccessorInfo&);
 
 class EventListener {
  public:

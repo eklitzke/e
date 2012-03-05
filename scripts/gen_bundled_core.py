@@ -51,14 +51,14 @@ v8::Local<v8::Script> GetCoreScript() {
 }
 }"""
 
-def get_compiled_code(input_files):
+def get_compiled_code(input_files, use_advanced=False):
     code = []
     for filename in input_files:
         with open(filename) as f:
             code.append(f.read())
     request_params = [
         ('js_code', '\n'.join(code)),
-        ('compilation_level', 'SIMPLE_OPTIMIZATIONS'),
+        ('compilation_level', 'ADVANCED_OPTIMIZATIONS' if use_advanced else 'SIMPLE_OPTIMIZATIONS'),
         ('output_format', 'json'),
         ('output_info', 'compiled_code'),
         ('output_info', 'errors'),
@@ -126,10 +126,12 @@ if __name__ == '__main__':
     parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings')
     parser.add_option('-s', '--statistics', action='store_true', help='Get statistics')
     parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit')
+    parser.add_option('-a', '--advanced-optimizations', action='store_true', help='Use ADVANCED_OPTIMIZATIONS')
     opts, args = parser.parse_args()
     if not opts.outfile:
         parser.error('must have an outfile')
         sys.exit(1)
 
-    code = get_compiled_code(opts.files or ['js/core.js'])
+    files = opts.files or ['js/core.js']
+    code = get_compiled_code(files, opts.advanced_optimizations)
     write_output(code, opts.outfile)

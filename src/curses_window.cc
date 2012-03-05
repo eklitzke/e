@@ -31,6 +31,8 @@ CursesWindow::~CursesWindow() {
 void CursesWindow::Initialize() {
   window_ = initscr();
 
+  start_color();
+  use_default_colors(); // ncurses extension!
   noecho();
   nonl();  // don't turn LF into CRLF
   raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.

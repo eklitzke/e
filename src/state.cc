@@ -105,21 +105,18 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   world_templ->Set(String::NewSymbol("stopLoop"),
                    FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
 
-  // add in all of the movement callbacks
-  std::map<std::string, e::js::JSCallback> callbacks = GetCursesCallbacks();
+  // added in the curses object
   Handle<ObjectTemplate> curses = ObjectTemplate::New();
+  NEW_INTEGER(curses, OK);
+  NEW_INTEGER(curses, ERR);
+  std::map<std::string, e::js::JSCallback> callbacks = GetCursesCallbacks();
   for (auto it = callbacks.begin(); it != callbacks.end(); ++it) {
     js::AddTemplateFunction(curses, it->first, it->second);
   }
-  // FIXME(eklitzke): make most of these accessors
-  NEW_INTEGER(curses, OK);
-  NEW_INTEGER(curses, ERR);
-  NEW_INTEGER(curses, COLOR_PAIRS);
-  NEW_INTEGER(curses, COLORS);
-  NEW_INTEGER(curses, COLS);
-  NEW_INTEGER(curses, ESCDELAY);
-  NEW_INTEGER(curses, LINES);
-  NEW_INTEGER(curses, TABSIZE);
+  std::map<std::string, js::JSAccessor> accessors = GetCursesAccessors();
+  for (auto it = accessors.begin(); it != accessors.end(); ++it) {
+    curses->SetAccessor(String::NewSymbol(it->first.c_str()), it->second);
+  }
 
   context_ = Context::New(nullptr, global);
   Context::Scope context_scope(context_);

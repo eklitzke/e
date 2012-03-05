@@ -20,6 +20,7 @@ using v8::Value;
 
 namespace e {
 std::map<std::string, js::JSCallback> GetCursesCallbacks();
+std::map<std::string, js::JSAccessor> GetCursesAccessors();
 }
 
 #endif  // SRC_JS_CURSES_H_

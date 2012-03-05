@@ -37,37 +37,35 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
   return scope.Close(ret);\
 }
 
+#define CURSES_ACCESSOR(macroname)                                      \
+  Handle<Value> JS_##macroname (Local<String> property,                 \
+                                const AccessorInfo& info) {             \
+    HandleScope scope;                                                  \
+    return scope.Close(Integer::New(macroname));                        \
+  }
+
+#define DECLARE_ACCESSOR(macroname)             \
+  accessors[#macroname] = JS_##macroname;
+
 namespace e {
 
-Handle<Value> JSGetColorPairs(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  return scope.Close(Integer::New(COLOR_PAIRS));
-}
+CURSES_ACCESSOR(COLOR_PAIRS);
+CURSES_ACCESSOR(COLORS);
+CURSES_ACCESSOR(COLS);
+CURSES_ACCESSOR(ESCDELAY);
+CURSES_ACCESSOR(LINES);
+CURSES_ACCESSOR(TABSIZE);
 
-Handle<Value> JSGetColors(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  return scope.Close(Integer::New(COLORS));
-}
+// colors
+CURSES_ACCESSOR(COLOR_BLACK);
+CURSES_ACCESSOR(COLOR_RED);
+CURSES_ACCESSOR(COLOR_GREEN);
+CURSES_ACCESSOR(COLOR_YELLOW);
+CURSES_ACCESSOR(COLOR_BLUE);
+CURSES_ACCESSOR(COLOR_MAGENTA);
+CURSES_ACCESSOR(COLOR_CYAN);
+CURSES_ACCESSOR(COLOR_WHITE);
 
-Handle<Value> JSGetCols(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  return scope.Close(Integer::New(COLS));
-}
-
-Handle<Value> JSGetEscDelay(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  return scope.Close(Integer::New(ESCDELAY));
-}
-
-Handle<Value> JSGetLines(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  return scope.Close(Integer::New(LINES));
-}
-
-Handle<Value> JSGetTabSize(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  return scope.Close(Integer::New(TABSIZE));
-}
 
 /*
 void JSSetLength(Local<String> property, Local<Value> value,
@@ -118,4 +116,24 @@ std::map<std::string, js::JSCallback> GetCursesCallbacks() {
   callbacks["refresh"] = &CursesRefresh;
   return callbacks;
 }
+
+std::map<std::string, js::JSAccessor> GetCursesAccessors() {
+  std::map<std::string, js::JSAccessor> accessors;
+  DECLARE_ACCESSOR(COLOR_PAIRS);
+  DECLARE_ACCESSOR(COLORS);
+  DECLARE_ACCESSOR(COLS);
+  DECLARE_ACCESSOR(ESCDELAY);
+  DECLARE_ACCESSOR(LINES);
+  DECLARE_ACCESSOR(TABSIZE);
+  DECLARE_ACCESSOR(COLOR_BLACK);
+  DECLARE_ACCESSOR(COLOR_RED);
+  DECLARE_ACCESSOR(COLOR_GREEN);
+  DECLARE_ACCESSOR(COLOR_YELLOW);
+  DECLARE_ACCESSOR(COLOR_BLUE);
+  DECLARE_ACCESSOR(COLOR_MAGENTA);
+  DECLARE_ACCESSOR(COLOR_CYAN);
+  DECLARE_ACCESSOR(COLOR_WHITE);
+  return accessors;
+}
+
 }

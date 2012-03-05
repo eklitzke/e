@@ -41,6 +41,14 @@ using v8::Value;
                                          *value, value.length())));     \
   }
 
+#define CURSES_INT_FUNC(name)                                           \
+  Handle<Value> JS_##name (const Arguments& args) {                     \
+    CHECK_ARGS(1);                                                      \
+    GET_SELF(JSCursesWindow);                                           \
+    int val = static_cast<int>(args[0]->Int32Value());                  \
+    return scope.Close(Integer::New(name(self->window_, val)));         \
+  }
+
 #define CURSES_YX_FUNC(name)                                            \
   Handle<Value> JS_##name (const Arguments& args) {                     \
     CHECK_ARGS(2);                                                      \
@@ -79,6 +87,9 @@ namespace {
 // MACRO                               EXPORTED NAME //
 ///////////////////////////////////////////////////////
 CURSES_STRING_FUNC(waddnstr);       // addstr
+CURSES_INT_FUNC(wattron);           // attron
+CURSES_INT_FUNC(wattroff);          // attroff
+CURSES_INT_FUNC(wattrset);          // attrset
 CURSES_VOID_FUNC(wclear);           // clear
 CURSES_VOID_FUNC(wclrtobot);        // clrtobot
 CURSES_VOID_FUNC(wclrtoeol);        // clrtoeol
@@ -100,6 +111,8 @@ CURSES_VOID_FUNC(wnoutrefresh);     // noutrefresh
 CURSES_VOID_FUNC(redrawwin);        // redrawwin
 CURSES_YX_FUNC(wredrawln);          // redrawln
 CURSES_VOID_FUNC(wrefresh);         // refresh
+CURSES_VOID_FUNC(wstandend);        // standend
+CURSES_VOID_FUNC(wstandout);        // standout
 
 Handle<Value> JSSubwin(const Arguments& args) {
   CHECK_ARGS(4);
@@ -126,6 +139,9 @@ Handle<ObjectTemplate> MakeTemplate() {
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
   js::AddTemplateFunction(result, "addstr", JS_waddnstr);
+  js::AddTemplateFunction(result, "attron", JS_wattron);
+  js::AddTemplateFunction(result, "attroff", JS_wattroff);
+  js::AddTemplateFunction(result, "attrset", JS_wattroff);
   js::AddTemplateFunction(result, "erase", JS_werase);
   js::AddTemplateFunction(result, "clear", JS_wclear);
   js::AddTemplateFunction(result, "clrtobot", JS_wclrtobot);
@@ -147,6 +163,8 @@ Handle<ObjectTemplate> MakeTemplate() {
   js::AddTemplateFunction(result, "refresh", JS_wrefresh);
   js::AddTemplateFunction(result, "redrawwin", JS_redrawwin);
   js::AddTemplateFunction(result, "redrawln", JS_wredrawln);
+  js::AddTemplateFunction(result, "standend", JS_wstandend);
+  js::AddTemplateFunction(result, "standout", JS_wstandout);
   js::AddTemplateFunction(result, "subwin", JSSubwin);
   return scope.Close(result);
 }
