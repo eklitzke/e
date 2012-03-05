@@ -55,7 +55,7 @@ world.addEventListener("load", function (event) {
 
     // draw tildes on blank lines
     var maxy = core.windows.buffer.getmaxy();
-    for (var i = 0; i < maxy; i++) {
+    for (var i = 1; i < maxy; i++) {
         core.windows.buffer.mvaddstr(i, 0, "~");
     }
 	core.windows.buffer.move(0, 0);
@@ -125,9 +125,10 @@ world.addEventListener("keypress", function (event) {
             }
             break;
         case "key_down":
-            if (cury < curses.getmaxy() - 1 && (core.line < world.buffer.length - 1)) {
+            if (cury < core.windows.buffer.getmaxy() - 1 && (core.line < world.buffer.length - 1)) {
                 core.line++;
-                curses.move(cury + 1, core.rightmost());
+				core.windows.buffer.move(cury + 1, core.rightmost());
+                curses.move(cury + 2, core.rightmost());
             }
             break;
         case "key_end":
@@ -142,19 +143,22 @@ world.addEventListener("keypress", function (event) {
             if (curx > 0) {
                 if (core.column)
                     core.column--;
-                curses.move(cury, core.column);
+                core.windows.buffer.move(cury, core.column);
+                curses.stdscr.move(cury + 1, core.column);
             }
             break;
         case "key_right":
-            if (curx < curses.getmaxx() - 1) {
-                core.column++;
-                curses.move(cury, core.column);
+            if (curx < core.windows.buffer.getmaxx() - 1) {
+				core.column++;
+				core.windows.buffer.move(cury, core.column);
+				curses.stdscr.move(cury + 1, core.column);
             }
             break;
         case "key_up":
             if (cury > 0 && core.line > 0) {
                 core.line--;
-                curses.move(cury - 1, core.rightmost());
+				core.windows.buffer.move(cury - 1, core.rightmost());
+                curses.stdscr.move(cury, core.rightmost());
             }
             break;
         }
