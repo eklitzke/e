@@ -37,47 +37,9 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
 }
 
 namespace e {
-Handle<Value> CursesAddstr(const Arguments& args) {
-  if (args.Length() < 1) {
-    return Undefined();
-  }
-  HandleScope scope;
-  Handle<Value> arg = args[0];
-  String::Utf8Value value(arg);
-  Local<Integer> ret = Integer::New(addnstr(*value, value.length()));
-  return scope.Close(ret);
-}
 
-CURSES_VOID_FUNC(Clear, clear)
-CURSES_VOID_FUNC(Clrtobot, clrtobot)
-CURSES_VOID_FUNC(Clrtoeol, clrtoeol)
-CURSES_VOID_FUNC(Delch, delch)
 CURSES_VOID_FUNC(Doupdate, doupdate)
-CURSES_VOID_FUNC(Erase, erase)
 CURSES_VOID_FUNC(Refresh, refresh)
-
-CURSES_WINDOW_FUNC(Getattrs, getattrs);
-CURSES_WINDOW_FUNC(Getbegx, getbegx);
-CURSES_WINDOW_FUNC(Getbegy, getbegy);
-CURSES_WINDOW_FUNC(Getmaxx, getmaxx);
-CURSES_WINDOW_FUNC(Getmaxy, getmaxy);
-CURSES_WINDOW_FUNC(Getparx, getparx);
-CURSES_WINDOW_FUNC(Getpary, getpary);
-CURSES_WINDOW_FUNC(Redrawwin, redrawwin)
-
-Handle<Value> CursesGetcurx(const Arguments& args) {
-  HandleScope scope;
-  int cx = getcurx(stdscr);
-  Handle<Integer> curx = Integer::New(cx);
-  return scope.Close(curx);
-}
-
-Handle<Value> CursesGetcury(const Arguments& args) {
-  HandleScope scope;
-  int cy = getcury(stdscr);
-  Handle<Integer> cury = Integer::New(cy);
-  return scope.Close(cury);
-}
 
 Handle<Value> CursesMove(const Arguments& args) {
   if (args.Length() < 2) {
@@ -88,18 +50,6 @@ Handle<Value> CursesMove(const Arguments& args) {
   int x = static_cast<int>(args[1]->Int32Value());
 
   Local<Integer> ret = Integer::New(move(y, x));
-  return scope.Close(ret);
-}
-
-Handle<Value> CursesMvdelch(const Arguments& args) {
-  if (args.Length() < 2) {
-    return Undefined();
-  }
-  HandleScope scope;
-  int y = static_cast<int>(args[0]->Int32Value());
-  int x = static_cast<int>(args[1]->Int32Value());
-
-  Local<Integer> ret = Integer::New(mvdelch(y, x));
   return scope.Close(ret);
 }
 
@@ -120,26 +70,9 @@ Handle<Value> CursesNewwin(const Arguments& args) {
 
 std::map<std::string, js::JSCallback> GetCursesCallbacks() {
   std::map<std::string, js::JSCallback> callbacks;
-  callbacks["addstr"] = &CursesAddstr;
-  callbacks["clear"] = &CursesClear;
-  callbacks["clrtobot"] = &CursesClrtobot;
-  callbacks["clrtoeol"] = &CursesClrtoeol;
-  callbacks["delch"] = &CursesDelch;
   callbacks["doupdate"] = &CursesDoupdate;
-  callbacks["erase"] = &CursesErase;
-  callbacks["getattrs"] = &CursesGetattrs;
-  callbacks["getbegx"] = &CursesGetbegx;
-  callbacks["getbegy"] = &CursesGetbegy;
-  callbacks["getcurx"] = &CursesGetcurx;
-  callbacks["getcury"] = &CursesGetcury;
-  callbacks["getmaxx"] = &CursesGetmaxx;
-  callbacks["getmaxy"] = &CursesGetmaxy;
-  callbacks["getparx"] = &CursesGetparx;
-  callbacks["getpary"] = &CursesGetpary;
   callbacks["move"] = &CursesMove;
-  callbacks["mvdelch"] = &CursesMvdelch;
   callbacks["newwin"] = &CursesNewwin;
-  callbacks["redrawwin"] = &CursesRedrawwin;
   callbacks["refresh"] = &CursesRefresh;
   return callbacks;
 }

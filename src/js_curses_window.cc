@@ -25,6 +25,42 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
+#define CURSES_VOID_FUNC(name)                              \
+  Handle<Value> JS_##name (const Arguments& args) {         \
+    CHECK_ARGS(0);                                          \
+    GET_SELF(JSCursesWindow);                               \
+    return scope.Close(Integer::New(name(self->window_)));  \
+  }
+
+#define CURSES_STRING_FUNC(name)                                        \
+  Handle<Value> JS_##name (const Arguments& args) {                     \
+    CHECK_ARGS(1);                                                      \
+    GET_SELF(JSCursesWindow);                                           \
+    String::AsciiValue value(args[0]);                                  \
+    return scope.Close(Integer::New(name(self->window_,                 \
+                                         *value, value.length())));     \
+  }
+
+#define CURSES_YX_FUNC(name)                                            \
+  Handle<Value> JS_##name (const Arguments& args) {                     \
+    CHECK_ARGS(2);                                                      \
+    GET_SELF(JSCursesWindow);                                           \
+    int y = static_cast<int>(args[0]->Int32Value());                    \
+    int x = static_cast<int>(args[1]->Int32Value());                    \
+    return scope.Close(Integer::New(name(self->window_, y, x)));        \
+  }
+
+#define CURSES_YX_STRING_FUNC(name)                                     \
+  Handle<Value> JS_##name (const Arguments& args) {                     \
+    CHECK_ARGS(3);                                                      \
+    GET_SELF(JSCursesWindow);                                           \
+    int y = static_cast<int>(args[0]->Int32Value());                    \
+    int x = static_cast<int>(args[1]->Int32Value());                    \
+    String::AsciiValue value(args[2]);                                  \
+    return scope.Close(Integer::New(name(                               \
+        self->window_, y, x, *value, value.length())));                 \
+  }
+
 namespace e {
 JSCursesWindow::JSCursesWindow(WINDOW *win)
     :window_(win) {
@@ -39,58 +75,31 @@ JSCursesWindow::~JSCursesWindow() {
 }
 
 namespace {
-Handle<Value> JSAddstr(const Arguments& args) {
-  CHECK_ARGS(1);
-  GET_SELF(JSCursesWindow);
-
-  Handle<Value> arg = args[0];
-  String::AsciiValue value(arg);
-  return scope.Close(Integer::New(waddnstr(self->window_, *value, value.length())));
-}
-
-Handle<Value> JSClrtoeol(const Arguments& args) {
-  CHECK_ARGS(0);
-  GET_SELF(JSCursesWindow);
-
-  return scope.Close(Integer::New(wclrtoeol(self->window_)));
-}
-
-Handle<Value> JSMove(const Arguments& args) {
-  CHECK_ARGS(2);
-  GET_SELF(JSCursesWindow);
-
-  int y = static_cast<int>(args[0]->Int32Value());
-  int x = static_cast<int>(args[1]->Int32Value());
-  return scope.Close(Integer::New(wmove(self->window_, y, x)));
-}
-
-Handle<Value> JSMvaddstr(const Arguments& args) {
-  CHECK_ARGS(3);
-  GET_SELF(JSCursesWindow);
-
-  int y = static_cast<int>(args[0]->Int32Value());
-  int x = static_cast<int>(args[1]->Int32Value());
-  Handle<Value> val = args[2];
-  String::AsciiValue value(val);
-  return scope.Close(Integer::New(mvwaddnstr(self->window_, y, x, *value, value.length())));
-}
-
-Handle<Value> JSMvwin(const Arguments& args) {
-  CHECK_ARGS(2);
-  GET_SELF(JSCursesWindow);
-
-  int y = static_cast<int>(args[0]->Int32Value());
-  int x = static_cast<int>(args[1]->Int32Value());
-
-  return scope.Close(Integer::New(mvwin(self->window_, y, x)));
-}
-
-Handle<Value> JSNoutrefresh(const Arguments& args) {
-  CHECK_ARGS(0);
-  GET_SELF(JSCursesWindow);
-
-  return scope.Close(Integer::New(wnoutrefresh(self->window_)));
-}
+///////////////////////////////////////////////////////
+// MACRO                               EXPORTED NAME //
+///////////////////////////////////////////////////////
+CURSES_STRING_FUNC(waddnstr);       // addstr
+CURSES_VOID_FUNC(wclear);           // clear
+CURSES_VOID_FUNC(wclrtobot);        // clrtobot
+CURSES_VOID_FUNC(wclrtoeol);        // clrtoeol
+CURSES_VOID_FUNC(werase);           // erase
+CURSES_VOID_FUNC(getattrs);         // getattrs
+CURSES_VOID_FUNC(getbegx);          // getbegx
+CURSES_VOID_FUNC(getbegy);          // getbegy
+CURSES_VOID_FUNC(getcurx);          // getcurx
+CURSES_VOID_FUNC(getcury);          // getcury
+CURSES_VOID_FUNC(getmaxx);          // getmaxx
+CURSES_VOID_FUNC(getmaxy);          // getmaxy
+CURSES_VOID_FUNC(getparx);          // getparx
+CURSES_VOID_FUNC(getpary);          // getpary
+CURSES_YX_FUNC(wmove);              // move
+CURSES_YX_STRING_FUNC(mvwaddnstr);  // mvaddstr
+CURSES_YX_FUNC(mvwdelch);           // mvdelch
+CURSES_YX_FUNC(mvwin);              // mvwin
+CURSES_VOID_FUNC(wnoutrefresh);     // noutrefresh
+CURSES_VOID_FUNC(redrawwin);        // redrawwin
+CURSES_YX_FUNC(wredrawln);          // redrawln
+CURSES_VOID_FUNC(wrefresh);         // refresh
 
 Handle<Value> JSSubwin(const Arguments& args) {
   CHECK_ARGS(4);
@@ -109,13 +118,6 @@ Handle<Value> JSSubwin(const Arguments& args) {
   return scope.Close(cw->ToScript());
 }
 
-Handle<Value> JSRefresh(const Arguments& args) {
-  CHECK_ARGS(0);
-  GET_SELF(JSCursesWindow);
-  wrefresh(self->window_);
-  return scope.Close(Undefined());
-}
-
 Persistent<ObjectTemplate> templ;
 
 // Create a raw template
@@ -123,13 +125,28 @@ Handle<ObjectTemplate> MakeTemplate() {
   HandleScope scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
-  js::AddTemplateFunction(result, "addstr", JSAddstr);
-  js::AddTemplateFunction(result, "clrtoeol", JSClrtoeol);
-  js::AddTemplateFunction(result, "move", JSMove);
-  js::AddTemplateFunction(result, "mvaddstr", JSMvaddstr);
-  js::AddTemplateFunction(result, "mvwin", JSMvwin);
-  js::AddTemplateFunction(result, "noutrefresh", JSNoutrefresh);
-  js::AddTemplateFunction(result, "refresh", JSRefresh);
+  js::AddTemplateFunction(result, "addstr", JS_waddnstr);
+  js::AddTemplateFunction(result, "erase", JS_werase);
+  js::AddTemplateFunction(result, "clear", JS_wclear);
+  js::AddTemplateFunction(result, "clrtobot", JS_wclrtobot);
+  js::AddTemplateFunction(result, "clrtoeol", JS_wclrtoeol);
+  js::AddTemplateFunction(result, "getattrs", JS_getattrs);
+  js::AddTemplateFunction(result, "getbegx", JS_getbegx);
+  js::AddTemplateFunction(result, "getbegy", JS_getbegy);
+  js::AddTemplateFunction(result, "getcurx", JS_getcurx);
+  js::AddTemplateFunction(result, "getcury", JS_getcury);
+  js::AddTemplateFunction(result, "getmaxx", JS_getmaxx);
+  js::AddTemplateFunction(result, "getmaxy", JS_getmaxy);
+  js::AddTemplateFunction(result, "getparx", JS_getparx);
+  js::AddTemplateFunction(result, "getpary", JS_getpary);
+  js::AddTemplateFunction(result, "move", JS_wmove);
+  js::AddTemplateFunction(result, "mvaddstr", JS_mvwaddnstr);
+  js::AddTemplateFunction(result, "mvdelch", JS_mvwdelch);
+  js::AddTemplateFunction(result, "mvwin", JS_mvwin);
+  js::AddTemplateFunction(result, "noutrefresh", JS_wnoutrefresh);
+  js::AddTemplateFunction(result, "refresh", JS_wrefresh);
+  js::AddTemplateFunction(result, "redrawwin", JS_redrawwin);
+  js::AddTemplateFunction(result, "redrawln", JS_wredrawln);
   js::AddTemplateFunction(result, "subwin", JSSubwin);
   return scope.Close(result);
 }

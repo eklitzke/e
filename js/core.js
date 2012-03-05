@@ -48,24 +48,25 @@ core.scrollTo = function (lineNumber) {
 
 world.addEventListener("load", function (event) {
 	core.windows = {};
-	core.windows.tab = curses.stdscr.subwin(1, curses.getmaxx(), 0, 0);
-	core.windows.buffer = curses.stdscr.subwin(curses.getmaxy() - 1, curses.getmaxx(), 1, 0);
+	core.windows.tab = curses.stdscr.subwin(1, curses.stdscr.getmaxx(), 0, 0);
+	core.windows.buffer = curses.stdscr.subwin(curses.stdscr.getmaxy() - 1, curses.stdscr.getmaxx(), 1, 0);
 
 	core.drawTabBar();
 
     // draw tildes on blank lines
-    var maxy = curses.getmaxy();
-    for (var i = 1; i < maxy; i++) {
+    var maxy = core.windows.buffer.getmaxy();
+    for (var i = 0; i < maxy; i++) {
         core.windows.buffer.mvaddstr(i, 0, "~");
     }
 	core.windows.buffer.move(0, 0);
-	curses.move(1, 0);
+	curses.stdscr.move(1, 0);
 	core.updateAllWindows();
 });
 
 world.addEventListener("keypress", function (event) {
-    var curx = curses.getcurx();
-    var cury = curses.getcury();
+	log(core.windows.buffer);
+    var curx = core.windows.buffer.getcurx();
+    var cury = core.windows.buffer.getcury();
     var code = event.getCode();
     var name = event.getName();
     //log("got keypress, code is " + code + ", name is \"" + name + "\", name length is " + name.length);
@@ -78,15 +79,16 @@ world.addEventListener("keypress", function (event) {
             world.stopLoop();
             break;
         case 5: // Ctrl-E
-            curses.move(cury, curses.getmaxx() - 1);
+            curses.move(cury, core.windows.buffer.getmaxx() - 1);
             break;
         case 12: // Ctrl-L
             curses.redrawwin();
             break;
         case 13: // Ctrl-M, carriage return
             world.buffer.addLine(core.line + 1);
-            curses.move(cury + 1, 0);
-            curses.clrtoeol();
+			core.windows.buffer.move(cury + 1, 0);
+            curses.stdscr.move(cury + 2, 0);
+            core.windows.buffer.clrtoeol();
             core.line++;
             core.column = 0;
             break;
@@ -106,7 +108,7 @@ world.addEventListener("keypress", function (event) {
                 // need to redraw the rest of the string to prevent overwrite
 				core.windows.buffer.clrtoeol();
 				core.windows.buffer.addstr(val.substr(core.column));
-                curses.move(cury, curx + 1); // XXX: need to check curxhere
+                curses.move(cury + 1, curx + 1); // XXX: need to check curxhere
             }
             core.column++;
             break;
@@ -115,7 +117,8 @@ world.addEventListener("keypress", function (event) {
         switch (name) {
         case "key_backspace":
             if (curx > 0 && core.column > 0) {
-                curses.mvdelch(cury, curx -1);
+                //curses.mvdelch(cury, curx -1);
+				//core.windows.buffer.mvdelch(
                 if (core.column > 0) {
                     core.column--;
                 }
