@@ -49,6 +49,14 @@ using v8::Value;
     return scope.Close(Integer::New(name(self->window_, val)));         \
   }
 
+#define CURSES_BOOL_FUNC(name)											\
+  Handle<Value> JS_##name (const Arguments& args) {                     \
+    CHECK_ARGS(1);                                                      \
+    GET_SELF(JSCursesWindow);                                           \
+    bool b = args[0]->BooleanValue();									\
+    return scope.Close(Integer::New(name(self->window_, b)));         \
+  }
+
 #define CURSES_YX_FUNC(name)                                            \
   Handle<Value> JS_##name (const Arguments& args) {                     \
     CHECK_ARGS(2);                                                      \
@@ -73,6 +81,7 @@ namespace e {
 JSCursesWindow::JSCursesWindow(WINDOW *win)
     :window_(win) {
   LOG(INFO) << "creating new window, *win = " << win;
+  idlok(win, true);
   wnoutrefresh(win);
 }
 
@@ -111,6 +120,9 @@ CURSES_VOID_FUNC(wnoutrefresh);     // noutrefresh
 CURSES_VOID_FUNC(redrawwin);        // redrawwin
 CURSES_YX_FUNC(wredrawln);          // redrawln
 CURSES_VOID_FUNC(wrefresh);         // refresh
+CURSES_INT_FUNC(wscrl);             // scrl
+CURSES_BOOL_FUNC(scrollok);         // scrollok
+CURSES_YX_FUNC(wsetscrreg);         // setscrreg
 CURSES_VOID_FUNC(wstandend);        // standend
 CURSES_VOID_FUNC(wstandout);        // standout
 
@@ -175,6 +187,9 @@ Handle<ObjectTemplate> MakeTemplate() {
   js::AddTemplateFunction(result, "refresh", JS_wrefresh);
   js::AddTemplateFunction(result, "redrawwin", JS_redrawwin);
   js::AddTemplateFunction(result, "redrawln", JS_wredrawln);
+  js::AddTemplateFunction(result, "scrollok", JS_scrollok);
+  js::AddTemplateFunction(result, "scrl", JS_wscrl);
+  js::AddTemplateFunction(result, "setscrreg", JS_wsetscrreg);
   js::AddTemplateFunction(result, "standend", JS_wstandend);
   js::AddTemplateFunction(result, "standout", JS_wstandout);
   js::AddTemplateFunction(result, "subwin", JSSubwin);

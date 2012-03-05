@@ -23,7 +23,8 @@ core.moveAbsolute = function (y, x) {
 	curses.stdscr.move(y + 1, x);
 };
 
-// move to a relative position
+// move to a new position, relative to the current cursor position (delta-y =
+// `up` and delta-x = `over`).
 core.move = function (up, over, restrictRight) {
 	up = parseInt(up || 0);
 	over = parseInt(over || 0);
@@ -56,7 +57,9 @@ core.move = function (up, over, restrictRight) {
 			core.column += newx - curx;
 		}
 	}
-	core.moveAbsolute(newy, newx);
+	if (newx != curx || newy != cury) {
+		core.moveAbsolute(newy, newx);
+	}
 };
 
 core.move.absolute = core.moveAbsolute;
@@ -130,6 +133,7 @@ world.addEventListener("load", function (event) {
 	core.windows.tab = curses.stdscr.subwin(1, curses.stdscr.getmaxx(), 0, 0);
 	core.drawTabBar();
 	core.windows.buffer = curses.stdscr.subwin(curses.stdscr.getmaxy() - 1, curses.stdscr.getmaxx(), 1, 0);
+	core.windows.buffer.scrollok(true);
 
 	// draw tildes on blank lines
 	var maxy = core.windows.buffer.getmaxy();
@@ -162,11 +166,11 @@ world.addEventListener("keypress", function (event) {
 			curses.redrawwin();
 			break;
 		case 13: // Ctrl-M, carriage return
-			world.buffer.addLine(core.line + 1);
-			core.move.left();
-			core.move(1);
-			core.windows.buffer.clrtoeol();
-			// FIXME: scroll lines down
+			world.buffer.addLine(core.line++);
+			core.move.absolute(cury + 1, 0);
+			core.windows.buffer.setscrreg(cury + 1, core.windows.buffer.getmaxy() - 1);
+			core.windows.buffer.scrl(-1);
+			core.column = 0;
 			break;
 		case 26: // Ctrl-Z
 			sys.kill(sys.getpid(), sys.SIGTSTP);
