@@ -84,7 +84,7 @@ Here's a screenshot. It's not very exciting.
 Help! How do I quit?
 --------------------
 
-Uses Ctrl-Q to exit the editor.
+Uses Ctrl-C to exit the editor.
 
 
 Javascript API

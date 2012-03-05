@@ -168,23 +168,15 @@ world.addEventListener("keypress", function (event) {
 			core.windows.buffer.clrtoeol();
 			// FIXME: scroll lines down
 			break;
-		//case 17: // Ctrl-Q
-		//	world.stopLoop();
-		//	break;
 		case 26: // Ctrl-Z
 			sys.kill(sys.getpid(), sys.SIGTSTP);
 			break;
 		default:
 			var curline = world.buffer.getLine(core.line);
 			curline.insert(core.column, name);
-			// FIXME: use insch
 			if (core.column < curline.length - 1) {
-				// we need to redraw the rest of the string to prevent overwrite
-				var val = curline.value();
-				log("line value is " + val);
-				core.windows.buffer.clrtoeol();
-				core.windows.buffer.addstr(val.substr(core.column));
-				core.move.absolute(cury, curx + 1); // XXX: need to check curxhere
+				core.windows.buffer.insch(name);
+				core.move(0, 1);
 			} else {
 				core.windows.buffer.addstr(name);
 			}

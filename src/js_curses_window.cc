@@ -114,9 +114,20 @@ CURSES_VOID_FUNC(wrefresh);         // refresh
 CURSES_VOID_FUNC(wstandend);        // standend
 CURSES_VOID_FUNC(wstandout);        // standout
 
+Handle<Value> JS_winsch(const Arguments& args) {
+  CHECK_ARGS(1);
+  GET_SELF(JSCursesWindow);                                           \
+  String::AsciiValue value(args[0]);                                  \
+  assert(value.length() == 1);
+
+  // a chtype is wider than a char, so cast to a char before casting to chtype
+  char char_val = static_cast<char>(**value);
+  chtype chtype_val = static_cast<chtype>(char_val);
+  return scope.Close(Integer::New(winsch(self->window_, chtype_val)));
+}
+
 Handle<Value> JSSubwin(const Arguments& args) {
   CHECK_ARGS(4);
-  //GET_SELF(JSCursesWindow);
 
   JSCursesWindow *other = Unwrap<JSCursesWindow>(args.Holder());
   int nlines = static_cast<int>(args[0]->Int32Value());
@@ -155,6 +166,7 @@ Handle<ObjectTemplate> MakeTemplate() {
   js::AddTemplateFunction(result, "getmaxy", JS_getmaxy);
   js::AddTemplateFunction(result, "getparx", JS_getparx);
   js::AddTemplateFunction(result, "getpary", JS_getpary);
+  js::AddTemplateFunction(result, "insch", JS_winsch);
   js::AddTemplateFunction(result, "move", JS_wmove);
   js::AddTemplateFunction(result, "mvaddstr", JS_mvwaddnstr);
   js::AddTemplateFunction(result, "mvdelch", JS_mvwdelch);
