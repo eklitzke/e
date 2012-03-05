@@ -49,12 +49,12 @@ using v8::Value;
     return scope.Close(Integer::New(name(self->window_, val)));         \
   }
 
-#define CURSES_BOOL_FUNC(name)											\
+#define CURSES_BOOL_FUNC(name)                                          \
   Handle<Value> JS_##name (const Arguments& args) {                     \
     CHECK_ARGS(1);                                                      \
     GET_SELF(JSCursesWindow);                                           \
-    bool b = args[0]->BooleanValue();									\
-    return scope.Close(Integer::New(name(self->window_, b)));         \
+    bool b = args[0]->BooleanValue();                                   \
+    return scope.Close(Integer::New(name(self->window_, b)));           \
   }
 
 #define CURSES_YX_FUNC(name)                                            \

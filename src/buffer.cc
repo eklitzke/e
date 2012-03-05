@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "./buffer.h"
+#include "./js.h"
 
 using v8::AccessorInfo;
 using v8::Arguments;
@@ -40,12 +41,12 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
     :filepath_(filepath), name_(name), dirty_(false) {
   int fd = open(filepath.c_str(), O_RDONLY);
   if (fd == -1) {
-    throw 1;
+    throw 1; // FIXME(eklitzke)
   }
   struct stat sb;
   if (fstat(fd, &sb) == -1) {
     close(fd);
-    throw 1;
+    throw 1; // FIXME(eklitzke)
   }
 
   char *mmaddr = static_cast<char *>(mmap(nullptr, sb.st_size, PROT_READ,
@@ -84,24 +85,23 @@ std::vector<Line*>* Buffer::Lines() {
 
 namespace {
 Handle<Value> JSAddLine(const Arguments& args) {
+  CHECK_ARGS(1);
   GET_SELF(Buffer);
-  if (args.Length() < 1) {
-    return Undefined();
-  }
 
-  HandleScope scope;
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
+  std::string lineValue;
+  if (args.Length() >= 2) {
+    String::AsciiValue value(args[1]);
+    lineValue.insert(0, *value, value.length());
+  }
   std::vector<Line *> *lines = self->Lines();
   assert(offset <= lines->size());
 
-  Line *line = new Line();
+  Line *line = new Line(lineValue);
   if (offset == lines->size()) {
-    LOG(INFO) << "addline, push_back";
     lines->push_back(line);
-    LOG(INFO) << "addline, push_back, size is now" << lines->size();
   } else {
-    LOG(INFO) << "addline, insert";
     lines->insert(lines->begin() + offset, line);
   }
 
@@ -109,12 +109,9 @@ Handle<Value> JSAddLine(const Arguments& args) {
 }
 
 Handle<Value> JSGetLine(const Arguments& args) {
+  CHECK_ARGS(1);
   GET_SELF(Buffer);
-  if (args.Length() < 1) {
-    return Undefined();
-  }
 
-  HandleScope scope;
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
   std::vector<Line *> l = *(self->Lines());
@@ -166,15 +163,11 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
   HandleScope scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
-  result->Set(String::NewSymbol("addLine"), FunctionTemplate::New(JSAddLine),
-    v8::ReadOnly);
-  result->Set(String::NewSymbol("getContents"),
-              FunctionTemplate::New(JSGetContents), v8::ReadOnly);
-  result->Set(String::NewSymbol("getLine"), FunctionTemplate::New(JSGetLine),
-    v8::ReadOnly);
-  result->Set(String::NewSymbol("getName"), FunctionTemplate::New(JSGetName),
-    v8::ReadOnly);
-  result->SetAccessor(String::NewSymbol("length"), JSGetLength);
+  js::AddTemplateFunction(result, "addLine", JSAddLine);
+  js::AddTemplateFunction(result, "getContents", JSGetContents);
+  js::AddTemplateFunction(result, "getLine", JSGetLine);
+  js::AddTemplateFunction(result, "getName", JSGetName);
+  js::AddTemplateAccessor(result, "length", JSGetLength, nullptr);
   return scope.Close(result);
 }
 }

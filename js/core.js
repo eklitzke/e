@@ -1,7 +1,6 @@
 core = { column: 0, line: 0, windowTop: 0 };
 
-log("started script!");
-log("buffer name is " + world.buffer.getName());
+log("entered core.js");
 
 // get the current line in the buffer
 core.currentLine = function () {
@@ -146,7 +145,6 @@ world.addEventListener("load", function (event) {
 
 // Core routine called on each keypress
 world.addEventListener("keypress", function (event) {
-	log("COLORS = " + curses.COLORS + ", COLOR_PAIRS = " + curses.COLOR_PAIRS);
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
@@ -166,10 +164,25 @@ world.addEventListener("keypress", function (event) {
 			curses.redrawwin();
 			break;
 		case 13: // Ctrl-M, carriage return
-			world.buffer.addLine(core.line++);
+			// chop the line
+			var line = core.currentLine();
+			var chopped = "";
+			if (core.column < line.length) {
+				chopped = line.chop(core.column);
+			}
+			// add the new line, with the chopped contents
+			world.buffer.addLine(core.line, chopped);
+
+			//move the cursor
+			core.windows.buffer.clrtoeol();
 			core.move.absolute(cury + 1, 0);
 			core.windows.buffer.setscrreg(cury + 1, core.windows.buffer.getmaxy() - 1);
 			core.windows.buffer.scrl(-1);
+			if (chopped) {
+				core.windows.buffer.addstr(chopped);
+				core.move.left();
+			}
+			core.line++;
 			core.column = 0;
 			break;
 		case 26: // Ctrl-Z

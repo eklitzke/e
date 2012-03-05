@@ -167,5 +167,9 @@ void AddTemplateFunction(Handle<ObjectTemplate> templ, const std::string &name,
              FunctionTemplate::New(callback),
              v8::ReadOnly);
 }
+void AddTemplateAccessor(Handle<ObjectTemplate> templ, const std::string &name,
+                         v8::AccessorGetter getter, v8::AccessorSetter setter) {
+  templ->SetAccessor(String::NewSymbol(name.c_str(), name.size()), getter, setter);
+}
 }
 }

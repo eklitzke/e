@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "./embeddable.h"
+#include "./js.h"
 
 using v8::AccessorInfo;
 using v8::Arguments;
@@ -52,13 +53,21 @@ const std::string& Line::ToString() const {
 //}
 
 namespace {
-Handle<Value> JSErase(const Arguments& args) {
+// chop a string from some position forward, and return the chopped part
+Handle<Value> JSChop(const Arguments& args) {
+  CHECK_ARGS(1);
   GET_SELF(Line);
-  if (args.Length() < 2) {
-    return Undefined();
-  }
 
-  HandleScope scope;
+  Handle<Value> arg0 = args[0];
+  uint32_t offset = arg0->Uint32Value();
+  std::string chopped = self->value.substr(offset, std::string::npos);
+  self->value.erase(self->value.begin() + offset, self->value.end());
+  return scope.Close(String::New(chopped.c_str(), chopped.size()));
+}
+
+Handle<Value> JSErase(const Arguments& args) {
+  CHECK_ARGS(2);
+  GET_SELF(Line);
   Handle<Value> arg0 = args[0];
   Handle<Value> arg1 = args[1];
   uint32_t offset = arg0->Uint32Value();
@@ -68,12 +77,8 @@ Handle<Value> JSErase(const Arguments& args) {
 }
 
 Handle<Value> JSInsert(const Arguments& args) {
+  CHECK_ARGS(2);
   GET_SELF(Line);
-  if (args.Length() < 2) {
-    return Undefined();
-  }
-
-  HandleScope scope;
   Handle<Value> arg0 = args[0];
   Handle<Value> arg1 = args[1];
   uint32_t position = arg0->Uint32Value();
@@ -110,13 +115,11 @@ Handle<ObjectTemplate> MakeLineTemplate() {
   HandleScope handle_scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
-  result->Set(String::NewSymbol("erase"), FunctionTemplate::New(JSErase),
-    v8::ReadOnly);
-  result->Set(String::NewSymbol("insert"), FunctionTemplate::New(JSInsert),
-    v8::ReadOnly);
-  result->Set(String::NewSymbol("value"), FunctionTemplate::New(JSValue),
-    v8::ReadOnly);
-  result->SetAccessor(String::NewSymbol("length"), JSGetLength, JSSetLength);
+  js::AddTemplateFunction(result, "chop", JSChop);
+  js::AddTemplateFunction(result, "erase", JSErase);
+  js::AddTemplateFunction(result, "insert", JSInsert);
+  js::AddTemplateFunction(result, "value", JSValue);
+  js::AddTemplateAccessor(result, "length", JSGetLength, JSSetLength);
   return handle_scope.Close(result);
 }
 }

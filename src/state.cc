@@ -100,10 +100,8 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);
-  world_templ->Set(String::NewSymbol("addEventListener"),
-                   FunctionTemplate::New(AddEventListener), v8::ReadOnly);
-  world_templ->Set(String::NewSymbol("stopLoop"),
-                   FunctionTemplate::New(JSStopLoop), v8::ReadOnly);
+  js::AddTemplateFunction(world_templ, "addEventListener", AddEventListener);
+  js::AddTemplateFunction(world_templ, "stopLoop", JSStopLoop);
 
   // added in the curses object
   Handle<ObjectTemplate> curses = ObjectTemplate::New();
@@ -115,7 +113,7 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   }
   std::map<std::string, js::JSAccessor> accessors = GetCursesAccessors();
   for (auto it = accessors.begin(); it != accessors.end(); ++it) {
-    curses->SetAccessor(String::NewSymbol(it->first.c_str()), it->second);
+    js::AddTemplateAccessor(curses, it->first, it->second, nullptr);
   }
 
   context_ = Context::New(nullptr, global);
