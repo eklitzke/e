@@ -90,16 +90,23 @@ core.move.right = function (pastText, updateBuffer) {
 };
 
 core.drawTabBar = function (restore) {
-	var val = "";
+	core.windows.tab.standend();
+	core.windows.tab.attron(curses.A_BOLD);
+	core.windows.tab.addstr(" " + world.buffer.getName() + " ");
+
+	var spaces = "";
 	var maxx = core.windows.tab.getmaxx();
-	while (val.length < maxx) {
-		val += " ";
+	var curx = core.windows.tab.getcurx();
+	while (spaces.length < maxx - curx - 1) {
+		spaces += " ";
 	}
 	core.windows.tab.standout();
-	core.windows.tab.mvaddstr(0, 0, val);
-	core.windows.tab.move(0, 1);
+	core.windows.tab.addstr(spaces);
+
 	core.windows.tab.standend();
-	core.windows.tab.addstr(world.buffer.getName());
+	core.windows.tab.attron(curses.A_BOLD);
+	core.windows.tab.attron(curses.A_UNDERLINE);
+	core.windows.tab.addstr("X");
 	core.windows.tab.refresh();
 };
 
