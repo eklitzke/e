@@ -132,9 +132,14 @@ core.updateAllWindows = function (doupdate) {
 	var w;
 	for (w in core.windows) {
 		if (core.windows.hasOwnProperty(w) && core.windows[w].noutrefresh) {
+			// update each stdscr subwindow
 			core.windows[w].noutrefresh();
 		}
 	}
+	// update stdscr
+	curses.stdscr.noutrefresh();
+
+	// do the update
 	curses.doupdate();
 };
 
@@ -274,6 +279,12 @@ world.addEventListener("keypress", function (e) {
 	}
 });
 
-world.addEventListener("keypress", function (e) {
+// This is the callback that specifically causes curses to flush all of its
+// drawing operations. It *must* be called after any functions that may do
+// drawing operations, which is why it has its own special event. In general,
+// it's not recommended that other functions register to listen to the
+// "after_keypress" event, and if they do they must not do any drawing
+// operations.
+world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });

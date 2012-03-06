@@ -184,6 +184,7 @@ State::HandleKey(KeyCode *k) {
   std::vector<Handle<Value> > args;
   args.push_back(k->ToScript());
   listener_.Dispatch("keypress", context_->Global(), args);
+  listener_.Dispatch("after_keypress", context_->Global(), args);
 
   return keep_going;
 }
