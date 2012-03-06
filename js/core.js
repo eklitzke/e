@@ -202,7 +202,7 @@ world.addEventListener("keypress", function (event) {
 				chopped = line.chop(core.column);
 			}
 			// add the new line, with the chopped contents
-			world.buffer.addLine(core.line, chopped);
+			world.buffer.addLine(core.line + 1, chopped);
 
 			//move the cursor
 			core.windows.buffer.clrtoeol();
