@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
        "path to an input file to edit (any positional arguments will be "
        "assumed to also be input files, and that's the recommnded way to "
        "specify inputs)");
-      
+
   po::options_description all_desc("Allowed options");
   all_desc.add(help_desc).add(scripting_desc).add(backend_desc);
 

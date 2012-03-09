@@ -79,7 +79,7 @@ What does it look like?
 
 Here's a screenshot. It's not very exciting.
 
-![](http://github.com/eklitzke/e/raw/master/static/hello_from_e.png) 
+![](http://github.com/eklitzke/e/raw/master/static/hello_from_e.png)
 
 Help! How do I quit?
 --------------------

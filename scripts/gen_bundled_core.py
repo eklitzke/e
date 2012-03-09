@@ -68,7 +68,7 @@ def get_compiled_code(input_files, use_advanced=False):
         request_params.append(('output_info', 'warnings'))
     if opts.statistics:
         request_params.append(('output_info', 'statistics'))
-    
+
     r = urllib.urlopen('https://closure-compiler.appspot.com/compile', urllib.urlencode(request_params))
     response = json.load(r)
     if 'warnings' in response:
