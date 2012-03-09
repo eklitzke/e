@@ -56,7 +56,7 @@ void Buffer::OpenFile(const std::string &filepath) {
 
   // clear the old buffer
   for (auto it = lines_.begin(); it != lines_.end(); ++it) {
-	delete *it;
+    delete *it;
   }
   lines_.clear();
 

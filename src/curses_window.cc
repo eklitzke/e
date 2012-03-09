@@ -81,7 +81,7 @@ void CursesWindow::OnRead(const boost::system::error_code& error,
       break;
   }
   if (keep_going) {
-	v8::V8::IdleNotification(); // tell v8 we're idle (it may want to GC)
+    v8::V8::IdleNotification(); // tell v8 we're idle (it may want to GC)
     EstablishReadLoop();
   }
 }
