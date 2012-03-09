@@ -29,7 +29,8 @@ using v8::Value;
 class State: public Embeddable {
  public:
   State() {}
-  explicit State(bool load_core, const std::vector<std::string> &scripts);
+  explicit State(bool load_core, const std::vector<std::string> &scripts,
+				 const std::vector<std::string> &args);
   ~State();
   void LoadScript(bool, boost::function<void(Persistent<Context>)>);
 
@@ -45,6 +46,7 @@ class State: public Embeddable {
  private:
   bool load_core_;
   std::vector<std::string> scripts_;
+  std::vector<std::string> args_;
 
   std::vector<Buffer*> buffers_;
   Buffer *active_buffer_;

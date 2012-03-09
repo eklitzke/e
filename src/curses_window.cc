@@ -19,8 +19,9 @@
 
 namespace e {
 CursesWindow::CursesWindow(bool load_core,
-                           const std::vector<std::string> &scripts)
-    :state_(load_core, scripts), window_(nullptr), term_in_(io_service_) {
+                           const std::vector<std::string> &scripts,
+                           const std::vector<std::string> &files)
+    :state_(load_core, scripts, files), window_(nullptr), args_(files), term_in_(io_service_) {
 }
 
 CursesWindow::~CursesWindow() {
@@ -32,7 +33,7 @@ void CursesWindow::Initialize() {
   window_ = initscr();
 
   start_color();
-  use_default_colors(); // ncurses extension!
+  use_default_colors();  // ncurses extension!
   noecho();
   nonl();  // don't turn LF into CRLF
   raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
@@ -74,13 +75,15 @@ void CursesWindow::OnRead(const boost::system::error_code& error,
     if (key == ERR)
       break;
 
-    KeyCode keycode = e::keycode::curses_code_to_keycode(key);
-    keep_going = HandleKey(&keycode);
+    KeyCode *keycode = e::keycode::curses_code_to_keycode(key);
+    keep_going = HandleKey(keycode);
     if (!keep_going)
       break;
   }
-  if (keep_going)
+  if (keep_going) {
+	v8::V8::IdleNotification(); // tell v8 we're idle (it may want to GC)
     EstablishReadLoop();
+  }
 }
 
 void CursesWindow::Loop() {

@@ -1,13 +1,28 @@
 core = { column: 0, line: 0, windowTop: 0 };
 
+keys = [];
+
 log("entered core.js");
 
-// get the current line in the buffer
-core.currentLine = function () {
+/**
+ * Gets the current line in the buffer.
+ *
+ * @param {number} [line] the "current" line
+ */
+core.currentLine = function (line) {
+	if (line === undefined) {
+		line = core.line;
+	}
 	return world.buffer.getLine(core.line);
 };
 
-// convert a value to a boolean
+/**
+ * Converts a value to a boolean, optionally with a default value for undefined
+ * values.
+ *
+ * @param val The current value
+ * @param {boolean} [defaultValue] the default value, if val is undefined
+ */
 core.toBool = function (val, defaultValue) {
 	if (val === undefined) {
 		val = defaultValue;
@@ -15,8 +30,72 @@ core.toBool = function (val, defaultValue) {
 	return !!val;
 };
 
-// move to an absolute position (specified relative to the core.windows.buffer
-// window)
+/**
+ * Low-level method to scroll a region of the screen.
+ *
+ * @param {number} lines The number of lines to scroll
+ * @param {number} top The top line of the scroll region
+ * @param {number} bot The bottom line of the scroll region
+ */
+core.scrollRegion = function (lines, top, bot) {
+	var cury = core.windows.buffer.getcury();
+	var maxy = core.windows.buffer.getmaxy();
+	if (lines < 0 && core.line == 0) {
+		// if we're already at the top of the screen, we can't scroll up
+		return;
+	}
+	else if (lines > 0) {
+		// make sure the last effective line isn't past the last line we can see
+		// in the buffer
+		var maxEffectiveLine = world.buffer.length + maxy - 1;
+		// XXX: off by one error?
+		if (core.windowTop + lines + maxy > maxEffectiveLine) {
+			return;
+		}
+	}
+	core.line += (lines - cury);
+	core.windowTop += lines;
+	core.windows.buffer.setscrreg(top, bot);
+	core.windows.buffer.scrl(lines);
+	log("a " + lines);
+
+	if (lines > 0) {
+		for (var i = maxy - lines; i < maxy; i++) {
+			var lineNum = core.windowTop + i;
+			log("lineNum " + lineNum);
+			if (lineNum > world.buffer.length) {
+				core.windows.buffer.mvaddstr(i, 0, "~");
+			} else {
+				var val = world.buffer.getLine(lineNum).value();
+				log(val);
+				core.windows.buffer.mvaddstr(i, 0, val);
+			}
+		}
+		//core.windows.buffer.moveAbsolute(0, 0);
+		core.moveAbsolute(0, 0);
+	}
+};
+
+// higher-level method to scroll a region
+//
+// partition -- the line to partition on; always included in scrolling
+// tophalf -- if true, top half is scrolled down, if false, bottom half is
+//            scrolled up
+// lines -- the number of lines to scroll by, always positive
+core.scroll = function (partition, tophalf, lines) {
+	var top, bot;
+	if (tophalf) {
+		top = 0;
+		bot = partition;
+	} else {
+		top = partition;
+		bot = core.windows.buffer.getmaxy();
+	}
+	core.scrollRegion(top, bot, lines);
+};
+
+// move to an absolute window position (specified relative to the
+// core.windows.buffer window)
 core.moveAbsolute = function (y, x) {
 	core.windows.buffer.move(y, x);
 	curses.stdscr.move(y + 1, x);
@@ -37,24 +116,18 @@ core.move = function (up, over, restrictRight) {
 		var maxy = core.windows.buffer.getmaxy();
 		if (newy < 0) {
 			newy = 0;
-		} else if (newy > maxy) {
-			newy = maxy;
+		} else if (newy > maxy - 1) {
+			//newy = maxy - 1;
+			core.scrollRegion(up, 0, maxy);
+			return;
 		}
 		if (newy != cury) {
 			core.line += newy - cury;
 		}
 	}
-	if (over) {
-		var newx = curx + over;
-		var maxx = core.windows.buffer.getmaxx();
-		if (newx < 0) {
-			newx = 0;
-		} else if (newx > maxx) {
-			newx = maxx;
-		}
-		if (newx != curx) {
-			core.column += newx - curx;
-		}
+	newx = core.restrictX(curx + over);
+	if (newx != curx) {
+		core.column += newx - curx;
 	}
 	if (newx != curx || newy != cury) {
 		core.moveAbsolute(newy, newx);
@@ -73,6 +146,7 @@ core.move.left = function (updateBuffer) {
 };
 
 core.move.right = function (pastText, updateBuffer) {
+	pastText = core.toBool(pastText, false);
 	updateBuffer = core.toBool(updateBuffer, true);
 	var cury = core.windows.buffer.getcury();
 	var newx;
@@ -87,6 +161,24 @@ core.move.right = function (pastText, updateBuffer) {
 	if (updateBuffer === true) {
 		core.column = newx;
 	}
+};
+
+core.restrictX = function (newx, lineNum) {
+	var line;
+	if (lineNum === undefined) {
+		lineNum = core.line;
+	}
+	line = world.buffer.getLine(lineNum);
+	if (newx < 0) {
+		newx = 0;
+	} else if (newx > line.length) {
+		newx = line.length;
+	}
+	var maxx = core.windows.buffer.getmaxx();
+	if (newx > maxx) {
+		newx = maxx;
+	}
+	return newx;
 };
 
 core.drawTabBar = function () {
@@ -112,7 +204,7 @@ core.drawTabBar = function () {
 core.drawStatus = function () {
 	core.windows.status.standout();
 	core.windows.status.mvaddstr(0, 0, "  ");
-	core.windows.status.addstr(core.line + "," + core.column);
+	core.windows.status.addstr(core.line + 1 + "," + core.column);
 
 	var spaces = "";
 	var curx = core.windows.status.getcurx();
@@ -164,18 +256,40 @@ world.addEventListener("load", function (event) {
 
 	core.windows.status = curses.stdscr.subwin(2, curses.stdscr.getmaxx(), curses.stdscr.getmaxy() - 2, 0);
 	core.drawStatus();
+});
 
-	// draw tildes on blank lines
+world.addEventListener("load", function (event) {
+	if (world.args.length) {
+		world.buffer.open(world.args[0]);
+	}
+});
+
+world.addEventListener("load", function (event) {
+	var i = 0;
 	var maxy = core.windows.buffer.getmaxy();
-	for (var i = 1; i < maxy; i++) {
+	var buflen = world.buffer.length;
+	if (buflen > maxy) {
+		buflen = maxy;
+	}
+	for (i = 0; i < buflen; i++) {
+		core.windows.buffer.mvaddstr(i, 0, world.buffer.getLine(i).value());
+	}
+	for (; i < maxy; i++) {
 		core.windows.buffer.mvaddstr(i, 0, "~");
 	}
+});
+
+world.addEventListener("load", function (event) {
 	core.moveAbsolute(0, 0);
 	core.updateAllWindows();
 });
 
 // Core routine called on each keypress
 world.addEventListener("keypress", function (event) {
+	keys.push(event);
+	for (var i = 0; i < keys.length; i++) {
+		log("keys[" + i + "] = " + keys[i].getName());
+	}
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
@@ -240,6 +354,28 @@ world.addEventListener("keypress", function (event) {
 				curses.stdscr.move(cury + 1, curx - 1);
 				core.column--;
 				curline.erase(core.column, 1);
+			} else if (core.line > 0) {
+				// update the buffers
+				var curline = world.buffer.getLine(core.line);
+				var origSize = curline.length;
+				var contents = curline.value();
+				world.buffer.deleteLine(core.line--);
+				curline = world.buffer.getLine(core.line);
+				if (contents) {
+					curline.append(contents);
+				}
+
+				// clear the current line
+				core.moveAbsolute(cury, 0);
+				core.windows.buffer.clrtoeol();
+				// scroll up
+				// redraw the previous line
+				core.column = origSize;
+				core.moveAbsolute(cury - 1, core.column);
+				if (contents) {
+					core.windows.buffer.addstr(contents)
+					core.moveAbsolute(cury - 1, core.column);
+				}
 			}
 			break;
 		case "key_down":
@@ -255,6 +391,12 @@ world.addEventListener("keypress", function (event) {
 			break;
 		case "key_left":
 			core.move(0, -1);
+			break;
+		case "key_npage": // page down
+			core.scrollRegion(1);
+			break;
+		case "key_ppage": // page up
+			core.scrollRegion(-1);
 			break;
 		case "key_right":
 			core.move(0, 1);
@@ -272,11 +414,11 @@ world.addEventListener("keypress", function (e) {
 });
 
 world.addEventListener("keypress", function (e) {
-	log("===============");
-	var lines = world.buffer.getContents();
-	for (var i = 0; i < lines.length; i++) {
+	//log("===============");
+	//var lines = world.buffer.getContents();
+	/*for (var i = 0; i < lines.length; i++) {
 		log(lines[i]);
-	}
+	}*/
 });
 
 // This is the callback that specifically causes curses to flush all of its

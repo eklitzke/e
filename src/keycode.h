@@ -17,21 +17,21 @@ using v8::Value;
 namespace e {
 class KeyCode: public Embeddable {
   public:
-    explicit KeyCode(int code,
-                     const std::string &short_name);
+    explicit KeyCode(int code, const std::string &short_name);
     explicit KeyCode(int code);
+    ~KeyCode();
     const std::string& GetName(void) const;
     bool IsASCII(void) const;
     int GetCode(void) const;
     char GetChar(void) const;
-    Handle<Value> ToScript();
+    Persistent<Value> ToScript();
   private:
     int code_;
     std::string short_name_;
 };
 
 namespace keycode {
-const KeyCode& curses_code_to_keycode(int code);
+KeyCode* curses_code_to_keycode(int code);
 }
 }
 

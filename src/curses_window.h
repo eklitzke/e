@@ -18,13 +18,15 @@ namespace e {
 class CursesWindow {
  public:
   explicit CursesWindow(bool load_core,
-                        const std::vector<std::string> &scripts);
+                        const std::vector<std::string> &scripts,
+                        const std::vector<std::string> &files);
   ~CursesWindow();
   void Initialize();
   void Loop();
  private:
   State state_;
   WINDOW *window_;
+  std::vector<std::string> args_;
   boost::asio::io_service io_service_;
   boost::asio::posix::stream_descriptor term_in_;
 

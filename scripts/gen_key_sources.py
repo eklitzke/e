@@ -26,21 +26,21 @@ using v8::Value;
 namespace e {
 class KeyCode: public Embeddable {
   public:
-    explicit KeyCode(int code,
-                     const std::string &short_name);
+    explicit KeyCode(int code, const std::string &short_name);
     explicit KeyCode(int code);
+    ~KeyCode();
     const std::string& GetName(void) const;
     bool IsASCII(void) const;
     int GetCode(void) const;
     char GetChar(void) const;
-    Handle<Value> ToScript();
+    Persistent<Value> ToScript();
   private:
     int code_;
     std::string short_name_;
 };
 
 namespace keycode {
-const KeyCode& curses_code_to_keycode(int code);
+KeyCode* curses_code_to_keycode(int code);
 }
 }
 
@@ -56,8 +56,6 @@ cc_template = """
 #include "./%(h_name)s"
 
 #include <v8.h>
-#include <glog/logging.h>
-#include <glog/log_severity.h>
 
 #include <cassert>
 #include <string>
@@ -142,8 +140,22 @@ KeyCode::KeyCode(int code)
   }
 }
 
-Handle<Value>
-KeyCode::ToScript() {
+KeyCode::~KeyCode() {
+}
+
+namespace {
+// this callback will be invoked when the V8 keypress object is GC'ed
+void CleanupKeycode(Persistent<Value> val, void*) {
+  HandleScope scope;
+  assert(val->IsObject());
+  Local<Object> obj = val->ToObject();
+  KeyCode *kc = Unwrap<KeyCode>(obj);
+  delete kc;
+  val.Dispose();
+}
+}
+
+Persistent<Value> KeyCode::ToScript() {
   HandleScope scope;
 
   if (keycode_template.IsEmpty()) {
@@ -151,32 +163,31 @@ KeyCode::ToScript() {
     keycode_template = Persistent<ObjectTemplate>::New(raw_template);
   }
 
-  Handle<Object> kc = keycode_template->NewInstance();
+  //Local<Object> kc_local = keycode_template->NewInstance();
+  Persistent<Object> kc = Persistent<Object>::New(keycode_template->NewInstance());
+
+  kc.MakeWeak(nullptr, CleanupKeycode);
 
   assert(kc->InternalFieldCount() == 1);
   kc->SetInternalField(0, External::New(this));
-  return scope.Close(kc);
+  //return scope.Close(kc);
+  return kc;
 }
 
-
-const std::string&
-KeyCode::GetName(void) const {
+const std::string& KeyCode::GetName(void) const {
   return short_name_;
 }
 
-bool
-KeyCode::IsASCII(void) const {
+bool KeyCode::IsASCII(void) const {
   return code_ <= 0xff;
 }
 
-int
-KeyCode::GetCode(void) const {
+int KeyCode::GetCode(void) const {
   return code_;
 }
 
 // XXX: it's unspecified whether this is a signed or unsigned char!
-char
-KeyCode::GetChar(void) const {
+char KeyCode::GetChar(void) const {
   if (code_ > 0xff) {
     return static_cast<char>(code_ & 0xff);
   } else {
@@ -186,13 +197,23 @@ KeyCode::GetChar(void) const {
 
 namespace keycode {
   const size_t max_code = %(max_code)d;
-  KeyCode keycode_arr[max_code + 1] = {
+  const std::string keycode_arr[max_code + 1] = {
 %(codes)s
   };
 
-  const KeyCode&
-  curses_code_to_keycode(int code) {
-    return keycode_arr[static_cast<size_t>(code)];
+  KeyCode* curses_code_to_keycode(int code) {
+    size_t offset = static_cast<size_t>(code);
+    assert(offset <= max_code);
+    const std::string &name = keycode_arr[offset];
+
+    // The returned pointers are "owned" by V8; the way they'll get deleted
+    // later on is by CleanupKeycode, which will be invoked when the containing
+    // V8 object is garbage collected.
+    if (!name.size()) {
+      return new KeyCode(code);
+    } else {
+      return new KeyCode(code, name);
+    }
   }
 }
 }
@@ -203,11 +224,10 @@ octal_regex = re.compile(r'^0[0-9]+$')
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('-o', '--output-prefix', default='keycode', help='output prefix')
+    parser.add_option('-o', '--output-prefix', default='src/keycode', help='output prefix')
     opts, args = parser.parse_args()
-    if len(args) != 1:
-        parser.error('must give exactly one argument')
-        sys.exit(1)
+    if not args:
+        args = ['third_party/Caps']
     try:
         in_file = open(args[0], 'r')
     except IOError:
@@ -256,12 +276,16 @@ if __name__ == '__main__':
     cc_name = opts.output_prefix + '.cc'
 
     code_arr = []
+    comment_width = 30
     for code in xrange(max_code + 1):
         if code and code in value_map:
             name, description = value_map[code]
-            code_arr.append('      KeyCode(%d, "%s"),  // %s' % (code, name, description))
+            val = '      "%s",' % (name,)
+            val += ' ' * (comment_width - len(val))
+            val += '// %s' % (description,)
+            code_arr.append(val)
         else:
-            code_arr.append('      KeyCode(%d),' % (code,))
+            code_arr.append('      "",')
 
     with open(h_name, 'w') as h_file:
         h_file.write(h_template.lstrip() % {'current_year': current_year})

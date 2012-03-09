@@ -54,12 +54,20 @@ const std::string& Line::ToString() const {
 
 namespace {
 // chop a string from some position forward, and return the chopped part
+Handle<Value> JSAppend(const Arguments& args) {
+  CHECK_ARGS(1);
+  GET_SELF(Line);
+
+  String::AsciiValue value(args[0]);
+  self->value.append(*value, value.length());
+  RETURN_SELF;
+}
+
 Handle<Value> JSChop(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Line);
 
-  Handle<Value> arg0 = args[0];
-  uint32_t offset = arg0->Uint32Value();
+  uint32_t offset = args[0]->Uint32Value();
   std::string chopped = self->value.substr(offset, std::string::npos);
   self->value.erase(self->value.begin() + offset, self->value.end());
   return scope.Close(String::New(chopped.c_str(), chopped.size()));
@@ -115,6 +123,7 @@ Handle<ObjectTemplate> MakeLineTemplate() {
   HandleScope handle_scope;
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
+  js::AddTemplateFunction(result, "append", JSAppend);
   js::AddTemplateFunction(result, "chop", JSChop);
   js::AddTemplateFunction(result, "erase", JSErase);
   js::AddTemplateFunction(result, "insert", JSInsert);

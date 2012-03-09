@@ -19,6 +19,7 @@
 namespace e {
 
 using v8::Arguments;
+using v8::Array;
 using v8::Context;
 using v8::External;
 using v8::Handle;
@@ -79,8 +80,9 @@ AddEventListener(const Arguments& args) {
 }
 }
 
-State::State(bool load_core, const std::vector<std::string> &scripts)
-    :load_core_(load_core), scripts_(scripts),
+State::State(bool load_core, const std::vector<std::string> &scripts,
+			 const std::vector<std::string> &args)
+    :load_core_(load_core), scripts_(scripts), args_(args),
      active_buffer_(new Buffer("*temp*")) {
   buffers_.push_back(active_buffer_);
 }
@@ -123,6 +125,11 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   world->SetInternalField(0, External::New(this));
   world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
+  Local<Array> args = Array::New(args_.size());
+  for (auto it = args_.begin(); it != args_.end(); ++it) {
+	args->Set(it - args_.begin(), String::New(it->c_str(), it->size()));
+  }
+  world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 
   Local<Object> curses_obj = curses->NewInstance();
 

@@ -20,6 +20,7 @@
 using v8::AccessorInfo;
 using v8::Arguments;
 using v8::Array;
+using v8::Boolean;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
@@ -39,6 +40,10 @@ Buffer::Buffer(const std::string &name)
 
 Buffer::Buffer(const std::string &name, const std::string &filepath)
     :filepath_(filepath), name_(name), dirty_(false) {
+  OpenFile(filepath);
+}
+
+void Buffer::OpenFile(const std::string &filepath) {
   int fd = open(filepath.c_str(), O_RDONLY);
   if (fd == -1) {
     throw 1; // FIXME(eklitzke)
@@ -48,6 +53,12 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
     close(fd);
     throw 1; // FIXME(eklitzke)
   }
+
+  // clear the old buffer
+  for (auto it = lines_.begin(); it != lines_.end(); ++it) {
+	delete *it;
+  }
+  lines_.clear();
 
   char *mmaddr = static_cast<char *>(mmap(nullptr, sb.st_size, PROT_READ,
                                           MAP_PRIVATE, fd, 0));
@@ -88,8 +99,7 @@ Handle<Value> JSAddLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
 
-  Handle<Value> arg0 = args[0];
-  uint32_t offset = arg0->Uint32Value();
+  uint32_t offset = args[0]->Uint32Value();
   std::string lineValue;
   if (args.Length() >= 2) {
     String::AsciiValue value(args[1]);
@@ -106,6 +116,21 @@ Handle<Value> JSAddLine(const Arguments& args) {
   }
 
   return scope.Close(line->ToScript());
+}
+
+Handle<Value> JSDeleteLine(const Arguments& args) {
+  CHECK_ARGS(1);
+  GET_SELF(Buffer);
+
+  uint32_t offset = args[0]->Uint32Value();
+  std::vector<Line *> *lines = self->Lines();
+  if (offset < lines->size()) {
+    delete (*lines)[offset];
+    lines->erase(lines->begin() + offset);
+    return scope.Close(Boolean::New(true));
+  } else {
+    return scope.Close(Boolean::New(true));
+  }
 }
 
 Handle<Value> JSGetLine(const Arguments& args) {
@@ -156,6 +181,16 @@ void JSSetLength(Local<String> property, Local<Value> value,
 }
 */
 
+Handle<Value> JSOpenFile(const Arguments& args) {
+  CHECK_ARGS(1);
+  GET_SELF(Buffer);
+
+  String::AsciiValue filename(args[0]);
+  const std::string filename_s(*filename, filename.length());
+  self->OpenFile(filename_s);
+  return scope.Close(Undefined());
+}
+
 Persistent<ObjectTemplate> buffer_template;
 
 // Create a raw template to assign to line_template
@@ -164,10 +199,12 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
   Handle<ObjectTemplate> result = ObjectTemplate::New();
   result->SetInternalFieldCount(1);
   js::AddTemplateFunction(result, "addLine", JSAddLine);
+  js::AddTemplateFunction(result, "deleteLine", JSDeleteLine);
   js::AddTemplateFunction(result, "getContents", JSGetContents);
   js::AddTemplateFunction(result, "getLine", JSGetLine);
   js::AddTemplateFunction(result, "getName", JSGetName);
   js::AddTemplateAccessor(result, "length", JSGetLength, nullptr);
+  js::AddTemplateFunction(result, "open", JSOpenFile);
   return scope.Close(result);
 }
 }

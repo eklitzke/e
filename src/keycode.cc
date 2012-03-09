@@ -6,8 +6,6 @@
 #include "./keycode.h"
 
 #include <v8.h>
-#include <glog/logging.h>
-#include <glog/log_severity.h>
 
 #include <cassert>
 #include <string>
@@ -92,8 +90,22 @@ KeyCode::KeyCode(int code)
   }
 }
 
-Handle<Value>
-KeyCode::ToScript() {
+KeyCode::~KeyCode() {
+}
+
+namespace {
+// this callback will be invoked when the V8 keypress object is GC'ed
+void CleanupKeycode(Persistent<Value> val, void*) {
+  HandleScope scope;
+  assert(val->IsObject());
+  Local<Object> obj = val->ToObject();
+  KeyCode *kc = Unwrap<KeyCode>(obj);
+  delete kc;
+  val.Dispose();
+}
+}
+
+Persistent<Value> KeyCode::ToScript() {
   HandleScope scope;
 
   if (keycode_template.IsEmpty()) {
@@ -101,32 +113,31 @@ KeyCode::ToScript() {
     keycode_template = Persistent<ObjectTemplate>::New(raw_template);
   }
 
-  Handle<Object> kc = keycode_template->NewInstance();
+  //Local<Object> kc_local = keycode_template->NewInstance();
+  Persistent<Object> kc = Persistent<Object>::New(keycode_template->NewInstance());
+
+  kc.MakeWeak(nullptr, CleanupKeycode);
 
   assert(kc->InternalFieldCount() == 1);
   kc->SetInternalField(0, External::New(this));
-  return scope.Close(kc);
+  //return scope.Close(kc);
+  return kc;
 }
 
-
-const std::string&
-KeyCode::GetName(void) const {
+const std::string& KeyCode::GetName(void) const {
   return short_name_;
 }
 
-bool
-KeyCode::IsASCII(void) const {
+bool KeyCode::IsASCII(void) const {
   return code_ <= 0xff;
 }
 
-int
-KeyCode::GetCode(void) const {
+int KeyCode::GetCode(void) const {
   return code_;
 }
 
 // XXX: it's unspecified whether this is a signed or unsigned char!
-char
-KeyCode::GetChar(void) const {
+char KeyCode::GetChar(void) const {
   if (code_ > 0xff) {
     return static_cast<char>(code_ & 0xff);
   } else {
@@ -136,422 +147,432 @@ KeyCode::GetChar(void) const {
 
 namespace keycode {
   const size_t max_code = 409;
-  KeyCode keycode_arr[max_code + 1] = {
-      KeyCode(0),
-      KeyCode(1),
-      KeyCode(2),
-      KeyCode(3),
-      KeyCode(4),
-      KeyCode(5),
-      KeyCode(6),
-      KeyCode(7),
-      KeyCode(8),
-      KeyCode(9),
-      KeyCode(10),
-      KeyCode(11),
-      KeyCode(12),
-      KeyCode(13),
-      KeyCode(14),
-      KeyCode(15),
-      KeyCode(16),
-      KeyCode(17),
-      KeyCode(18),
-      KeyCode(19),
-      KeyCode(20),
-      KeyCode(21),
-      KeyCode(22),
-      KeyCode(23),
-      KeyCode(24),
-      KeyCode(25),
-      KeyCode(26),
-      KeyCode(27),
-      KeyCode(28),
-      KeyCode(29),
-      KeyCode(30),
-      KeyCode(31),
-      KeyCode(32),
-      KeyCode(33),
-      KeyCode(34),
-      KeyCode(35),
-      KeyCode(36),
-      KeyCode(37),
-      KeyCode(38),
-      KeyCode(39),
-      KeyCode(40),
-      KeyCode(41),
-      KeyCode(42),
-      KeyCode(43),
-      KeyCode(44),
-      KeyCode(45),
-      KeyCode(46),
-      KeyCode(47),
-      KeyCode(48),
-      KeyCode(49),
-      KeyCode(50),
-      KeyCode(51),
-      KeyCode(52),
-      KeyCode(53),
-      KeyCode(54),
-      KeyCode(55),
-      KeyCode(56),
-      KeyCode(57),
-      KeyCode(58),
-      KeyCode(59),
-      KeyCode(60),
-      KeyCode(61),
-      KeyCode(62),
-      KeyCode(63),
-      KeyCode(64),
-      KeyCode(65),
-      KeyCode(66),
-      KeyCode(67),
-      KeyCode(68),
-      KeyCode(69),
-      KeyCode(70),
-      KeyCode(71),
-      KeyCode(72),
-      KeyCode(73),
-      KeyCode(74),
-      KeyCode(75),
-      KeyCode(76),
-      KeyCode(77),
-      KeyCode(78),
-      KeyCode(79),
-      KeyCode(80),
-      KeyCode(81),
-      KeyCode(82),
-      KeyCode(83),
-      KeyCode(84),
-      KeyCode(85),
-      KeyCode(86),
-      KeyCode(87),
-      KeyCode(88),
-      KeyCode(89),
-      KeyCode(90),
-      KeyCode(91),
-      KeyCode(92),
-      KeyCode(93),
-      KeyCode(94),
-      KeyCode(95),
-      KeyCode(96),
-      KeyCode(97),
-      KeyCode(98),
-      KeyCode(99),
-      KeyCode(100),
-      KeyCode(101),
-      KeyCode(102),
-      KeyCode(103),
-      KeyCode(104),
-      KeyCode(105),
-      KeyCode(106),
-      KeyCode(107),
-      KeyCode(108),
-      KeyCode(109),
-      KeyCode(110),
-      KeyCode(111),
-      KeyCode(112),
-      KeyCode(113),
-      KeyCode(114),
-      KeyCode(115),
-      KeyCode(116),
-      KeyCode(117),
-      KeyCode(118),
-      KeyCode(119),
-      KeyCode(120),
-      KeyCode(121),
-      KeyCode(122),
-      KeyCode(123),
-      KeyCode(124),
-      KeyCode(125),
-      KeyCode(126),
-      KeyCode(127),
-      KeyCode(128),
-      KeyCode(129),
-      KeyCode(130),
-      KeyCode(131),
-      KeyCode(132),
-      KeyCode(133),
-      KeyCode(134),
-      KeyCode(135),
-      KeyCode(136),
-      KeyCode(137),
-      KeyCode(138),
-      KeyCode(139),
-      KeyCode(140),
-      KeyCode(141),
-      KeyCode(142),
-      KeyCode(143),
-      KeyCode(144),
-      KeyCode(145),
-      KeyCode(146),
-      KeyCode(147),
-      KeyCode(148),
-      KeyCode(149),
-      KeyCode(150),
-      KeyCode(151),
-      KeyCode(152),
-      KeyCode(153),
-      KeyCode(154),
-      KeyCode(155),
-      KeyCode(156),
-      KeyCode(157),
-      KeyCode(158),
-      KeyCode(159),
-      KeyCode(160),
-      KeyCode(161),
-      KeyCode(162),
-      KeyCode(163),
-      KeyCode(164),
-      KeyCode(165),
-      KeyCode(166),
-      KeyCode(167),
-      KeyCode(168),
-      KeyCode(169),
-      KeyCode(170),
-      KeyCode(171),
-      KeyCode(172),
-      KeyCode(173),
-      KeyCode(174),
-      KeyCode(175),
-      KeyCode(176),
-      KeyCode(177),
-      KeyCode(178),
-      KeyCode(179),
-      KeyCode(180),
-      KeyCode(181),
-      KeyCode(182),
-      KeyCode(183),
-      KeyCode(184),
-      KeyCode(185),
-      KeyCode(186),
-      KeyCode(187),
-      KeyCode(188),
-      KeyCode(189),
-      KeyCode(190),
-      KeyCode(191),
-      KeyCode(192),
-      KeyCode(193),
-      KeyCode(194),
-      KeyCode(195),
-      KeyCode(196),
-      KeyCode(197),
-      KeyCode(198),
-      KeyCode(199),
-      KeyCode(200),
-      KeyCode(201),
-      KeyCode(202),
-      KeyCode(203),
-      KeyCode(204),
-      KeyCode(205),
-      KeyCode(206),
-      KeyCode(207),
-      KeyCode(208),
-      KeyCode(209),
-      KeyCode(210),
-      KeyCode(211),
-      KeyCode(212),
-      KeyCode(213),
-      KeyCode(214),
-      KeyCode(215),
-      KeyCode(216),
-      KeyCode(217),
-      KeyCode(218),
-      KeyCode(219),
-      KeyCode(220),
-      KeyCode(221),
-      KeyCode(222),
-      KeyCode(223),
-      KeyCode(224),
-      KeyCode(225),
-      KeyCode(226),
-      KeyCode(227),
-      KeyCode(228),
-      KeyCode(229),
-      KeyCode(230),
-      KeyCode(231),
-      KeyCode(232),
-      KeyCode(233),
-      KeyCode(234),
-      KeyCode(235),
-      KeyCode(236),
-      KeyCode(237),
-      KeyCode(238),
-      KeyCode(239),
-      KeyCode(240),
-      KeyCode(241),
-      KeyCode(242),
-      KeyCode(243),
-      KeyCode(244),
-      KeyCode(245),
-      KeyCode(246),
-      KeyCode(247),
-      KeyCode(248),
-      KeyCode(249),
-      KeyCode(250),
-      KeyCode(251),
-      KeyCode(252),
-      KeyCode(253),
-      KeyCode(254),
-      KeyCode(255),
-      KeyCode(256),
-      KeyCode(257),
-      KeyCode(258, "key_down"),  // down-arrow key
-      KeyCode(259, "key_up"),  // up-arrow key
-      KeyCode(260, "key_left"),  // left-arrow key
-      KeyCode(261, "key_right"),  // right-arrow key
-      KeyCode(262, "key_home"),  // home key
-      KeyCode(263, "key_backspace"),  // backspace key
-      KeyCode(264, "key_f0"),  // F0 function key
-      KeyCode(265),
-      KeyCode(266),
-      KeyCode(267),
-      KeyCode(268),
-      KeyCode(269),
-      KeyCode(270),
-      KeyCode(271),
-      KeyCode(272),
-      KeyCode(273),
-      KeyCode(274),
-      KeyCode(275),
-      KeyCode(276),
-      KeyCode(277),
-      KeyCode(278),
-      KeyCode(279),
-      KeyCode(280),
-      KeyCode(281),
-      KeyCode(282),
-      KeyCode(283),
-      KeyCode(284),
-      KeyCode(285),
-      KeyCode(286),
-      KeyCode(287),
-      KeyCode(288),
-      KeyCode(289),
-      KeyCode(290),
-      KeyCode(291),
-      KeyCode(292),
-      KeyCode(293),
-      KeyCode(294),
-      KeyCode(295),
-      KeyCode(296),
-      KeyCode(297),
-      KeyCode(298),
-      KeyCode(299),
-      KeyCode(300),
-      KeyCode(301),
-      KeyCode(302),
-      KeyCode(303),
-      KeyCode(304),
-      KeyCode(305),
-      KeyCode(306),
-      KeyCode(307),
-      KeyCode(308),
-      KeyCode(309),
-      KeyCode(310),
-      KeyCode(311),
-      KeyCode(312),
-      KeyCode(313),
-      KeyCode(314),
-      KeyCode(315),
-      KeyCode(316),
-      KeyCode(317),
-      KeyCode(318),
-      KeyCode(319),
-      KeyCode(320),
-      KeyCode(321),
-      KeyCode(322),
-      KeyCode(323),
-      KeyCode(324),
-      KeyCode(325),
-      KeyCode(326),
-      KeyCode(327),
-      KeyCode(328, "key_dl"),  // delete-line key
-      KeyCode(329, "key_il"),  // insert-line key
-      KeyCode(330, "key_dc"),  // delete-character key
-      KeyCode(331, "key_ic"),  // insert-character key
-      KeyCode(332, "key_eic"),  // sent by rmir or smir in insert mode
-      KeyCode(333, "key_clear"),  // clear-screen or erase key
-      KeyCode(334, "key_eos"),  // clear-to-end-of-screen key
-      KeyCode(335, "key_eol"),  // clear-to-end-of-line key
-      KeyCode(336, "key_sf"),  // scroll-forward key
-      KeyCode(337, "key_sr"),  // scroll-backward key
-      KeyCode(338, "key_npage"),  // next-page key
-      KeyCode(339, "key_ppage"),  // previous-page key
-      KeyCode(340, "key_stab"),  // set-tab key
-      KeyCode(341, "key_ctab"),  // clear-tab key
-      KeyCode(342, "key_catab"),  // clear-all-tabs key
-      KeyCode(343, "key_enter"),  // enter/send key
-      KeyCode(344),
-      KeyCode(345),
-      KeyCode(346, "key_print"),  // print key
-      KeyCode(347, "key_ll"),  // lower-left key (home down)
-      KeyCode(348, "key_a1"),  // upper left of keypad
-      KeyCode(349, "key_a3"),  // upper right of keypad
-      KeyCode(350, "key_b2"),  // center of keypad
-      KeyCode(351, "key_c1"),  // lower left of keypad
-      KeyCode(352, "key_c3"),  // lower right of keypad
-      KeyCode(353, "key_btab"),  // back-tab key
-      KeyCode(354, "key_beg"),  // begin key
-      KeyCode(355, "key_cancel"),  // cancel key
-      KeyCode(356, "key_close"),  // close key
-      KeyCode(357, "key_command"),  // command key
-      KeyCode(358, "key_copy"),  // copy key
-      KeyCode(359, "key_create"),  // create key
-      KeyCode(360, "key_end"),  // end key
-      KeyCode(361, "key_exit"),  // exit key
-      KeyCode(362, "key_find"),  // find key
-      KeyCode(363, "key_help"),  // help key
-      KeyCode(364, "key_mark"),  // mark key
-      KeyCode(365, "key_message"),  // message key
-      KeyCode(366, "key_move"),  // move key
-      KeyCode(367, "key_next"),  // next key
-      KeyCode(368, "key_open"),  // open key
-      KeyCode(369, "key_options"),  // options key
-      KeyCode(370, "key_previous"),  // previous key
-      KeyCode(371, "key_redo"),  // redo key
-      KeyCode(372, "key_reference"),  // reference key
-      KeyCode(373, "key_refresh"),  // refresh key
-      KeyCode(374, "key_replace"),  // replace key
-      KeyCode(375, "key_restart"),  // restart key
-      KeyCode(376, "key_resume"),  // resume key
-      KeyCode(377, "key_save"),  // save key
-      KeyCode(378, "key_sbeg"),  // shifted begin key
-      KeyCode(379, "key_scancel"),  // shifted cancel key
-      KeyCode(380, "key_scommand"),  // shifted command key
-      KeyCode(381, "key_scopy"),  // shifted copy key
-      KeyCode(382, "key_screate"),  // shifted create key
-      KeyCode(383, "key_sdc"),  // shifted delete-character key
-      KeyCode(384, "key_sdl"),  // shifted delete-line key
-      KeyCode(385, "key_select"),  // select key
-      KeyCode(386, "key_send"),  // shifted end key
-      KeyCode(387, "key_seol"),  // shifted clear-to-end-of-line key
-      KeyCode(388, "key_sexit"),  // shifted exit key
-      KeyCode(389, "key_sfind"),  // shifted find key
-      KeyCode(390, "key_shelp"),  // shifted help key
-      KeyCode(391, "key_shome"),  // shifted home key
-      KeyCode(392, "key_sic"),  // shifted insert-character key
-      KeyCode(393, "key_sleft"),  // shifted left-arrow key
-      KeyCode(394, "key_smessage"),  // shifted message key
-      KeyCode(395, "key_smove"),  // shifted move key
-      KeyCode(396, "key_snext"),  // shifted next key
-      KeyCode(397, "key_soptions"),  // shifted options key
-      KeyCode(398, "key_sprevious"),  // shifted previous key
-      KeyCode(399, "key_sprint"),  // shifted print key
-      KeyCode(400, "key_sredo"),  // shifted redo key
-      KeyCode(401, "key_sreplace"),  // shifted replace key
-      KeyCode(402, "key_sright"),  // shifted right-arrow key
-      KeyCode(403, "key_srsume"),  // shifted resume key
-      KeyCode(404, "key_ssave"),  // shifted save key
-      KeyCode(405, "key_ssuspend"),  // shifted suspend key
-      KeyCode(406, "key_sundo"),  // shifted undo key
-      KeyCode(407, "key_suspend"),  // suspend key
-      KeyCode(408, "key_undo"),  // undo key
-      KeyCode(409, "key_mouse"),  // Mouse event has occurred
+  const std::string keycode_arr[max_code + 1] = {
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "key_down",             // down-arrow key
+      "key_up",               // up-arrow key
+      "key_left",             // left-arrow key
+      "key_right",            // right-arrow key
+      "key_home",             // home key
+      "key_backspace",        // backspace key
+      "key_f0",               // F0 function key
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "key_dl",               // delete-line key
+      "key_il",               // insert-line key
+      "key_dc",               // delete-character key
+      "key_ic",               // insert-character key
+      "key_eic",              // sent by rmir or smir in insert mode
+      "key_clear",            // clear-screen or erase key
+      "key_eos",              // clear-to-end-of-screen key
+      "key_eol",              // clear-to-end-of-line key
+      "key_sf",               // scroll-forward key
+      "key_sr",               // scroll-backward key
+      "key_npage",            // next-page key
+      "key_ppage",            // previous-page key
+      "key_stab",             // set-tab key
+      "key_ctab",             // clear-tab key
+      "key_catab",            // clear-all-tabs key
+      "key_enter",            // enter/send key
+      "",
+      "",
+      "key_print",            // print key
+      "key_ll",               // lower-left key (home down)
+      "key_a1",               // upper left of keypad
+      "key_a3",               // upper right of keypad
+      "key_b2",               // center of keypad
+      "key_c1",               // lower left of keypad
+      "key_c3",               // lower right of keypad
+      "key_btab",             // back-tab key
+      "key_beg",              // begin key
+      "key_cancel",           // cancel key
+      "key_close",            // close key
+      "key_command",          // command key
+      "key_copy",             // copy key
+      "key_create",           // create key
+      "key_end",              // end key
+      "key_exit",             // exit key
+      "key_find",             // find key
+      "key_help",             // help key
+      "key_mark",             // mark key
+      "key_message",          // message key
+      "key_move",             // move key
+      "key_next",             // next key
+      "key_open",             // open key
+      "key_options",          // options key
+      "key_previous",         // previous key
+      "key_redo",             // redo key
+      "key_reference",        // reference key
+      "key_refresh",          // refresh key
+      "key_replace",          // replace key
+      "key_restart",          // restart key
+      "key_resume",           // resume key
+      "key_save",             // save key
+      "key_sbeg",             // shifted begin key
+      "key_scancel",          // shifted cancel key
+      "key_scommand",         // shifted command key
+      "key_scopy",            // shifted copy key
+      "key_screate",          // shifted create key
+      "key_sdc",              // shifted delete-character key
+      "key_sdl",              // shifted delete-line key
+      "key_select",           // select key
+      "key_send",             // shifted end key
+      "key_seol",             // shifted clear-to-end-of-line key
+      "key_sexit",            // shifted exit key
+      "key_sfind",            // shifted find key
+      "key_shelp",            // shifted help key
+      "key_shome",            // shifted home key
+      "key_sic",              // shifted insert-character key
+      "key_sleft",            // shifted left-arrow key
+      "key_smessage",         // shifted message key
+      "key_smove",            // shifted move key
+      "key_snext",            // shifted next key
+      "key_soptions",         // shifted options key
+      "key_sprevious",        // shifted previous key
+      "key_sprint",           // shifted print key
+      "key_sredo",            // shifted redo key
+      "key_sreplace",         // shifted replace key
+      "key_sright",           // shifted right-arrow key
+      "key_srsume",           // shifted resume key
+      "key_ssave",            // shifted save key
+      "key_ssuspend",         // shifted suspend key
+      "key_sundo",            // shifted undo key
+      "key_suspend",          // suspend key
+      "key_undo",             // undo key
+      "key_mouse",            // Mouse event has occurred
   };
 
-  const KeyCode&
-  curses_code_to_keycode(int code) {
-    return keycode_arr[static_cast<size_t>(code)];
+  KeyCode* curses_code_to_keycode(int code) {
+    size_t offset = static_cast<size_t>(code);
+    assert(offset <= max_code);
+    const std::string &name = keycode_arr[offset];
+
+    // The returned pointers are "owned" by V8; the way they'll get deleted
+    // later on is by CleanupKeycode, which will be invoked when the containing
+    // V8 object is garbage collected.
+    if (!name.size()) {
+      return new KeyCode(code);
+    } else {
+      return new KeyCode(code, name);
+    }
   }
 }
 }

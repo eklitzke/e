@@ -30,6 +30,8 @@ class Buffer: public Embeddable {
   explicit Buffer(const std::string &name);
   explicit Buffer(const std::string &name, const std::string &filepath);
 
+  void OpenFile(const std::string &filepath);
+
   // get the name of the buffer
   const std::string & GetBufferName() const;
 

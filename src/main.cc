@@ -23,10 +23,15 @@ int main(int argc, char **argv) {
       ("script,s", po::value<std::vector<std::string> >(),
        "script file(s) to load")
       ("list-environment", "list the default JS environment")
-      ("really-do-nothing", "allow running without any JS scripts");
+      ("really-do-nothing", "allow running without any JS scripts")
+      ("file,f", po::value<std::vector<std::string> >(),
+       "path to an input file to edit (this may also be specified positionally)");
+  po::positional_options_description p;
+  p.add("file", -1);
 
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::command_line_parser(argc, argv).
+			options(desc).positional(p).run(), vm);
   po::notify(vm);
 
   if (vm.count("help")) {
@@ -52,11 +57,15 @@ int main(int argc, char **argv) {
     state.LoadScript(false, e::ListEnvironment);
   } else {
     bool load_core = !vm.count("skip-core");
-    std::vector<std::string> inputs;
-    if (vm.count("script")) {
-      inputs = vm["script"].as<std::vector<std::string> >();
-    }
-    e::CursesWindow window(load_core, inputs);
+	std::vector<std::string> files;
+	if (vm.count("file")) {
+	  files = vm["file"].as< std::vector<std::string> >();
+	}
+    std::vector<std::string> scripts;
+	if (vm.count("script")) {
+	  scripts = vm["script"].as<std::vector<std::string> >();
+	}
+    e::CursesWindow window(load_core, scripts, files);
     window.Loop();
   }
 
