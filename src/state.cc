@@ -81,7 +81,7 @@ AddEventListener(const Arguments& args) {
 }
 
 State::State(bool load_core, const std::vector<std::string> &scripts,
-			 const std::vector<std::string> &args)
+             const std::vector<std::string> &args)
     :load_core_(load_core), scripts_(scripts), args_(args),
      active_buffer_(new Buffer("*temp*")) {
   buffers_.push_back(active_buffer_);
@@ -127,7 +127,7 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   context_->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
   Local<Array> args = Array::New(args_.size());
   for (auto it = args_.begin(); it != args_.end(); ++it) {
-	args->Set(it - args_.begin(), String::New(it->c_str(), it->size()));
+    args->Set(it - args_.begin(), String::New(it->c_str(), it->size()));
   }
   world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 

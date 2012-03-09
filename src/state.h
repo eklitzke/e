@@ -30,7 +30,7 @@ class State: public Embeddable {
  public:
   State() {}
   explicit State(bool load_core, const std::vector<std::string> &scripts,
-				 const std::vector<std::string> &args);
+                 const std::vector<std::string> &args);
   ~State();
   void LoadScript(bool, boost::function<void(Persistent<Context>)>);
 
