@@ -96,9 +96,11 @@ std::vector<Line*>* Buffer::Lines() {
 
 namespace {
 // @class: Buffer
+// @description: a buffer object
 //
 // @method: addLine
-// @param[offset]: #int offset of where to add the line
+// @param[offset]: #int line number for the newly inserted line
+// @returns: #Line the line that was added
 // @description: adds a line to the buffer
 Handle<Value> JSAddLine(const Arguments& args) {
   CHECK_ARGS(1);
@@ -124,7 +126,8 @@ Handle<Value> JSAddLine(const Arguments& args) {
 }
 
 // @method: deleteLine
-// @param[offset]: #int offset of where to add the line
+// @param[offset]: #int line number of the line to delete
+// @returns: #bool true if the line was deleted, false otherwise
 // @description: removes a line from the buffer
 Handle<Value> JSDeleteLine(const Arguments& args) {
   CHECK_ARGS(1);
@@ -137,10 +140,14 @@ Handle<Value> JSDeleteLine(const Arguments& args) {
     lines->erase(lines->begin() + offset);
     return scope.Close(Boolean::New(true));
   } else {
-    return scope.Close(Boolean::New(true));
+    return scope.Close(Boolean::New(false));
   }
 }
 
+// @method: getLine
+// @param[offset]: #int line number of the line to get
+// @returns: #Line the line at the specified linenum
+// @description: gets a Line object from the buffer
 Handle<Value> JSGetLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
@@ -152,7 +159,9 @@ Handle<Value> JSGetLine(const Arguments& args) {
   return scope.Close(l[offset]->ToScript());
 }
 
-// returns the buffer content as an array of strings
+// @method: getContents
+// @returns: #[string] the array of strings representing the buffer
+// @description: returns the buffer as an array of strings
 Handle<Value> JSGetContents(const Arguments& args) {
   GET_SELF(Buffer);
   HandleScope scope;
@@ -165,6 +174,8 @@ Handle<Value> JSGetContents(const Arguments& args) {
   return scope.Close(arr);
 }
 
+// @method: getName
+// @returns: #string the name of the buffer
 Handle<Value> JSGetName(const Arguments& args) {
   GET_SELF(Buffer);
 
@@ -173,6 +184,8 @@ Handle<Value> JSGetName(const Arguments& args) {
   return scope.Close(String::New(buffer_name.c_str(), buffer_name.length()));
 }
 
+// @accessor: length
+// @returns: #int the number of lines in the buffer
 Handle<Value> JSGetLength(Local<String> property, const AccessorInfo& info) {
   HandleScope scope;
   ACCESSOR_GET_SELF(Buffer);

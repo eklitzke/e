@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 
 import cgi
+import jinja2
 import optparse
 import os
 import re
+import sys
 
 source_regex = re.compile(r'\.(cc|h)$')
 command_regex = re.compile(r'^\s*// @(?P<comm>[-a-zA-Z_]+)(?P<param>\[[-a-zA-Z_]+\])?:\s+(?P<data>.*)\s*$')
 cont_regex = re.compile(r'^\s*//\s+(.*)\s*$')
-
-def emit_html(tmpl, *bind_vals):
-    bind_vals = tuple(cgi.escape(v) for v in bind_vals)
-    return tmpl % bind_vals
 
 class Documentation(object):
 
@@ -29,22 +27,25 @@ class Documentation(object):
         bind_vals = tuple(cgi.escape(v) for v in bind_vals)
         self.html_out.append(tmpl % bind_vals)
 
-    def to_html(self):
-        out = []
-        for p in self.prototypes:
-            out.append(p.to_html())
-        for f in self.functions:
-            out.append(f.to_html())
-        return '\n'.join(out)
+    def render(self, outfile):
+        loader = jinja2.FileSystemLoader(os.path.join(
+                os.path.dirname(__file__), 'templates'))
+        env = jinja2.Environment(loader=loader)
+        template = env.get_template('jsdoc.html')
+        context = {'prototypes': sorted(self.prototypes),
+                   'functions': sorted(self.functions)}
+ 
+        for chunk in template.generate(**context):
+            outfile.write(chunk)
 
 doc = Documentation()
 
 class JSVar(object):
 
-    def __init__(self, name, type='', description=[]):
+    def __init__(self, name, type='', description=None):
         self.name = name
         self.type = type
-        self._description = description
+        self._description = description or []
 
     @property
     def description(self):
@@ -58,16 +59,20 @@ class JSFunction(JSVar):
     def __init__(self, name):
         super(JSFunction, self).__init__(name)
         self.arguments = []
+        self.is_accessor = False
+        self.return_type = ''
+        self.return_val = ''
 
     def add_argument(self, arg):
-        self.arguments.add(arg)
+        self.arguments.append(arg)
 
-    def to_html(self):
-        out = []
-        out.append(emit_html('<div class="function">'))
-        out.append(emit_html('<div class="function_name">%s</div>', self.name))
-        out.append(emit_html('</div> <!-- .function -->'))
-        return '\n'.join(out)
+    def add_returns(self, data):
+        if data.startswith('#'):
+            type, val = data.split(' ', 1)
+            self.return_type = type[1:]
+            self.return_val = val
+        else:
+            self.return_val = data
 
 class JSPrototype(JSVar):
 
@@ -88,15 +93,6 @@ class JSPrototype(JSVar):
         
     def add_method(self, method):
         self.methods.append(method)
-
-    def to_html(self):
-        out = []
-        out.append(emit_html('<div class="prototype">'))
-        out.append(emit_html('<div class="prototype_name">%s</div>', self.name))
-        for meth in self.methods:
-            out.append(meth.to_html())
-        out.append(emit_html('</div> <!-- .prototype -->'))
-        return '\n'.join(out)
 
 class ParseState(object):
 
@@ -149,11 +145,13 @@ class ParseState(object):
                     proto = None
                 else:
                     proto = JSPrototype.get_prototype(data)
-            elif command == 'method':
+            elif command in ('method', 'accessor'):
                 assert proto is not None
                 cur_type = 'func'
                 func = JSFunction(data)
                 proto.add_method(func)
+                if command == 'accessor':
+                    func.is_accessor = True
             elif command == 'param':
                 assert func is not None
                 assert par
@@ -164,6 +162,12 @@ class ParseState(object):
                 else:
                     param = JSVar(par)
                 param.update_description(data)
+                if cur_type == 'class':
+                    proto.add_argument(param)
+                elif cur_type == 'func':
+                    func.add_argument(param)
+                else:
+                    raise ValueError('Unknown curtype %r' % (cur_type,))
             elif command == 'description':
                 if cur_type == 'class':
                     proto.update_description(data)
@@ -171,6 +175,9 @@ class ParseState(object):
                     func.update_description(data)
                 else:
                     assert False
+            elif command == 'returns':
+                assert cur_type == 'func'
+                func.add_returns(data)
             else:
                 raise ValueError('Unknown command %r' % (command,))
 
@@ -182,10 +189,18 @@ def index_file(src_file):
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('-d', '--directory', default='src/', help='The directory to scan')
+    parser.add_option('-o', '--output', default=None, help='The output file')
     opts, args = parser.parse_args()
 
     for dirpath, dirnames, filenames in os.walk(opts.directory):
         for f in (f for f in filenames if source_regex.search(f)):
             index_file(os.path.join(dirpath, f))
-                                 
-    print doc.to_html()
+
+    if opts.output:
+        outdir = os.path.dirname(opts.output)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        with open(opts.output, 'w') as f:
+            doc.render(f)
+    else:
+        doc.render(sys.stdout)

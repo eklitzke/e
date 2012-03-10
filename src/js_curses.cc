@@ -48,35 +48,99 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
   accessors[#macroname] = JS_##macroname;
 
 namespace e {
+// @class: curses
+// @description: a low-level interface to ncurses
 
+// @accessor: OK
+// @returns: #int the OK value for curses
+//
+// This is set in state.cc
+
+// @accessor: ERR
+// @returns: #int the error value for curses
+//
+// This is set in state.cc
+
+// @accessor: COLOR_PAIRS
+// @returns: #int the number of color pairs the terminal supports
 CURSES_ACCESSOR(COLOR_PAIRS);
+
+// @accessor: COLOR_PAIRS
+// @returns: #int the number of colors the terminal supports
 CURSES_ACCESSOR(COLORS);
+
+// @accessor: COLS
+// @returns: #int the width of the screen (i.e. the number of columns)
 CURSES_ACCESSOR(COLS);
+
+// @accessor: ESCDELAY
+// @returns: #int the number of milliseconds curses will wait after reading
+//           an escape character
 CURSES_ACCESSOR(ESCDELAY);
+
+// @accessor: ESCDELAY
+// @returns: #int the height of the screen (i.e. the number of lines)
 CURSES_ACCESSOR(LINES);
+
+// @accessor: TABSIZE
+// @returns: #int the number of columns in a tab character
 CURSES_ACCESSOR(TABSIZE);
 
-// colors
+// @accessor: COLOR_BLACK
 CURSES_ACCESSOR(COLOR_BLACK);
+
+// @accessor: COLOR_RED
 CURSES_ACCESSOR(COLOR_RED);
+
+// @accessor: COLOR_GREEN
 CURSES_ACCESSOR(COLOR_GREEN);
+
+// @accessor: COLOR_YELLOW
 CURSES_ACCESSOR(COLOR_YELLOW);
+
+// @accessor: COLOR_BLUE
 CURSES_ACCESSOR(COLOR_BLUE);
+
+// @accessor: COLOR_MAGENTA
 CURSES_ACCESSOR(COLOR_MAGENTA);
+
+// @accessor: COLOR_CYAN
 CURSES_ACCESSOR(COLOR_CYAN);
+
+// @accessor: COLOR_WHITE
 CURSES_ACCESSOR(COLOR_WHITE);
 
-// attributes
+// @accessor: A_NORMAL
 CURSES_ACCESSOR(A_NORMAL);
+
+// @accessor: A_STANDOUT
 CURSES_ACCESSOR(A_STANDOUT);
+
+// @accessor: A_UNDERLINE
 CURSES_ACCESSOR(A_UNDERLINE);
+
+// @accessor: A_REVERSE
 CURSES_ACCESSOR(A_REVERSE);
+
+// @accessor: A_BLINK
 CURSES_ACCESSOR(A_BLINK);
+
+// @accessor: A_DIM
 CURSES_ACCESSOR(A_DIM);
+
+// @accessor: A_BOLD
 CURSES_ACCESSOR(A_BOLD);
+
+// @accessor: A_PROTECT
 CURSES_ACCESSOR(A_PROTECT);
+
+// @accessor: A_INVIS
 CURSES_ACCESSOR(A_INVIS);
+
+// @accessor: A_ALTCHARSET
 CURSES_ACCESSOR(A_ALTCHARSET);
+
+// @accessor: A_CHARTEXT
 CURSES_ACCESSOR(A_CHARTEXT);
 
 /*
@@ -90,9 +154,18 @@ void JSSetLength(Local<String> property, Local<Value> value,
 */
 
 
+// @method: doupdate
+// @description: calls the curses `doupdate()` routine
 CURSES_VOID_FUNC(Doupdate, doupdate)
+
+// @method: refresh
+// @description: calls the curses `refresh()` routine
 CURSES_VOID_FUNC(Refresh, refresh)
 
+// @method: move
+// @param[y]: #int the row to move to
+// @param[x]: #int the column to move to
+// @description: this method moves the user-visible cursor
 Handle<Value> CursesMove(const Arguments& args) {
   if (args.Length() < 2) {
     return Undefined();
@@ -105,6 +178,12 @@ Handle<Value> CursesMove(const Arguments& args) {
   return scope.Close(ret);
 }
 
+// @method: newwin
+// @param[nlines]: #int the number of lines in the window
+// @param[ncols]: #int the number of columns in the window
+// @param[begin_y]: #int the y-coordinate of the upper-left corner
+// @param[begin_x]: #int the x-coordinate of the upper-left corner
+// @description: this method creates a new curses window
 Handle<Value> CursesNewwin(const Arguments& args) {
   CHECK_ARGS(4);
 

@@ -1,0 +1,73 @@
+{% macro render_param(param) -%}
+<span class="param">{{param.name}}</span>
+{%- endmacro %}
+{% macro render_function(func) -%}
+<div class="function">
+  <div class="function_sig">
+	<span class="function_name">{{ func.name }}</span>{% if not func.is_accessor %}({%- if func.arguments -%}
+	{%- for param in func.arguments[:-1] -%}
+	{{ render_param(param)}} ,
+	{%- endfor %}
+	{{ render_param(func.arguments[-1])}}
+	{%- endif %}){% endif %}</div>
+  {% if func.arguments %}
+  <!-- <div class="function_params_decl">Parameters:</div> -->
+  <div class="function_params">
+	{% for param in func.arguments %}
+	<ul>
+	  <span class="param"> {{param.name}} </span>
+	  {% if param.type %}
+	  <span class="param_type">{{param.type}}</span>
+	  {% endif %}
+	  {{param.description}}
+	</ul>
+	{% endfor %}
+  </div>
+  {% endif %}
+  {% if func.return_val %}
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	{% if func.return_type %}
+	<span class="param_type">{{func.return_type}}</span>
+	{% endif %}
+	{{ func.return_val }}
+  </span>
+  </div>
+  {% endif %}
+  <div class="function_desc">
+	{{ func.description }}
+  </div>
+</div>
+{%- endmacro %}
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>JavaScript Documentation</title>
+	<link rel="stylesheet" href="./reset.css" type="text/css">
+	<link href="http://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet" type="text/css">
+	<link href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="./style.css" type="text/css">
+  </head>
+  <body>
+	<div class="TOC">
+	{% for proto in prototypes %}
+	{{proto.name}}<br>
+	<!--
+	{% for method in proto.methods %}
+	&nbsp;{{method.name}}{% if not method.is_accessor %}(){% endif %}<br>
+	{% endfor %}
+	-->
+	{% endfor %}
+	</div>
+	{% for proto in prototypes %}
+	<div class="prototype">
+	  <div class="prototype_name">{{ proto.name }}</div>
+	  <div class="prototype_desc">{{ proto.description}} </div>
+	  {% for method in proto.methods %}
+	  {{ render_function(method) }}
+	  {% endfor %}
+	</div> <!-- .prototype -->
+	{% endfor %}
+  </body>
+</html>

@@ -1,0 +1,726 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>JavaScript Documentation</title>
+	<link rel="stylesheet" href="./reset.css" type="text/css">
+	<link href="http://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet" type="text/css">
+	<link href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="./style.css" type="text/css">
+  </head>
+  <body>
+	<div class="TOC">
+	
+	curses<br>
+	<!--
+	
+	&nbsp;OK<br>
+	
+	&nbsp;ERR<br>
+	
+	&nbsp;COLOR_PAIRS<br>
+	
+	&nbsp;COLOR_PAIRS<br>
+	
+	&nbsp;COLS<br>
+	
+	&nbsp;ESCDELAY<br>
+	
+	&nbsp;ESCDELAY<br>
+	
+	&nbsp;TABSIZE<br>
+	
+	&nbsp;COLOR_BLACK<br>
+	
+	&nbsp;COLOR_RED<br>
+	
+	&nbsp;COLOR_GREEN<br>
+	
+	&nbsp;COLOR_YELLOW<br>
+	
+	&nbsp;COLOR_BLUE<br>
+	
+	&nbsp;COLOR_MAGENTA<br>
+	
+	&nbsp;COLOR_CYAN<br>
+	
+	&nbsp;COLOR_WHITE<br>
+	
+	&nbsp;A_NORMAL<br>
+	
+	&nbsp;A_STANDOUT<br>
+	
+	&nbsp;A_UNDERLINE<br>
+	
+	&nbsp;A_REVERSE<br>
+	
+	&nbsp;A_BLINK<br>
+	
+	&nbsp;A_DIM<br>
+	
+	&nbsp;A_BOLD<br>
+	
+	&nbsp;A_PROTECT<br>
+	
+	&nbsp;A_INVIS<br>
+	
+	&nbsp;A_ALTCHARSET<br>
+	
+	&nbsp;A_CHARTEXT<br>
+	
+	&nbsp;doupdate()<br>
+	
+	&nbsp;refresh()<br>
+	
+	&nbsp;move()<br>
+	
+	&nbsp;newwin()<br>
+	
+	-->
+	
+	Buffer<br>
+	<!--
+	
+	&nbsp;addLine()<br>
+	
+	&nbsp;deleteLine()<br>
+	
+	&nbsp;getLine()<br>
+	
+	&nbsp;getContents()<br>
+	
+	&nbsp;getName()<br>
+	
+	&nbsp;length<br>
+	
+	-->
+	
+	</div>
+	
+	<div class="prototype">
+	  <div class="prototype_name">curses</div>
+	  <div class="prototype_desc">a low-level interface to ncurses </div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">OK</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the OK value for curses
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">ERR</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the error value for curses
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_PAIRS</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the number of color pairs the terminal supports
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_PAIRS</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the number of colors the terminal supports
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLS</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the width of the screen (i.e. the number of columns)
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">ESCDELAY</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the number of milliseconds curses will wait after reading an escape character
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">ESCDELAY</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the height of the screen (i.e. the number of lines)
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">TABSIZE</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the number of columns in a tab character
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_BLACK</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_RED</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_GREEN</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_YELLOW</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_BLUE</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_MAGENTA</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_CYAN</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">COLOR_WHITE</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_NORMAL</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_STANDOUT</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_UNDERLINE</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_REVERSE</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_BLINK</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_DIM</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_BOLD</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_PROTECT</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_INVIS</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_ALTCHARSET</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">A_CHARTEXT</span></div>
+  
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">doupdate</span>()</div>
+  
+  
+  <div class="function_desc">
+	calls the curses `doupdate()` routine
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">refresh</span>()</div>
+  
+  
+  <div class="function_desc">
+	calls the curses `refresh()` routine
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">move</span>(<span class="param">y</span> ,
+	<span class="param">x</span>)</div>
+  
+  <!-- <div class="function_params_decl">Parameters:</div> -->
+  <div class="function_params">
+	
+	<ul>
+	  <span class="param"> y </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  the row to move to
+	</ul>
+	
+	<ul>
+	  <span class="param"> x </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  the column to move to
+	</ul>
+	
+  </div>
+  
+  
+  <div class="function_desc">
+	this method moves the user-visible cursor
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">newwin</span>(<span class="param">nlines</span> ,<span class="param">ncols</span> ,<span class="param">begin_y</span> ,
+	<span class="param">begin_x</span>)</div>
+  
+  <!-- <div class="function_params_decl">Parameters:</div> -->
+  <div class="function_params">
+	
+	<ul>
+	  <span class="param"> nlines </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  the number of lines in the window
+	</ul>
+	
+	<ul>
+	  <span class="param"> ncols </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  the number of columns in the window
+	</ul>
+	
+	<ul>
+	  <span class="param"> begin_y </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  the y-coordinate of the upper-left corner
+	</ul>
+	
+	<ul>
+	  <span class="param"> begin_x </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  the x-coordinate of the upper-left corner
+	</ul>
+	
+  </div>
+  
+  
+  <div class="function_desc">
+	this method creates a new curses window
+  </div>
+</div>
+	  
+	</div> <!-- .prototype -->
+	
+	<div class="prototype">
+	  <div class="prototype_name">Buffer</div>
+	  <div class="prototype_desc">a buffer object </div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">addLine</span>(
+	<span class="param">offset</span>)</div>
+  
+  <!-- <div class="function_params_decl">Parameters:</div> -->
+  <div class="function_params">
+	
+	<ul>
+	  <span class="param"> offset </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  line number for the newly inserted line
+	</ul>
+	
+  </div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">Line</span>
+	
+	the line that was added
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	adds a line to the buffer
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">deleteLine</span>(
+	<span class="param">offset</span>)</div>
+  
+  <!-- <div class="function_params_decl">Parameters:</div> -->
+  <div class="function_params">
+	
+	<ul>
+	  <span class="param"> offset </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  line number of the line to delete
+	</ul>
+	
+  </div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">bool</span>
+	
+	true if the line was deleted, false otherwise
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	removes a line from the buffer
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">getLine</span>(
+	<span class="param">offset</span>)</div>
+  
+  <!-- <div class="function_params_decl">Parameters:</div> -->
+  <div class="function_params">
+	
+	<ul>
+	  <span class="param"> offset </span>
+	  
+	  <span class="param_type">int</span>
+	  
+	  line number of the line to get
+	</ul>
+	
+  </div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">Line</span>
+	
+	the line at the specified linenum
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	gets a Line object from the buffer
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">getContents</span>()</div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">[string]</span>
+	
+	the array of strings representing the buffer
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	returns the buffer as an array of strings
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">getName</span>()</div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">string</span>
+	
+	the name of the buffer
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	  <div class="function">
+  <div class="function_sig">
+	<span class="function_name">length</span></div>
+  
+  
+  <div class="function_returns_wrapper">
+  <span class="function_returns_decl">Returns:</span>
+  <span class="function_returns">
+	
+	<span class="param_type">int</span>
+	
+	the number of lines in the buffer
+  </span>
+  </div>
+  
+  <div class="function_desc">
+	
+  </div>
+</div>
+	  
+	</div> <!-- .prototype -->
+	
+  </body>
+</html>
