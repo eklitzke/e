@@ -135,9 +135,6 @@ KeyCode::KeyCode(int code, const std::string &short_name)
 
 KeyCode::KeyCode(int code)
     :code_(code) {
-  if (code <= 127) {
-    short_name_ = std::string(1, static_cast<char>(code));
-  }
 }
 
 KeyCode::~KeyCode() {
@@ -197,19 +194,19 @@ char KeyCode::GetChar(void) const {
 
 namespace keycode {
   const size_t max_code = %(max_code)d;
-  const std::string keycode_arr[max_code + 1] = {
+  const char * keycode_arr[%(arr_size)d] = {
 %(codes)s
   };
 
   KeyCode* curses_code_to_keycode(int code) {
     size_t offset = static_cast<size_t>(code);
     assert(offset <= max_code);
-    const std::string &name = keycode_arr[offset];
+    const char *name = keycode_arr[offset];
 
     // The returned pointers are "owned" by V8; the way they'll get deleted
     // later on is by CleanupKeycode, which will be invoked when the containing
     // V8 object is garbage collected.
-    if (!name.size()) {
+    if (name == nullptr) {
       return new KeyCode(code);
     } else {
       return new KeyCode(code, name);
@@ -275,6 +272,7 @@ if __name__ == '__main__':
     h_name = opts.output_prefix + '.h'
     cc_name = opts.output_prefix + '.cc'
 
+    printable = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ '
     code_arr = []
     comment_width = 30
     for code in xrange(max_code + 1):
@@ -284,14 +282,24 @@ if __name__ == '__main__':
             val += ' ' * (comment_width - len(val))
             val += '// %s' % (description,)
             code_arr.append(val)
+        elif code < 128:
+            chrval = chr(code)
+            if chrval in printable:
+                chrval = chrval.replace('\\', '\\\\')
+                chrval = chrval.replace('"', '\\"')
+                code_arr.append('      "%s",' % (chrval,))
+            else:
+                code_arr.append('      "\\x%02x",' % (code,))
+            pass
         else:
-            code_arr.append('      "",')
+            code_arr.append('      nullptr,')
 
     with open(h_name, 'w') as h_file:
         h_file.write(h_template.lstrip() % {'current_year': current_year})
 
     with open(cc_name, 'w') as cc_file:
-        cc_file.write(cc_template.lstrip() % ({'current_year': current_year,
+        cc_file.write(cc_template.lstrip() % ({'arr_size': max_code + 1,
+                                               'current_year': current_year,
                                                'codes': '\n'.join(code_arr),
                                                'h_name': os.path.basename(h_name),
                                                'max_code': max_code}))

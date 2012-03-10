@@ -1,7 +1,5 @@
 core = { column: 0, line: 0, windowTop: 0 };
 
-keys = [];
-
 log("entered core.js");
 
 /**
@@ -286,10 +284,6 @@ world.addEventListener("load", function (event) {
 
 // Core routine called on each keypress
 world.addEventListener("keypress", function (event) {
-	keys.push(event);
-	for (var i = 0; i < keys.length; i++) {
-		log("keys[" + i + "] = " + keys[i].getName());
-	}
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();

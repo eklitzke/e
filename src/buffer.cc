@@ -95,6 +95,11 @@ std::vector<Line*>* Buffer::Lines() {
 }
 
 namespace {
+// @class: Buffer
+//
+// @method: addLine
+// @param[offset]: #int offset of where to add the line
+// @description: adds a line to the buffer
 Handle<Value> JSAddLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
@@ -118,6 +123,9 @@ Handle<Value> JSAddLine(const Arguments& args) {
   return scope.Close(line->ToScript());
 }
 
+// @method: deleteLine
+// @param[offset]: #int offset of where to add the line
+// @description: removes a line from the buffer
 Handle<Value> JSDeleteLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
