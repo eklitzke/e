@@ -27,13 +27,14 @@ class Documentation(object):
         bind_vals = tuple(cgi.escape(v) for v in bind_vals)
         self.html_out.append(tmpl % bind_vals)
 
-    def render(self, outfile):
+    def render(self, static_dir, outfile):
         loader = jinja2.FileSystemLoader(os.path.join(
                 os.path.dirname(__file__), 'templates'))
         env = jinja2.Environment(loader=loader)
         template = env.get_template('jsdoc.html')
         context = {'prototypes': sorted(self.prototypes),
-                   'functions': sorted(self.functions)}
+                   'functions': sorted(self.functions),
+                   'static_dir': static_dir.rstrip('/')}
  
         for chunk in template.generate(**context):
             outfile.write(chunk)
@@ -49,7 +50,16 @@ class JSVar(object):
 
     @property
     def description(self):
-        return ' '.join(self._description)
+        val = ' '.join(self._description)
+        while True:
+            c = val.count('`')
+            if c == 0:
+                break
+            elif c % 2 == 0:
+                val = val.replace('`', '<span class="code">', 1)
+            else:
+                val = val.replace('`', '</span>', 1)
+        return val
 
     def update_description(self, desc):
         self._description.append(desc)
@@ -190,6 +200,7 @@ if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('-d', '--directory', default='src/', help='The directory to scan')
     parser.add_option('-o', '--output', default=None, help='The output file')
+    parser.add_option('--static-dir', default='../static/', help='The static directory file')
     opts, args = parser.parse_args()
 
     for f in sorted(args):
@@ -200,6 +211,6 @@ if __name__ == '__main__':
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         with open(opts.output, 'w') as f:
-            doc.render(f)
+            doc.render(opts.static_dir, f)
     else:
-        doc.render(sys.stdout)
+        doc.render(opts.static_dir, sys.stdout)

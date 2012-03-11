@@ -53,7 +53,14 @@ const std::string& Line::ToString() const {
 //}
 
 namespace {
-// chop a string from some position forward, and return the chopped part
+// @class: Line
+// @description: This class is the internal representation of a line of text,
+//               and is the subunit of a `Buffer.. It is similar to a JavaScript
+//               string, and can be converted to and from one.
+
+// @method: append
+// @param[str]: #string the string to append
+// @description: Appends the string to the line. Returns the new Line.
 Handle<Value> JSAppend(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Line);
@@ -63,6 +70,10 @@ Handle<Value> JSAppend(const Arguments& args) {
   RETURN_SELF;
 }
 
+// @method: chop
+// @param[offset]: #int the offset to chop at
+// @description: Chops from the offset to the end of the line. Returns the
+//               chopped section as a JavaScript string.
 Handle<Value> JSChop(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Line);
@@ -73,6 +84,11 @@ Handle<Value> JSChop(const Arguments& args) {
   return scope.Close(String::New(chopped.c_str(), chopped.size()));
 }
 
+// @method: erase
+// @param[offset]: #int the offset to erase at
+// @param[num_chars]: #int the number of characters to erase
+// @description: Erases characters from the middle of the line. Returns the new
+//               Line.
 Handle<Value> JSErase(const Arguments& args) {
   CHECK_ARGS(2);
   GET_SELF(Line);
@@ -84,6 +100,11 @@ Handle<Value> JSErase(const Arguments& args) {
   RETURN_SELF;
 }
 
+// @method: insert
+// @param[offset]: #int the offset to insert at
+// @param[str]: #string the string to insert
+// @description: Inserts characters in the middle of the line. Returns the new
+//               Line.
 Handle<Value> JSInsert(const Arguments& args) {
   CHECK_ARGS(2);
   GET_SELF(Line);
@@ -96,12 +117,16 @@ Handle<Value> JSInsert(const Arguments& args) {
   RETURN_SELF;
 }
 
+// @method: value
+// @description: Returns the contents of the line as a JavaScript string.
 Handle<Value> JSValue(const Arguments& args) {
   HandleScope scope;
   GET_SELF(Line);
   RETURN_SELF;
 }
 
+// @accessor: length
+// @description: Returns the length of the line.
 Handle<Value> JSGetLength(Local<String> property, const AccessorInfo& info) {
   HandleScope scope;
   ACCESSOR_GET_SELF(Line);

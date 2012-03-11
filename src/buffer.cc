@@ -96,12 +96,11 @@ std::vector<Line*>* Buffer::Lines() {
 
 namespace {
 // @class: Buffer
-// @description: a buffer object
+// @description: The internal representation of a buffer.
 //
 // @method: addLine
 // @param[offset]: #int line number for the newly inserted line
-// @returns: #Line the line that was added
-// @description: adds a line to the buffer
+// @description: Adds a line to the buffer.
 Handle<Value> JSAddLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
@@ -127,8 +126,8 @@ Handle<Value> JSAddLine(const Arguments& args) {
 
 // @method: deleteLine
 // @param[offset]: #int line number of the line to delete
-// @returns: #bool true if the line was deleted, false otherwise
-// @description: removes a line from the buffer
+// @description: Removes a line from the buffer; returns true if the line was
+//               deleted, false otherwise.
 Handle<Value> JSDeleteLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
@@ -146,8 +145,7 @@ Handle<Value> JSDeleteLine(const Arguments& args) {
 
 // @method: getLine
 // @param[offset]: #int line number of the line to get
-// @returns: #Line the line at the specified linenum
-// @description: gets a Line object from the buffer
+// @description: Gets a Line object from the buffer.
 Handle<Value> JSGetLine(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
@@ -160,8 +158,7 @@ Handle<Value> JSGetLine(const Arguments& args) {
 }
 
 // @method: getContents
-// @returns: #[string] the array of strings representing the buffer
-// @description: returns the buffer as an array of strings
+// @description: Returns the buffer as an array of strings.
 Handle<Value> JSGetContents(const Arguments& args) {
   GET_SELF(Buffer);
   HandleScope scope;
@@ -175,7 +172,7 @@ Handle<Value> JSGetContents(const Arguments& args) {
 }
 
 // @method: getName
-// @returns: #string the name of the buffer
+// @description: Returns the name of the buffer.
 Handle<Value> JSGetName(const Arguments& args) {
   GET_SELF(Buffer);
 
@@ -185,7 +182,7 @@ Handle<Value> JSGetName(const Arguments& args) {
 }
 
 // @accessor: length
-// @returns: #int the number of lines in the buffer
+// @description: Returns the number of lines in the buffer.
 Handle<Value> JSGetLength(Local<String> property, const AccessorInfo& info) {
   HandleScope scope;
   ACCESSOR_GET_SELF(Buffer);

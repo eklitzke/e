@@ -1,15 +1,30 @@
-body {font-family: 'Droid Sans', sans-serif; font-size: 16px; margin: 1em; }
+body { font-family: 'Open Sans', sans-serif; font-size: 18px; margin: 1em 3em 1em 1em; }
+html {  color: #fdfdfa; }
+a { cursor: pointer; }
 
-.param { font-family: 'Droid Sans Mono'; font-weight: bold; }
-.param_type { font-family: 'Droid Sans Mono'; background-color: #EEE; }
+.TOC { margin-bottom: 2em; font-family: 'Inconsolata', mono; }
+.TOC_header { font-size: 24px; font-weight: bold; font-family: 'Inconsolata', mono; color: #ff738d; }
+.TOC a { color: #d1a5e3; font-weight: bold; text-decoration: none; }
+.TOC_container { margin-top: 0.40em; }
+
+.code { font-family: 'Inconsolata', mono; color: #c5e8ef; }
+.italic { font-style: italic; }
+
+.param { font-family: 'Inconsolata'; color: #a5ff89; }
+.param_type { font-family: 'Inconsolata'; color: #d1a5e3; margin-right: 0.5em; }
 
 .prototype { margin-top: 1em; }
-.prototype_name { font-size: 24px; font-weight: bold; font-family: 'Droid Sans Mono', mono; }
+.prototype_name { font-size: 24px; font-weight: bold; font-family: 'Inconsolata', mono; color: #d1a5e3}
+
+a.para { visibility: hidden; }
+.prototype_name_container:hover > a.para { visibility: visible; }
+.prototype_name_container:hover > a.para { color: red; }
 
 .function { margin-top: 1em; }
-.function_sig { font-family: 'Droid Sans Mono'; }
-.function_name { font-weight: bold; font-size: 18px; }
-.function_desc { margin-top: 0.5em; }
+.function_sig { font-family: 'Inconsolata'; }
+/*.function_name { font-weight: bold; 18px; color: #c5e8ef; }*/
+.function_name { font-weight: bold; 18px; color: #6ad6ea; }
+.function_desc { margin-bottom: 2em; }
+.function_params { margin-bottom: 0.5em; }
 
 .function_params_decl { font-weight: bold; }
-.function_returns_decl { font-weight: bold; }

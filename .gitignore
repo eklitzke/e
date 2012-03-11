@@ -6,7 +6,8 @@
 Makefile
 *.Makefile
 *.mk
-docs/jsdoc.html
+docs/
+e
 gyp.out/
 src/bundled_core.cc
 src/bundled_core.h

@@ -41,6 +41,19 @@ using v8::Value;
 namespace {
 bool keep_going = true;
 
+// @class: world
+// @description: The representation of the world's state.
+
+// @method: addEventListener
+// @param[type]: #string the type of event to listen for
+// @param[listener]: #function the callback function to invoke
+// @param[useCapture]: #bool run the listener in capture mode (optional,
+//                     defaults to `false`)
+// @description: Adds an event listener to the world. This follows the usual
+//               browser-based `addEventListener` interface.
+
+// @method: stopLoop
+// @description: Stops the event loop.
 Handle<Value> JSStopLoop(const Arguments& args) {
   keep_going = false;
   return Undefined();

@@ -49,41 +49,41 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
 
 namespace e {
 // @class: curses
-// @description: a low-level interface to ncurses
+// @description: A low-level interface to ncurses.
 
 // @accessor: OK
-// @returns: #int the OK value for curses
+// @description: The value of `OK` in the underlying curses implementation.
 //
 // This is set in state.cc
 
 // @accessor: ERR
-// @returns: #int the error value for curses
+// @description: The value of `ERR` in the underlying curses implementation.
 //
 // This is set in state.cc
 
 // @accessor: COLOR_PAIRS
-// @returns: #int the number of color pairs the terminal supports
+// @description: The number of color pairs the terminal supports.
 CURSES_ACCESSOR(COLOR_PAIRS);
 
 // @accessor: COLOR_PAIRS
-// @returns: #int the number of colors the terminal supports
+// @description: The number of colors the terminal supports.
 CURSES_ACCESSOR(COLORS);
 
 // @accessor: COLS
-// @returns: #int the width of the screen (i.e. the number of columns)
+// @description: The width of the screen (i.e. the number of columns).
 CURSES_ACCESSOR(COLS);
 
 // @accessor: ESCDELAY
-// @returns: #int the number of milliseconds curses will wait after reading
-//           an escape character
+// @description: The number of milliseconds ncurses will wait after reading an
+//               escape character
 CURSES_ACCESSOR(ESCDELAY);
 
 // @accessor: ESCDELAY
-// @returns: #int the height of the screen (i.e. the number of lines)
+// @description: The height of the screen (i.e. the number of lines).
 CURSES_ACCESSOR(LINES);
 
 // @accessor: TABSIZE
-// @returns: #int the number of columns in a tab character
+// @description: The number of columns in a tab character.
 CURSES_ACCESSOR(TABSIZE);
 
 // @accessor: COLOR_BLACK
@@ -155,17 +155,17 @@ void JSSetLength(Local<String> property, Local<Value> value,
 
 
 // @method: doupdate
-// @description: calls the curses `doupdate()` routine
+// @description: Calls the underlying ncurses `doupdate()` routine.
 CURSES_VOID_FUNC(Doupdate, doupdate)
 
 // @method: refresh
-// @description: calls the curses `refresh()` routine
+// @description: Calls the underlying ncurses `refresh()` routine.
 CURSES_VOID_FUNC(Refresh, refresh)
 
 // @method: move
 // @param[y]: #int the row to move to
 // @param[x]: #int the column to move to
-// @description: this method moves the user-visible cursor
+// @description: This method moves the user-visible cursor.
 Handle<Value> CursesMove(const Arguments& args) {
   if (args.Length() < 2) {
     return Undefined();
@@ -183,7 +183,7 @@ Handle<Value> CursesMove(const Arguments& args) {
 // @param[ncols]: #int the number of columns in the window
 // @param[begin_y]: #int the y-coordinate of the upper-left corner
 // @param[begin_x]: #int the x-coordinate of the upper-left corner
-// @description: this method creates a new curses window
+// @description: This method creates a new curses window.
 Handle<Value> CursesNewwin(const Arguments& args) {
   CHECK_ARGS(4);
 

@@ -92,40 +92,164 @@ JSCursesWindow::~JSCursesWindow() {
 }
 
 namespace {
-///////////////////////////////////////////////////////
-// MACRO                               EXPORTED NAME //
-///////////////////////////////////////////////////////
-CURSES_STRING_FUNC(waddnstr);       // addstr
-CURSES_INT_FUNC(wattron);           // attron
-CURSES_INT_FUNC(wattroff);          // attroff
-CURSES_INT_FUNC(wattrset);          // attrset
-CURSES_VOID_FUNC(wclear);           // clear
-CURSES_VOID_FUNC(wclrtobot);        // clrtobot
-CURSES_VOID_FUNC(wclrtoeol);        // clrtoeol
-CURSES_VOID_FUNC(werase);           // erase
-CURSES_VOID_FUNC(getattrs);         // getattrs
-CURSES_VOID_FUNC(getbegx);          // getbegx
-CURSES_VOID_FUNC(getbegy);          // getbegy
-CURSES_VOID_FUNC(getcurx);          // getcurx
-CURSES_VOID_FUNC(getcury);          // getcury
-CURSES_VOID_FUNC(getmaxx);          // getmaxx
-CURSES_VOID_FUNC(getmaxy);          // getmaxy
-CURSES_VOID_FUNC(getparx);          // getparx
-CURSES_VOID_FUNC(getpary);          // getpary
-CURSES_YX_FUNC(wmove);              // move
-CURSES_YX_STRING_FUNC(mvwaddnstr);  // mvaddstr
-CURSES_YX_FUNC(mvwdelch);           // mvdelch
-CURSES_YX_FUNC(mvwin);              // mvwin
-CURSES_VOID_FUNC(wnoutrefresh);     // noutrefresh
-CURSES_VOID_FUNC(redrawwin);        // redrawwin
-CURSES_YX_FUNC(wredrawln);          // redrawln
-CURSES_VOID_FUNC(wrefresh);         // refresh
-CURSES_INT_FUNC(wscrl);             // scrl
-CURSES_BOOL_FUNC(scrollok);         // scrollok
-CURSES_YX_FUNC(wsetscrreg);         // setscrreg
-CURSES_VOID_FUNC(wstandend);        // standend
-CURSES_VOID_FUNC(wstandout);        // standout
+// @class: curses.Window
+// @description: The JS representation of a `curses.WINDOW` object. In general,
+//               the commands below correspond to the `w*` commands in curses,
+//               so e.g. the `addstr` method actually maps to `waddstr(3)` in
+//               the underlying curses implementation. Also note that curses
+//               routines accepting strings use the `n` variant, so it's safe to
+//               use strings containing null bytes.
 
+
+// @method: addstr
+// @param[str]: #string the string to draw
+// @description: Adds a string at the current cursor location.
+CURSES_STRING_FUNC(waddnstr);
+
+// @method: attron
+// @param[attrs]: #int The attributes to turn on.
+// @description: Turns on the given attributes.
+CURSES_INT_FUNC(wattron);
+
+// @method: attroff
+// @param[attrs]: #int The attributes to turn off.
+// @description: Turns off the given attributes.
+CURSES_INT_FUNC(wattroff);
+
+// @method: attrset
+// @param[attrs]: #int The attributes to set.
+// @description: Sets the given attributes, and clears all others.
+CURSES_INT_FUNC(wattrset);
+
+// @method: clear
+// @description: Clears the window.
+CURSES_VOID_FUNC(wclear);
+
+// @method: clrtobot
+// @description: Clears from the cursor to the bottom of the window.
+CURSES_VOID_FUNC(wclrtobot);
+
+// @method: clrtoeol
+// @description: Clears from the cursor to the end of the line.
+CURSES_VOID_FUNC(wclrtoeol);
+
+// @method: erase
+// @description: Like `clear()`, but also calls `clearok()`.
+CURSES_VOID_FUNC(werase);
+
+// @method: getattrs
+// @description: Gets the attributes of the current window.
+CURSES_VOID_FUNC(getattrs);
+
+// @method: getbegx
+// @description: Returns the absolute x-coordinate of the origin of the current window.
+CURSES_VOID_FUNC(getbegx);
+
+// @method: getbegy
+// @description: Returns the absolute y-coordinate of the origin of the current window.
+CURSES_VOID_FUNC(getbegy);
+
+// @method: getcurx
+// @description: Returns the x-coordinate of the window's cursor.
+CURSES_VOID_FUNC(getcurx);
+
+// @method: getcury
+// @description: Returns the y-coordinate of the window's cursor.
+CURSES_VOID_FUNC(getcury);
+
+// @method: getmaxx
+// @description: Returns the maximum x-coordinate for the window.
+CURSES_VOID_FUNC(getmaxx);
+
+// @method: getmaxy
+// @description: Returns the maximum y-coordinate for the window.
+CURSES_VOID_FUNC(getmaxy);
+
+// @method: getparx
+// @description: Returns the x-coordinate of the window relative to its parent.
+CURSES_VOID_FUNC(getparx);
+
+// @method: getpary
+// @description: Returns the y-coordinate of the window relative to its parent.
+CURSES_VOID_FUNC(getpary);
+
+// @method: move
+// @param[y]: #int the y-coordinate to move to
+// @param[x]: #int the x-coordinate to move to
+// @description: Moves the cursor to the specified (y, x) coordinate.
+CURSES_YX_FUNC(wmove);
+
+// @method: mvaddstr
+// @param[y]: #int the y-coordinate to move to
+// @param[x]: #int the x-coordinate to move to
+// @param[str]: #string the string to draw
+// @description: Moves the cursor to the specified (y, x) coordinate, and then
+//               draws a string (updating the cursor position).
+CURSES_YX_STRING_FUNC(mvwaddnstr);
+
+// @method: mvdelch
+// @param[y]: #int the y-coordinate to move to
+// @param[x]: #int the x-coordinate to move to
+// @description: Moves the cursor to the specified (y, x) coordinate, and then
+//               deletes a character. Following characters will be shifted left
+//               as necessary.
+CURSES_YX_FUNC(mvwdelch);
+
+// @method: mvwin
+// @param[y]: #int the y-coordinate to move the window to
+// @param[x]: #int the x-coordinate to move the window to
+// @description: Moves the origin of the current window.
+CURSES_YX_FUNC(mvwin);
+
+// @method: noutrefresh
+// @description: Copy the contents of the window to the virtual screen.
+CURSES_VOID_FUNC(wnoutrefresh);
+
+// @method: redrawwin
+// @description: Redraw the window.
+CURSES_VOID_FUNC(redrawwin);
+
+// @method: redrawln
+// @param[beg_line]: #int the first corrupted line
+// @param[num_lines]: #int the number of corrupted lines
+// @description: Redraws multiple lines.
+CURSES_YX_FUNC(wredrawln);
+
+// @method: refresh
+// @description: Rereshes the window (i.e. causes the windows contents to be
+//               drawn to the screen).
+CURSES_VOID_FUNC(wrefresh);
+
+// @method: scrl
+// @param[n]: #int the number of lines to scroll
+// @description: Scrolls the window a given number of lines.
+CURSES_INT_FUNC(wscrl);
+
+// @method: scrollok
+// @param[bf]: #bool is scrolling allowed?
+// @description: Toggles scrollability for the window.
+CURSES_BOOL_FUNC(scrollok);
+
+// @method: setscrreg
+// @param[top]: #int the top line in the scroll region
+// @param[bot]: #int the bottom line in the scroll region
+// @description: Establishes a section of the screen for scrolling.
+CURSES_YX_FUNC(wsetscrreg);
+
+// @method: standend
+// @description: Ends standout mode.
+CURSES_VOID_FUNC(wstandend);
+
+// @method: standout
+// @description: Begins standout mode.
+CURSES_VOID_FUNC(wstandout);
+
+// @method: insch
+// @param[ch]: #char the character to insert
+// @description: Inserts a character at the current cursor position, shifting
+//               following characters to the right as necessary. If `ch` is more
+//               than one character, it will be truncated to the first
+//               character.
 Handle<Value> JS_winsch(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(JSCursesWindow);                                           \
@@ -138,6 +262,12 @@ Handle<Value> JS_winsch(const Arguments& args) {
   return scope.Close(Integer::New(winsch(self->window_, chtype_val)));
 }
 
+// @method: subwin
+// @param[nlines]: #int the number of lines in the new window
+// @param[ncols]: #int the number of columns in the new window
+// @param[begin_y]: #int the y-coordinate of the origin of the new window
+// @param[begin_x]: #int the x-coordinate of the origin of the new window
+// @description: Creates a new subwindow of the current window.
 Handle<Value> JSSubwin(const Arguments& args) {
   CHECK_ARGS(4);
 

@@ -1,15 +1,16 @@
 {% macro render_param(param) -%}
 <span class="param">{{param.name}}</span>
 {%- endmacro %}
-{% macro render_function(func) -%}
+{% macro render_function(func, proto="") -%}
 <div class="function">
   <div class="function_sig">
-	<span class="function_name">{{ func.name }}</span>{% if not func.is_accessor %}({%- if func.arguments -%}
+	{% if proto %}<span class="italic">{{proto.name}}.</span>{% endif -%}
+	<span class="function_name">{{ func.name }}{% if not func.is_accessor %}(</span>{%- if func.arguments -%}
 	{%- for param in func.arguments[:-1] -%}
-	{{ render_param(param)}} ,
-	{%- endfor %}
+	{{ render_param(param)}}, 
+	{% endfor -%}
 	{{ render_param(func.arguments[-1])}}
-	{%- endif %}){% endif %}</div>
+	{%- endif %}<span class="function_name">){% endif %}</span></div>
   {% if func.arguments %}
   <!-- <div class="function_params_decl">Parameters:</div> -->
   <div class="function_params">
@@ -24,35 +25,42 @@
 	{% endfor %}
   </div>
   {% endif %}
-  {% if func.return_val %}
-  <div class="function_returns_wrapper">
-  <span class="function_returns_decl">Returns:</span>
-  <span class="function_returns">
-	{% if func.return_type %}
-	<span class="param_type">{{func.return_type}}</span>
-	{% endif %}
-	{{ func.return_val }}
-  </span>
-  </div>
-  {% endif %}
+  {% if func.description or func.return_val %}
   <div class="function_desc">
+	{% if func.return_val %}
+	<div class="function_returns_wrapper">
+	  <span class="function_returns_decl">Returns:</span>
+	  <span class="function_returns">
+		{% if func.return_type %}
+		<span class="param_type">{{func.return_type}}</span>
+		{% endif %}
+		{{ func.return_val }}
+	  </span>
+	</div>
+	{% endif %}
 	{{ func.description }}
   </div>
+  {% endif %}
 </div>
 {%- endmacro %}
 <!DOCTYPE html>
 <html>
   <head>
 	<title>JavaScript Documentation</title>
-	<link rel="stylesheet" href="/static/reset.css" type="text/css">
-	<link href="http://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet" type="text/css">
-	<link href="http://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet" type="text/css">
-	<link rel="stylesheet" href="/static/style.css" type="text/css">
+	<link rel="stylesheet" href="{{static_dir}}/reset.css" type="text/css">
+	<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css">
+	<link href="http://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="{{static_dir}}/style.css" type="text/css">
+	<style type="text/css">
+	  html { background-image:url("{{static_dir}}/bkgrd.png"); }
+	</style>
   </head>
   <body>
+	<h1 class="TOC_header">Object Reference</h1>
+	Jump directly to the documentation of one of the following objects: <br>
 	<div class="TOC">
 	{% for proto in prototypes %}
-	{{proto.name}}<br>
+	<div class="TOC_container"><a href="#{{proto.name}}">{{proto.name}}</a></div>
 	<!--
 	{% for method in proto.methods %}
 	&nbsp;{{method.name}}{% if not method.is_accessor %}(){% endif %}<br>
@@ -62,10 +70,13 @@
 	</div>
 	{% for proto in prototypes %}
 	<div class="prototype">
-	  <div class="prototype_name">{{ proto.name }}</div>
+	  <div class="prototype_name_container">
+		<span class="prototype_name">{{ proto.name }}</span>
+		<a name="{{proto.name}}" class="para">&nbsp;&para;</a>
+	  </div>
 	  <div class="prototype_desc">{{ proto.description}} </div>
 	  {% for method in proto.methods %}
-	  {{ render_function(method) }}
+	  {{ render_function(method, proto) }}
 	  {% endfor %}
 	</div> <!-- .prototype -->
 	{% endfor %}
