@@ -28,7 +28,7 @@ $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) gyp.out
 	make -C gyp.out
 
 e: $(TARGET)
-	@if [ ! -e "e" ]; then ln -s $(TARGET) e; fi
+	@if [ ! -e "e" ]; then echo "Creating ./e symlink..."; ln -s $(TARGET) e; fi
 
 
 .PHONY: all clean

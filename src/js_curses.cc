@@ -65,7 +65,7 @@ namespace e {
 // @description: The number of color pairs the terminal supports.
 CURSES_ACCESSOR(COLOR_PAIRS);
 
-// @accessor: COLOR_PAIRS
+// @accessor: COLORS
 // @description: The number of colors the terminal supports.
 CURSES_ACCESSOR(COLORS);
 
@@ -78,7 +78,7 @@ CURSES_ACCESSOR(COLS);
 //               escape character
 CURSES_ACCESSOR(ESCDELAY);
 
-// @accessor: ESCDELAY
+// @accessor: LINES
 // @description: The height of the screen (i.e. the number of lines).
 CURSES_ACCESSOR(LINES);
 

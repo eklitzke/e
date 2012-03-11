@@ -22,6 +22,12 @@ using v8::Undefined;
 
 namespace e {
 namespace {
+// @class: sys
+// @description: Various low-level system routines.
+
+// @method: chdir
+// @param[path]: #string the directory to change to
+// @description: An implementation of `chdir(2)`.
 Handle<Value> JSChdir(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1) {
@@ -32,6 +38,8 @@ Handle<Value> JSChdir(const Arguments& args) {
   return scope.Close(Integer::New(ret));
 }
 
+// @method: getcwd
+// @description: Returns the current working directory.
 Handle<Value> JSGetcwd(const Arguments& args) {
   HandleScope scope;
   static char buf[PATH_MAX];
@@ -39,11 +47,17 @@ Handle<Value> JSGetcwd(const Arguments& args) {
   return scope.Close(String::New(buf));
 }
 
+// @method: getpid
+// @description: Returns the PID of the current process as an integer.
 Handle<Value> JSGetpid(const Arguments& args) {
   HandleScope scope;
   return scope.Close(Integer::New(static_cast<int>(getpid())));
 }
 
+// @method: kill
+// @param[pid]: #int the process to signal
+// @param[sig]: #int the signal to send
+// @description: An implementation of `kill(2)`.
 Handle<Value> JSKill(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 2) {

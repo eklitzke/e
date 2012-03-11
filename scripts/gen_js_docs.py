@@ -32,8 +32,8 @@ class Documentation(object):
                 os.path.dirname(__file__), 'templates'))
         env = jinja2.Environment(loader=loader)
         template = env.get_template('jsdoc.html')
-        context = {'prototypes': sorted(self.prototypes),
-                   'functions': sorted(self.functions),
+        context = {'prototypes': sorted(self.prototypes, key=lambda x: x.name),
+                   'functions': sorted(self.functions, key=lambda x: x.name),
                    'static_dir': static_dir.rstrip('/')}
  
         for chunk in template.generate(**context):
@@ -102,6 +102,7 @@ class JSPrototype(JSVar):
         return proto
         
     def add_method(self, method):
+        assert not any(m.name == method.name for m in self.methods), '%s.%s' % (self.name, method.name)
         self.methods.append(method)
 
 class ParseState(object):
