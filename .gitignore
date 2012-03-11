@@ -3,7 +3,9 @@
 *.o
 \.#*
 *.log
-out
 Makefile
 *.Makefile
 *.mk
+gyp.out/
+src/bundled_core.cc
+src/bundled_core.h

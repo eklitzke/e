@@ -185,7 +185,7 @@ def index_file(src_file):
     state = ParseState(src_file)
     with open(src_file) as f:
         state.get_toplevel(f)
-    
+
 if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('-d', '--directory', default='src/', help='The directory to scan')
@@ -193,6 +193,8 @@ if __name__ == '__main__':
     opts, args = parser.parse_args()
 
     for dirpath, dirnames, filenames in os.walk(opts.directory):
+        if '/out' in dirpath:
+            continue
         for f in (f for f in filenames if source_regex.search(f)):
             index_file(os.path.join(dirpath, f))
 

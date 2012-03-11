@@ -1,1 +1,1 @@
-out/Default/e
+gyp.out/out/Default/e

@@ -120,7 +120,7 @@ Building on Linux
 You'll need [GYP](http://code.google.com/p/gyp/) installed. You ought to then be
 able to run something like
 
-    gyp --toplevel-dir=. --depth=src/ e.gyp
+    gyp --toplevel-dir=. --depth=src/ e.gyp --generator-output=gyp.out
 
 and get a `Makefile` in the current directory (at the root of the source tree).
 Then use `make` as usual. If you have build problems, you might want to try
