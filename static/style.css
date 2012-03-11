@@ -17,13 +17,13 @@ a { cursor: pointer; text-decoration: none; }
 .prototype { margin-top: 1em; }
 .prototype_name { font-size: 24px; font-weight: bold; font-family: 'Inconsolata', mono; color: #d1a5e3; }
 
-a.para { visibility: hidden; color: #324ac6; }
+.para { visibility: hidden; color: #324ac6; }
 *:hover > a.para { visibility: visible; }
 
 .function { margin-top: 1em; }
 .function_sig { font-family: 'Inconsolata'; }
 /*.function_name { font-weight: bold; 18px; color: #c5e8ef; }*/
-.function_name { font-weight: bold; 18px; color: #6ad6ea; }
+.function_name { font-weight: bold; 18px; color: #85d9f8; }
 .function_desc { margin-bottom: 2em; }
 .function_params { margin-bottom: 0.5em; }
 

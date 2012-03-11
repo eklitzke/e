@@ -4,14 +4,15 @@
 {%- macro render_function(func, proto="") -%}
 <div class="function">
   <div class="function_sig">
+	<a name="{{escape(proto.name + '.' + func.name)}}">
 	{% if proto %}<span class="italic">{{proto.name}}.</span>{% endif -%}
 	<span class="function_name">{{ func.name }}{% if not func.is_accessor %}(</span>{%- if func.arguments -%}
 	{%- for param in func.arguments[:-1] -%}
 	{{ render_param(param)}}, 
 	{% endfor -%}
 	{{ render_param(func.arguments[-1])}}
-	{%- endif %}<span class="function_name">){%- endif %}</span>
-	<a name="{{escape(proto.name + '.' + func.name)}}" class="para">&para;</a></div>
+	{%- endif %}<span class="function_name">){%- endif %}</span></a>
+	<a href="#{{escape(proto.name + '.' + func.name)}}" class="para">&para;</a></div>
   {% if func.arguments -%}
   <div class="function_params">
 	{% for param in func.arguments -%}
