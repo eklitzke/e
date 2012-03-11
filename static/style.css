@@ -1,11 +1,12 @@
 body { font-family: 'Open Sans', sans-serif; font-size: 18px; margin: 1em 3em 1em 1em; }
 html {  color: #fdfdfa; }
-a { cursor: pointer; }
+a { cursor: pointer; text-decoration: none; }
 
 .TOC { margin-bottom: 2em; font-family: 'Inconsolata', mono; }
 .TOC_header { font-size: 24px; font-weight: bold; font-family: 'Inconsolata', mono; color: #ff738d; }
-.TOC a { color: #d1a5e3; font-weight: bold; text-decoration: none; }
-.TOC_container { margin-top: 0.40em; }
+.TOC a { text-decoration: none; color: inherit; }
+.TOC_container { margin-top: 0.40em; color: #d1a5e3; font-weight: bold; }
+.TOC_method { color: #c5e8ef; font-weight: normal; margin-left: 1em; }
 
 .code { font-family: 'Inconsolata', mono; color: #c5e8ef; }
 .italic { font-style: italic; }
@@ -14,11 +15,10 @@ a { cursor: pointer; }
 .param_type { font-family: 'Inconsolata'; color: #d1a5e3; margin-right: 0.5em; }
 
 .prototype { margin-top: 1em; }
-.prototype_name { font-size: 24px; font-weight: bold; font-family: 'Inconsolata', mono; color: #d1a5e3}
+.prototype_name { font-size: 24px; font-weight: bold; font-family: 'Inconsolata', mono; color: #d1a5e3; }
 
-a.para { visibility: hidden; }
-.prototype_name_container:hover > a.para { visibility: visible; }
-.prototype_name_container:hover > a.para { color: red; }
+a.para { visibility: hidden; color: #324ac6; }
+*:hover > a.para { visibility: visible; }
 
 .function { margin-top: 1em; }
 .function_sig { font-family: 'Inconsolata'; }

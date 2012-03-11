@@ -32,9 +32,11 @@ class Documentation(object):
                 os.path.dirname(__file__), 'templates'))
         env = jinja2.Environment(loader=loader)
         template = env.get_template('jsdoc.html')
-        context = {'prototypes': sorted(self.prototypes, key=lambda x: x.name),
-                   'functions': sorted(self.functions, key=lambda x: x.name),
-                   'static_dir': static_dir.rstrip('/')}
+        context = {
+            'escape': cgi.escape,
+            'prototypes': sorted(self.prototypes, key=lambda x: x.name),
+            'functions': sorted(self.functions, key=lambda x: x.name),
+            'static_dir': static_dir.rstrip('/')}
  
         for chunk in template.generate(**context):
             outfile.write(chunk)

@@ -1,7 +1,7 @@
-{% macro render_param(param) -%}
+{%- macro render_param(param) -%}
 <span class="param">{{param.name}}</span>
-{%- endmacro %}
-{% macro render_function(func, proto="") -%}
+{%- endmacro -%}
+{%- macro render_function(func, proto="") -%}
 <div class="function">
   <div class="function_sig">
 	{% if proto %}<span class="italic">{{proto.name}}.</span>{% endif -%}
@@ -10,39 +10,39 @@
 	{{ render_param(param)}}, 
 	{% endfor -%}
 	{{ render_param(func.arguments[-1])}}
-	{%- endif %}<span class="function_name">){% endif %}</span></div>
-  {% if func.arguments %}
-  <!-- <div class="function_params_decl">Parameters:</div> -->
+	{%- endif %}<span class="function_name">){%- endif %}</span>
+	<a name="{{escape(proto.name + '.' + func.name)}}" class="para">&para;</a></div>
+  {% if func.arguments -%}
   <div class="function_params">
-	{% for param in func.arguments %}
+	{% for param in func.arguments -%}
 	<ul>
 	  <span class="param"> {{param.name}} </span>
-	  {% if param.type %}
+	  {%- if param.type -%}
 	  <span class="param_type">{{param.type}}</span>
-	  {% endif %}
+	  {%- endif -%}
 	  {{param.description}}
 	</ul>
-	{% endfor %}
+	{%- endfor %}
   </div>
   {% endif %}
   {% if func.description or func.return_val %}
   <div class="function_desc">
-	{% if func.return_val %}
+	{%- if func.return_val -%}
 	<div class="function_returns_wrapper">
 	  <span class="function_returns_decl">Returns:</span>
 	  <span class="function_returns">
-		{% if func.return_type %}
+		{% if func.return_type -%}
 		<span class="param_type">{{func.return_type}}</span>
-		{% endif %}
+		{%- endif %}
 		{{ func.return_val }}
 	  </span>
 	</div>
-	{% endif %}
+	{%- endif -%}
 	{{ func.description }}
   </div>
   {% endif %}
 </div>
-{%- endmacro %}
+{%- endmacro -%}
 <!DOCTYPE html>
 <html>
   <head>
@@ -56,23 +56,25 @@
 	</style>
   </head>
   <body>
-	<h1 class="TOC_header">Object Reference</h1>
+	<h1 class="TOC_header">JavaScript Object Reference</h1>
 	Jump directly to the documentation of one of the following objects: <br>
 	<div class="TOC">
 	{% for proto in prototypes %}
 	<div class="TOC_container"><a href="#{{proto.name}}">{{proto.name}}</a></div>
-	<!--
-	{% for method in proto.methods %}
-	&nbsp;{{method.name}}{% if not method.is_accessor %}(){% endif %}<br>
+	{% for method in proto.methods -%}
+	{% if not method.is_accessor %}
+	<div class="TOC_method">
+	  <a href="#{{escape(proto.name + '.' + method.name)}}">{{method.name}}()</a>
+	</div>
+	{% endif %}
 	{% endfor %}
-	-->
 	{% endfor %}
 	</div>
 	{% for proto in prototypes %}
 	<div class="prototype">
 	  <div class="prototype_name_container">
-		<span class="prototype_name">{{ proto.name }}</span>
-		<a name="{{proto.name}}" class="para">&nbsp;&para;</a>
+		<span class="prototype_name">{{ escape(proto.name) }}</span>
+		<a name="{{escape(proto.name)}}" class="para"> &nbsp;&para;</a>
 	  </div>
 	  <div class="prototype_desc">{{ proto.description}} </div>
 	  {% for method in proto.methods %}
