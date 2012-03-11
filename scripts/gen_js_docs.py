@@ -192,11 +192,8 @@ if __name__ == '__main__':
     parser.add_option('-o', '--output', default=None, help='The output file')
     opts, args = parser.parse_args()
 
-    for dirpath, dirnames, filenames in os.walk(opts.directory):
-        if '/out' in dirpath:
-            continue
-        for f in (f for f in filenames if source_regex.search(f)):
-            index_file(os.path.join(dirpath, f))
+    for f in sorted(args):
+        index_file(f)
 
     if opts.output:
         outdir = os.path.dirname(opts.output)

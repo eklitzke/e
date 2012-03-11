@@ -122,7 +122,6 @@ def write_output(code, output):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('-f', '--file', dest='files', default=[], action='append', help='The files to use')
     parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings')
     parser.add_option('-s', '--statistics', action='store_true', help='Get statistics')
     parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit')
@@ -132,6 +131,5 @@ if __name__ == '__main__':
         parser.error('must have an outfile')
         sys.exit(1)
 
-    files = opts.files or ['js/core.js']
-    code = get_compiled_code(files, opts.advanced_optimizations)
+    code = get_compiled_code(args, opts.advanced_optimizations)
     write_output(code, opts.outfile)

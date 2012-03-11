@@ -224,11 +224,13 @@ if __name__ == '__main__':
     parser.add_option('-o', '--output-prefix', default='src/keycode', help='output prefix')
     opts, args = parser.parse_args()
     if not args:
-        args = ['third_party/Caps']
+        parser.error('need to specify a capabilities file')
+        sys.exit(1)
     try:
         in_file = open(args[0], 'r')
     except IOError:
         parser.error('failed to open capabilities file %r' % (args[1],))
+        sys.exit(1)
 
     values = []
     try:

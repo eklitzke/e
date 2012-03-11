@@ -1,15 +1,26 @@
-SRCFILES := $(shell echo src/*.cc src/*.h)
+SRCFILES := $(shell git ls-files src/)
+TARGET := $(shell readlink ./e)
+BUNDLED_JS = src/bundled_core.cc src/bundled_core.h
+KEYCODE_FILES = src/keycode.cc src/keycode.h
 
-.PHONY: all
-all: gyp_out
+all: docs/jsdoc.html $(TARGET)
 
-docs/jsdoc.html: scripts/gen_js_docs.py $(SRCFILES)
-	echo $^
-	python scripts/gen_js_docs.py -o $@
+clean:
+	rm -rf gyp.out/out docs/jsdoc.html $(BUNDLED_JS) $(KEYCODE_FILES)
 
-src/bundled_core.cc src/bundled_core.h: js/core.js scripts/gen_bundled_core.py
-	python scripts/gen_bundled_core.py -f $<
+docs/jsdoc.html: scripts/gen_js_docs.py $(SRCFILES) $(KEYCODE_FILES)
+	python scripts/gen_js_docs.py -o $@ $(SRCFILES) $(KEYCODE_FILES)
 
-.PHONY: gyp_out
-gyp_out: src/bundled_core.cc src/bundled_core.h
+$(BUNDLED_JS): scripts/gen_bundled_core.py js/core.js
+	python $^
+
+$(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps
+	python $^
+
+gyp.out:
+	gyp --toplevel-dir=. --depth=src/ --generator-output=gyp.out e.gyp
+
+$(TARGET): $(BUNDLED_JS) $(KEYCODE_FILES) gyp.out
 	make -C gyp.out
+
+.PHONY: all clean
