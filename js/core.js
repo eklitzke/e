@@ -341,7 +341,7 @@ world.addEventListener("keypress", function (event) {
 		}
 	} else {
 		switch (name) {
-		case "key_backspace":
+		case "KEY_BACKSPACE":
 			if (core.column > 0) {
 				var curline = world.buffer.getLine(core.line);
 				core.windows.buffer.mvdelch(cury, curx - 1);
@@ -372,30 +372,30 @@ world.addEventListener("keypress", function (event) {
 				}
 			}
 			break;
-		case "key_down":
+		case "KEY_DOWN":
 			if (core.line < world.buffer.length - 1) {
 				core.move(1);
 			}
 			break;
-		case "key_end":
+		case "KEY_END":
 			core.move.right();
 			break;
-		case "key_home":
+		case "KEY_HOME":
 			core.move.left();
 			break;
-		case "key_left":
+		case "KEY_LEFT":
 			core.move(0, -1);
 			break;
-		case "key_npage": // page down
+		case "KEY_NPAGE": // page down
 			core.scrollRegion(1);
 			break;
-		case "key_ppage": // page up
+		case "KEY_PPAGE": // page up
 			core.scrollRegion(-1);
 			break;
-		case "key_right":
+		case "KEY_RIGHT":
 			core.move(0, 1);
 			break;
-		case "key_up":
+		case "KEY_UP":
 			if (core.line > 0)
 				core.move(-1);
 			break;

@@ -218,22 +218,14 @@ namespace keycode {
 
 key_regex = re.compile(r'^([_a-z0-9]+)\s+[a-zA-Z0-9]+\s+str\s+[a-zA-Z0-9;@%&*#!]+\s+([_A-Z()0-9]+)\s+([-0-9]+)\s+[-A-Z*]+\s+(.*)$')
 octal_regex = re.compile(r'^0[0-9]+$')
+define_regex = re.compile(r'^#define (KEY_[A-Z_]+)\s+([0-9]+)\s+/\*(.*)\*/\s*$')
 
-if __name__ == '__main__':
-    parser = optparse.OptionParser()
-    parser.add_option('-o', '--output-prefix', default='src/keycode', help='output prefix')
-    opts, args = parser.parse_args()
-    if not args:
-        parser.error('need to specify a capabilities file')
-        sys.exit(1)
-    try:
-        in_file = open(args[0], 'r')
-    except IOError:
-        parser.error('failed to open capabilities file %r' % (args[1],))
-        sys.exit(1)
 
-    values = []
-    try:
+def already_in_values(values, code):
+    return any(c == code for _, _, c, _ in values)
+
+def parse_capabilities(caps_path, values):
+    with open(caps_path) as in_file:
         for line in in_file:
             if not line.startswith('key_'):
                 continue
@@ -242,15 +234,45 @@ if __name__ == '__main__':
                 print >> sys.stderr, 'failed to parse line %r' % (line,)
                 sys.exit(1)
             name, macro, code, description = m.groups()
+            if name.startswith('key_'):
+                name = name.upper()
+            if macro.startswith('key_'):
+                macro = macro.upper()
             if code == '-':
                 code = 0
             elif octal_regex.match(code):
                 code = int(code, 8)
             else:
                 print >> sys.stderr, 'failed to parse octal code %r' % (code,)
-            values.append((name, macro, code, description))
-    finally:
-        in_file.close()
+            if not already_in_values(values, code):
+                values.append((name, macro, code, description))
+    return values
+
+def parse_curses(curses_path, values):
+    with open(curses_path) as in_file:
+        for line in in_file:
+            m = define_regex.match(line)
+            if not m:
+                continue
+            macro, code, description = m.groups()
+            description = description.strip()
+            code = int(code, 8)
+            if not already_in_values(values, code):
+                values.append((macro, macro, code, description))
+    return values
+
+if __name__ == '__main__':
+    parser = optparse.OptionParser()
+    parser.add_option('-o', '--output-prefix', default='src/keycode', help='output prefix')
+    parser.add_option('--caps-file', default='third_party/Caps', help='path to the capabilities file')
+    parser.add_option('--curses-header', default='/usr/include/ncurses.h', help='path to the ncurses file')
+    opts, args = parser.parse_args()
+
+    values = []
+    if opts.caps_file:
+        parse_capabilities(opts.caps_file, values)
+    if opts.curses_header:
+        parse_curses(opts.curses_header, values)
 
     # OK, we were able to parse the file; generate the C++ files
 
