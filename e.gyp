@@ -12,7 +12,7 @@
             '-lboost_system',
             '-lboost_program_options',
             '-lglog',
-            '-lncurses',
+            '-lncursesw',
             '-lv8',
           ],
          'defines': [ 'USE_LINUX', ],
