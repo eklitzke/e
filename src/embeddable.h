@@ -11,11 +11,13 @@
 
 namespace e {
 
+using v8::Arguments;
 using v8::Context;
 using v8::External;
 using v8::FunctionTemplate;
 using v8::InvocationCallback;
 using v8::Handle;
+using v8::HandleScope;
 using v8::Local;
 using v8::Object;
 using v8::Persistent;
@@ -24,7 +26,20 @@ using v8::Value;
 
 template<typename T> T* Unwrap(Handle<Object> holder, int field = 0) {
   Local<External> wrap = Local<External>::Cast(holder->GetInternalField(field));
+}
+
+template<typename T> T* UnwrapObj(Handle<Object> obj, int field = 0) {
+  HandleScope scope;
+  Local<External> wrap = Local<External>::Cast(obj->GetInternalField(field));
   return static_cast<T*>(wrap->Value());
+}
+
+
+// Unwrap an External from an Arguments reference
+template<typename T, typename A> T* Unwrap(const A &args, int field = 0) {
+  HandleScope scope;
+  Local<Object> holder = args.Holder();
+  return UnwrapObj<T>(holder, field);
 }
 
 #define GET_SELF2(a, tp) Local<Object> s_ = a.Holder();\

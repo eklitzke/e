@@ -34,6 +34,7 @@
         'src/line.cc',
         'src/list_environment.cc',
         'src/state.cc',
+        'src/unicode.cc',
     ],
     'defines': [ 'USE_CURSES', ],
   },

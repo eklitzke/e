@@ -273,7 +273,7 @@ Handle<Value> JS_winsch(const Arguments& args) {
 Handle<Value> JSSubwin(const Arguments& args) {
   CHECK_ARGS(4);
 
-  JSCursesWindow *other = Unwrap<JSCursesWindow>(args.Holder());
+  JSCursesWindow *other = Unwrap<JSCursesWindow>(args);
   int nlines = static_cast<int>(args[0]->Int32Value());
   int ncols = static_cast<int>(args[1]->Int32Value());
   int begin_y = static_cast<int>(args[2]->Int32Value());
