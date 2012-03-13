@@ -10,9 +10,9 @@ clean:
 	rm -rf gyp.out/out/ docs/ $(BUNDLED_JS) $(KEYCODE_FILES) e
 
 docs:
-	mkdir -p docs
+	@mkdir -p docs
 
-docs/jsdoc.html: docs scripts/gen_js_docs.py $(SRCFILES) $(KEYCODE_FILES) $(TEMPLATES) e
+docs/jsdoc.html: scripts/gen_js_docs.py e docs
 	@echo -n "Updating $@..."
 	@python scripts/gen_js_docs.py -o $@ $(SRCFILES) $(KEYCODE_FILES)
 	@echo " done!"
