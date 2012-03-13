@@ -1,6 +1,0 @@
-#!/bin/bash
-set -eu
-cppcheck -q src/
-pushd src >/dev/null
-python ../third_party/cpplint.py *.h *.cc
-popd >/dev/null

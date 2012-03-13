@@ -2,6 +2,7 @@
 #
 # Install this as .git/hooks/pre-commit to get extra pre-commit goodness.
 
+import os
 import re
 import subprocess
 import sys
@@ -37,6 +38,8 @@ if __name__ == '__main__':
     lint_files = []
     for f in out.split('\0'):
         if not f:
+            continue
+        if not os.path.exists(f):
             continue
         check_tabs = False if ('Makefile' in f or 'third_party' in f) else True
         check_whitespace(f, check_tabs=check_tabs)
