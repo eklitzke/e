@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+#
+# Install this as .git/hooks/pre-commit to get extra pre-commit goodness.
+
+import re
+import subprocess
+import sys
+
+trailing_whitespace_re = re.compile(r'\s+$')
+
+def check_whitespace(f, check_tabs=False):
+    """Ensures that the file doesn't have any trailing whitespace"""
+    empty = False
+    with open(f) as infile:
+        for line in f:
+            line = line.rstrip('\n')
+            if not line:
+                empty = True
+            elif trailing_whitespace_re.search(line):
+                empty = False
+                sys.stderr.write('%r has trailing whitespace!\n' % (f,))
+                sys.exit(1)
+            else:
+                empty = False
+
+            if check_tabs and '\t' in line:
+                sys.stderr.write('%r has tabs!\n' % (f,))
+                sys.exit(1)
+
+    if empty:
+        sys.stderr.write('%r ends in whitespace\n' % (f,))
+        sys.exit(1)
+
+if __name__ == '__main__':
+    p = subprocess.Popen(['git', 'diff-index', '--name-only', '-z', 'HEAD'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    lint_files = []
+    for f in out.split('\0'):
+        if not f:
+            continue
+        check_tabs = False if ('Makefile' in f or 'third_party' in f) else True
+        check_whitespace(f, check_tabs=check_tabs)
+        if f.endswith('.cc') or f.endswith('.h'):
+            lint_files.append(f)
+
+    if lint_files:
+        try:
+            # run cpplint
+            p = subprocess.Popen(['python', 'third_party/cpplint.py'] + lint_files,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            saw_err = False
+            for line in err.split('\n'):
+                if not line or line.startswith('Done processing ') or line.startswith('Total errors'):
+                    continue
+                else:
+                    saw_err = True
+                    sys.stderr.write(line + '\n')
+            if saw_err:
+                sys.exit(1)
+
+            # run cppcheck
+            p = subprocess.Popen(['cppcheck'] + lint_files,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            if p.returncode != 0:
+                sys.stderr.write('cppcheck failed\n')
+                sys.exit(1)
+        except subprocess.CalledProcessError:
+            sys.exit(1)
