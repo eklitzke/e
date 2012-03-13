@@ -71,11 +71,12 @@ void CursesWindow::OnRead(const boost::system::error_code& error,
   // bytes until getch() returns ERR
   bool keep_going = true;
   while (true) {
-    int key = getch();
-    if (key == ERR)
+    wint_t wch;
+    int ret = get_wch(&wch);
+    if (ret == ERR)
       break;
 
-    KeyCode *keycode = e::keycode::curses_code_to_keycode(key);
+    KeyCode *keycode = e::keycode::curses_to_keycode(wch, ret == KEY_CODE_YES);
     keep_going = HandleKey(keycode);
     if (!keep_going)
       break;

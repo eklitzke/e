@@ -11,8 +11,9 @@
           'libraries': [
             '-lboost_system',
             '-lboost_program_options',
-            '-lglog',
-            '-lncursesw',
+            '<!@(pkg-config --libs-only-l libglog)',
+            '<!@(pkg-config --libs-only-l icu-uc)',
+            '<!@(pkg-config --libs-only-l ncursesw)',
             '-lv8',
           ],
          'defines': [ 'USE_LINUX', ],

@@ -4,7 +4,7 @@ TEMPLATES := $(shell echo scripts/templates/*.html)
 BUNDLED_JS = src/bundled_core.cc src/bundled_core.h
 KEYCODE_FILES = src/keycode.cc src/keycode.h
 
-all: docs/jsdoc.html e
+all: e docs/jsdoc.html
 
 clean:
 	rm -rf gyp.out/out/ docs/ $(BUNDLED_JS) $(KEYCODE_FILES) e

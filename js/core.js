@@ -287,8 +287,8 @@ world.addEventListener("keypress", function (event) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
-	var name = event.getName();
-	if (event.isASCII()) {
+	if (!event.isKeypad()) {
+		var wch = event.getChar();
 		switch (code) {
 		case 1: // Ctrl-A
 			core.move.left();
@@ -329,17 +329,18 @@ world.addEventListener("keypress", function (event) {
 			break;
 		default:
 			var curline = world.buffer.getLine(core.line);
-			curline.insert(core.column, name);
+			curline.insert(core.column, wch);
 			if (core.column < curline.length - 1) {
-				core.windows.buffer.insch(name);
+				core.windows.buffer.insch(wch);
 				core.move(0, 1);
 			} else {
-				core.windows.buffer.addstr(name);
+				core.windows.buffer.addstr(wch);
 			}
 			core.column++;
 			break;
 		}
 	} else {
+		var name = event.getName();
 		switch (name) {
 		case "KEY_BACKSPACE":
 			if (core.column > 0) {

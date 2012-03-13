@@ -16,6 +16,7 @@ h_template = """
 #define SRC_KEYCODE_H_
 
 #include <v8.h>
+#include <wchar.h>
 #include <string>
 #include "./embeddable.h"
 
@@ -26,21 +27,18 @@ using v8::Value;
 namespace e {
 class KeyCode: public Embeddable {
   public:
-    explicit KeyCode(int code, const std::string &short_name);
-    explicit KeyCode(int code);
+    explicit KeyCode(wint_t code);
+    explicit KeyCode(wint_t code, const std::string &name);
     ~KeyCode();
-    const std::string& GetName(void) const;
-    bool IsASCII(void) const;
-    int GetCode(void) const;
-    char GetChar(void) const;
     Persistent<Value> ToScript();
-  private:
-    int code_;
-    std::string short_name_;
+  public:
+    wint_t code_;
+    bool is_keypad_;
+    std::string name_;
 };
 
 namespace keycode {
-KeyCode* curses_code_to_keycode(int code);
+KeyCode* curses_to_keycode(const wint_t &wch, bool is_keypad);
 }
 }
 
@@ -55,9 +53,12 @@ cc_template = """
 
 #include "./%(h_name)s"
 
+#include <unicode/unistr.h>
 #include <v8.h>
+#include <wchar.h>
 
 #include <cassert>
+#include <memory>
 #include <string>
 
 #include "./embeddable.h"
@@ -76,37 +77,56 @@ using v8::Value;
 
 namespace e {
 namespace {
+// @class: KeyCode
+// @description: Internal representation of a keypress.
+
+// @method: getChar
+// @description: Returns the JavaScript string representation of a keypress;
+//               this will be a string of length 1 that will present a single
+//               unicode character.
 Handle<Value> JSGetChar(const Arguments& args) {
+  HandleScope scope;
   GET_SELF(KeyCode);
 
-  HandleScope scope;
-  char c = self->GetChar();
-  Local<String> ch = String::NewSymbol(&c, 1);
-  return scope.Close(ch);
+  UnicodeString us(static_cast<UChar32>(self->code_));
+  int length = us.length();
+  std::unique_ptr<UChar> data(new uint16_t[length]);
+  UErrorCode err;
+  us.extract(data.get(), length, err);
+  Local<String> js_string = String::New(static_cast<const uint16_t*>(data.get()), length);
+  return scope.Close(js_string);
 }
 
+// @method: getCode
+// @description: Returns the integral code for a character (generally its
+//               Unicode codepoint).
 Handle<Value> JSGetCode(const Arguments& args) {
   GET_SELF(KeyCode);
 
   HandleScope scope;
-  Local<Integer> code = Integer::New(self->GetCode());
+  Local<Integer> code = Integer::New(self->code_);
   return scope.Close(code);
 }
 
+// @method: getName
+// @description: Returns the name for a keypress; this will be an empty string
+//               unless the keycode represents a keypad hit
 Handle<Value> JSGetName(const Arguments& args) {
   GET_SELF(KeyCode);
 
   HandleScope scope;
-  std::string s = self->GetName();
+  const std::string &s = self->name_;
   Local<String> name = String::NewSymbol(s.c_str(), s.length());
   return scope.Close(name);
 }
 
-Handle<Value> JSIsASCII(const Arguments& args) {
+// @method: isKeypad
+// @description: Returns true if this was a keypad hit, false otherwise.
+Handle<Value> JSIsKeypad(const Arguments& args) {
   GET_SELF(KeyCode);
 
   HandleScope scope;
-  Handle<Boolean> b = Boolean::New(self->IsASCII());
+  Handle<Boolean> b = Boolean::New(self->is_keypad_);
   return scope.Close(b);
 }
 
@@ -123,18 +143,18 @@ Handle<ObjectTemplate> MakeKeyCodeTemplate() {
     v8::ReadOnly);
   result->Set(String::New("getName"), FunctionTemplate::New(JSGetName),
     v8::ReadOnly);
-  result->Set(String::New("isASCII"), FunctionTemplate::New(JSIsASCII),
+  result->Set(String::New("isKeypad"), FunctionTemplate::New(JSIsKeypad),
     v8::ReadOnly);
   return scope.Close(result);
 }
 }
 
-KeyCode::KeyCode(int code, const std::string &short_name)
-    :code_(code), short_name_(short_name) {
+KeyCode::KeyCode(wint_t code, const std::string &name)
+    :code_(code), is_keypad_(true), name_(name) {
 }
 
-KeyCode::KeyCode(int code)
-    :code_(code) {
+KeyCode::KeyCode(wint_t code)
+    :code_(code), is_keypad_(false) {
 }
 
 KeyCode::~KeyCode() {
@@ -171,45 +191,24 @@ Persistent<Value> KeyCode::ToScript() {
   return kc;
 }
 
-const std::string& KeyCode::GetName(void) const {
-  return short_name_;
-}
-
-bool KeyCode::IsASCII(void) const {
-  return code_ <= 0xff;
-}
-
-int KeyCode::GetCode(void) const {
-  return code_;
-}
-
-// XXX: it's unspecified whether this is a signed or unsigned char!
-char KeyCode::GetChar(void) const {
-  if (code_ > 0xff) {
-    return static_cast<char>(code_ & 0xff);
-  } else {
-    return static_cast<char>(code_);
-  }
-}
-
 namespace keycode {
   const size_t max_code = %(max_code)d;
   const char * keycode_arr[%(arr_size)d] = {
 %(codes)s
   };
 
-  KeyCode* curses_code_to_keycode(int code) {
-    size_t offset = static_cast<size_t>(code);
-    assert(offset <= max_code);
-    const char *name = keycode_arr[offset];
-
+  KeyCode* curses_to_keycode(const wint_t &wch, bool is_keypad) {
     // The returned pointers are "owned" by V8; the way they'll get deleted
     // later on is by CleanupKeycode, which will be invoked when the containing
     // V8 object is garbage collected.
-    if (name == nullptr) {
-      return new KeyCode(code);
+    if (is_keypad) {
+      size_t offset = static_cast<size_t>(wch);
+      assert(offset <= max_code);
+      const char *name = keycode_arr[offset];
+      assert (name != nullptr);
+      return new KeyCode(wch, name);
     } else {
-      return new KeyCode(code, name);
+      return new KeyCode(wch);
     }
   }
 }
