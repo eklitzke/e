@@ -118,19 +118,6 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   js::AddTemplateFunction(world_templ, "addEventListener", AddEventListener);
   js::AddTemplateFunction(world_templ, "stopLoop", JSStopLoop);
 
-  // added in the curses object
-  Handle<ObjectTemplate> curses = ObjectTemplate::New();
-  NEW_INTEGER(curses, OK);
-  NEW_INTEGER(curses, ERR);
-  std::map<std::string, e::js::JSCallback> callbacks = GetCursesCallbacks();
-  for (auto it = callbacks.begin(); it != callbacks.end(); ++it) {
-    js::AddTemplateFunction(curses, it->first, it->second);
-  }
-  std::map<std::string, js::JSAccessor> accessors = GetCursesAccessors();
-  for (auto it = accessors.begin(); it != accessors.end(); ++it) {
-    js::AddTemplateAccessor(curses, it->first, it->second, nullptr);
-  }
-
   context_ = Context::New(nullptr, global);
   Context::Scope context_scope(context_);
 
@@ -144,9 +131,7 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   }
   world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 
-  Local<Object> curses_obj = curses->NewInstance();
-
-  context_->Global()->Set(String::NewSymbol("curses"), curses_obj, v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("curses"), GetCursesObj(), v8::ReadOnly);
 
   context_->Global()->Set(String::NewSymbol("errno"), GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("signal"), GetSignalTemplate()->NewInstance(), v8::ReadOnly);

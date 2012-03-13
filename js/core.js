@@ -287,6 +287,7 @@ world.addEventListener("keypress", function (event) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
+	log("isKeypad = " + event.isKeypad() + ", code = " + code);
 	if (!event.isKeypad()) {
 		var wch = event.getChar();
 		switch (code) {

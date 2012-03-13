@@ -18,6 +18,20 @@
 #include "./js_curses_window.h"
 
 namespace e {
+namespace {
+bool is_initialized = false;
+
+void InitializeCurses() {
+  if (!is_initialized) {
+    mousemask(ALL_MOUSE_EVENTS, nullptr);
+    start_color();
+    use_default_colors();  // ncurses extension!
+    noecho();
+    nonl();  // don't turn LF into CRLF
+    raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
+  }
+}
+}
 CursesWindow::CursesWindow(bool load_core,
                            const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
@@ -32,11 +46,8 @@ CursesWindow::~CursesWindow() {
 void CursesWindow::Initialize() {
   window_ = initscr();
 
-  start_color();
-  use_default_colors();  // ncurses extension!
-  noecho();
-  nonl();  // don't turn LF into CRLF
-  raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
+  InitializeCurses();
+
   keypad(window_, TRUE);
   clearok(window_, TRUE);
   notimeout(window_, TRUE);

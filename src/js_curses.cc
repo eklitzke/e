@@ -18,6 +18,7 @@ using v8::External;
 using v8::Handle;
 using v8::HandleScope;
 using v8::Integer;
+using v8::Local;
 using v8::Object;
 using v8::String;
 using v8::Undefined;
@@ -45,21 +46,11 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
   }
 
 #define DECLARE_ACCESSOR(macroname)             \
-  accessors[#macroname] = JS_##macroname;
+  js::AddTemplateAccessor(curses, #macroname, JS_##macroname, nullptr)
 
 namespace e {
 // @class: curses
 // @description: A low-level interface to ncurses.
-
-// @accessor: OK
-// @description: The value of `OK` in the underlying curses implementation.
-//
-// This is set in state.cc
-
-// @accessor: ERR
-// @description: The value of `ERR` in the underlying curses implementation.
-//
-// This is set in state.cc
 
 // @accessor: COLOR_PAIRS
 // @description: The number of color pairs the terminal supports.
@@ -143,6 +134,8 @@ CURSES_ACCESSOR(A_ALTCHARSET);
 // @accessor: A_CHARTEXT
 CURSES_ACCESSOR(A_CHARTEXT);
 
+
+
 /*
 void JSSetLength(Local<String> property, Local<Value> value,
                const AccessorInfo& info) {
@@ -201,15 +194,102 @@ Handle<Value> CursesNewwin(const Arguments& args) {
 
 std::map<std::string, js::JSCallback> GetCursesCallbacks() {
   std::map<std::string, js::JSCallback> callbacks;
-  callbacks["doupdate"] = &CursesDoupdate;
-  callbacks["move"] = &CursesMove;
-  callbacks["newwin"] = &CursesNewwin;
-  callbacks["refresh"] = &CursesRefresh;
   return callbacks;
 }
 
-std::map<std::string, js::JSAccessor> GetCursesAccessors() {
-  std::map<std::string, js::JSAccessor> accessors;
+Local<Object> GetCursesObj() {
+  HandleScope scope;
+  Local<ObjectTemplate> curses = ObjectTemplate::New();
+
+  // @accessor: OK
+  // @description: The value of `OK` in the underlying curses implementation.
+  NEW_INTEGER(curses, OK);
+
+  // @accessor: ERR
+  // @description: The value of `ERR` in the underlying curses implementation.
+  NEW_INTEGER(curses, ERR);
+
+  // @accessor: BUTTON1_CLICKED
+  NEW_INTEGER(curses, BUTTON1_CLICKED);
+
+  // @accessor: BUTTON1_DOUBLE_CLICKED
+  NEW_INTEGER(curses, BUTTON1_DOUBLE_CLICKED);
+
+  // @accessor: BUTTON1_PRESSED
+  NEW_INTEGER(curses, BUTTON1_PRESSED);
+
+  // @accessor: BUTTON1_RELEASED
+  NEW_INTEGER(curses, BUTTON1_RELEASED);
+
+  // @accessor: BUTTON1_RESERVED_EVENT
+  NEW_INTEGER(curses, BUTTON1_RESERVED_EVENT);
+
+  // @accessor: BUTTON1_TRIPLE_CLICKED
+  NEW_INTEGER(curses, BUTTON1_TRIPLE_CLICKED);
+
+  // @accessor: BUTTON2_CLICKED
+  NEW_INTEGER(curses, BUTTON2_CLICKED);
+
+  // @accessor: BUTTON2_DOUBLE_CLICKED
+  NEW_INTEGER(curses, BUTTON2_DOUBLE_CLICKED);
+
+  // @accessor: BUTTON2_PRESSED
+  NEW_INTEGER(curses, BUTTON2_PRESSED);
+
+  // @accessor: BUTTON2_RELEASED
+  NEW_INTEGER(curses, BUTTON2_RELEASED);
+
+  // @accessor: BUTTON2_RESERVED_EVENT
+  NEW_INTEGER(curses, BUTTON2_RESERVED_EVENT);
+
+  // @accessor: BUTTON2_TRIPLE_CLICKED
+  NEW_INTEGER(curses, BUTTON2_TRIPLE_CLICKED);
+
+  // @accessor: BUTTON3_CLICKED
+  NEW_INTEGER(curses, BUTTON3_CLICKED);
+
+  // @accessor: BUTTON3_DOUBLE_CLICKED
+  NEW_INTEGER(curses, BUTTON3_DOUBLE_CLICKED);
+
+  // @accessor: BUTTON3_PRESSED
+  NEW_INTEGER(curses, BUTTON3_PRESSED);
+
+  // @accessor: BUTTON3_RELEASED
+  NEW_INTEGER(curses, BUTTON3_RELEASED);
+
+  // @accessor: BUTTON3_RESERVED_EVENT
+  NEW_INTEGER(curses, BUTTON3_RESERVED_EVENT);
+
+  // @accessor: BUTTON3_TRIPLE_CLICKED
+  NEW_INTEGER(curses, BUTTON3_TRIPLE_CLICKED);
+
+  // @accessor: BUTTON4_CLICKED
+  NEW_INTEGER(curses, BUTTON4_CLICKED);
+
+  // @accessor: BUTTON4_DOUBLE_CLICKED
+  NEW_INTEGER(curses, BUTTON4_DOUBLE_CLICKED);
+
+  // @accessor: BUTTON4_PRESSED
+  NEW_INTEGER(curses, BUTTON4_PRESSED);
+
+  // @accessor: BUTTON4_RELEASED
+  NEW_INTEGER(curses, BUTTON4_RELEASED);
+
+  // @accessor: BUTTON4_RESERVED_EVENT
+  NEW_INTEGER(curses, BUTTON4_RESERVED_EVENT);
+
+  // @accessor: BUTTON4_TRIPLE_CLICKED
+  NEW_INTEGER(curses, BUTTON4_TRIPLE_CLICKED);
+
+  // @accessor: BUTTON_ALT
+  NEW_INTEGER(curses, BUTTON_ALT);
+
+  // @accessor: BUTTON_CTRL
+  NEW_INTEGER(curses, BUTTON_CTRL);
+
+  // @accessor: BUTTON_SHIFT
+  NEW_INTEGER(curses, BUTTON_SHIFT);
+
   DECLARE_ACCESSOR(COLOR_PAIRS);
   DECLARE_ACCESSOR(COLORS);
   DECLARE_ACCESSOR(COLS);
@@ -236,7 +316,11 @@ std::map<std::string, js::JSAccessor> GetCursesAccessors() {
   DECLARE_ACCESSOR(A_ALTCHARSET);
   DECLARE_ACCESSOR(A_CHARTEXT);
 
-  return accessors;
-}
+  js::AddTemplateFunction(curses, "doupdate", &CursesDoupdate);
+  js::AddTemplateFunction(curses, "move", &CursesMove);
+  js::AddTemplateFunction(curses, "newwin", &CursesNewwin);
+  js::AddTemplateFunction(curses, "refresh", &CursesRefresh);
 
+  return scope.Close(curses->NewInstance());
+}
 }
