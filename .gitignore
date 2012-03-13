@@ -1,11 +1,11 @@
-*~
-*.gch
-*.o
-\.#*
-*.log
-Makefile
 *.Makefile
+*.gch
+*.log
 *.mk
+*.o
+*~
+Makefile
+\.#*
 docs/
 e
 gyp.out/
