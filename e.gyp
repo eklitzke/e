@@ -2,7 +2,7 @@
 {
   'target_defaults': {
     'type': 'executable',
-    'cflags': ['-Wall', '-std=c++11'],
+    'cflags': ['-pedantic', '-Wall', '-std=c++11'],
     'conditions': [
        ['OS=="linux"', {
          'ldflags': [

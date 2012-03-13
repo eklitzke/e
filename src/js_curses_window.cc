@@ -104,83 +104,82 @@ namespace {
 // @method: addstr
 // @param[str]: #string the string to draw
 // @description: Adds a string at the current cursor location.
-CURSES_STRING_FUNC(waddnstr);
+CURSES_STRING_FUNC(waddnstr)
 
 // @method: attron
 // @param[attrs]: #int The attributes to turn on.
 // @description: Turns on the given attributes.
-CURSES_INT_FUNC(wattron);
+CURSES_INT_FUNC(wattron)
 
 // @method: attroff
 // @param[attrs]: #int The attributes to turn off.
 // @description: Turns off the given attributes.
-CURSES_INT_FUNC(wattroff);
+CURSES_INT_FUNC(wattroff)
 
 // @method: attrset
 // @param[attrs]: #int The attributes to set.
 // @description: Sets the given attributes, and clears all others.
-CURSES_INT_FUNC(wattrset);
+CURSES_INT_FUNC(wattrset)
 
 // @method: clear
 // @description: Clears the window.
-CURSES_VOID_FUNC(wclear);
+CURSES_VOID_FUNC(wclear)
 
 // @method: clrtobot
 // @description: Clears from the cursor to the bottom of the window.
-CURSES_VOID_FUNC(wclrtobot);
+CURSES_VOID_FUNC(wclrtobot)
 
 // @method: clrtoeol
 // @description: Clears from the cursor to the end of the line.
-CURSES_VOID_FUNC(wclrtoeol);
+CURSES_VOID_FUNC(wclrtoeol)
 
 // @method: erase
 // @description: Like `clear()`, but also calls `clearok()`.
-CURSES_VOID_FUNC(werase);
+CURSES_VOID_FUNC(werase)
 
 // @method: getattrs
 // @description: Gets the attributes of the current window.
-CURSES_VOID_FUNC(getattrs);
+CURSES_VOID_FUNC(getattrs)
 
 // @method: getbegx
 // @description: Returns the absolute x-coordinate of the origin of the current
 //               window.
-
-CURSES_VOID_FUNC(getbegx);
+CURSES_VOID_FUNC(getbegx)
 
 // @method: getbegy
 // @description: Returns the absolute y-coordinate of the origin of the current
 //               window.
-CURSES_VOID_FUNC(getbegy);
+CURSES_VOID_FUNC(getbegy)
 
 // @method: getcurx
 // @description: Returns the x-coordinate of the window's cursor.
-CURSES_VOID_FUNC(getcurx);
+CURSES_VOID_FUNC(getcurx)
 
 // @method: getcury
 // @description: Returns the y-coordinate of the window's cursor.
-CURSES_VOID_FUNC(getcury);
+CURSES_VOID_FUNC(getcury)
 
 // @method: getmaxx
 // @description: Returns the maximum x-coordinate for the window.
-CURSES_VOID_FUNC(getmaxx);
+CURSES_VOID_FUNC(getmaxx)
 
 // @method: getmaxy
 // @description: Returns the maximum y-coordinate for the window.
-CURSES_VOID_FUNC(getmaxy);
+CURSES_VOID_FUNC(getmaxy)
 
 // @method: getparx
 // @description: Returns the x-coordinate of the window relative to its parent.
-CURSES_VOID_FUNC(getparx);
+CURSES_VOID_FUNC(getparx)
 
 // @method: getpary
 // @description: Returns the y-coordinate of the window relative to its parent.
-CURSES_VOID_FUNC(getpary);
+CURSES_VOID_FUNC(getpary)
 
 // @method: move
 // @param[y]: #int the y-coordinate to move to
 // @param[x]: #int the x-coordinate to move to
 // @description: Moves the cursor to the specified (y, x) coordinate.
-CURSES_YX_FUNC(wmove);
+CURSES_YX_FUNC(wmove)
 
 // @method: mvaddstr
 // @param[y]: #int the y-coordinate to move to
@@ -188,7 +187,7 @@ CURSES_YX_FUNC(wmove);
 // @param[str]: #string the string to draw
 // @description: Moves the cursor to the specified (y, x) coordinate, and then
 //               draws a string (updating the cursor position).
-CURSES_YX_STRING_FUNC(mvwaddnstr);
+CURSES_YX_STRING_FUNC(mvwaddnstr)
 
 // @method: mvdelch
 // @param[y]: #int the y-coordinate to move to
@@ -196,56 +195,56 @@ CURSES_YX_STRING_FUNC(mvwaddnstr);
 // @description: Moves the cursor to the specified (y, x) coordinate, and then
 //               deletes a character. Following characters will be shifted left
 //               as necessary.
-CURSES_YX_FUNC(mvwdelch);
+CURSES_YX_FUNC(mvwdelch)
 
 // @method: mvwin
 // @param[y]: #int the y-coordinate to move the window to
 // @param[x]: #int the x-coordinate to move the window to
 // @description: Moves the origin of the current window.
-CURSES_YX_FUNC(mvwin);
+CURSES_YX_FUNC(mvwin)
 
 // @method: noutrefresh
 // @description: Copy the contents of the window to the virtual screen.
-CURSES_VOID_FUNC(wnoutrefresh);
+CURSES_VOID_FUNC(wnoutrefresh)
 
 // @method: redrawwin
 // @description: Redraw the window.
-CURSES_VOID_FUNC(redrawwin);
+CURSES_VOID_FUNC(redrawwin)
 
 // @method: redrawln
 // @param[beg_line]: #int the first corrupted line
 // @param[num_lines]: #int the number of corrupted lines
 // @description: Redraws multiple lines.
-CURSES_YX_FUNC(wredrawln);
+CURSES_YX_FUNC(wredrawln)
 
 // @method: refresh
 // @description: Rereshes the window (i.e. causes the windows contents to be
 //               drawn to the screen).
-CURSES_VOID_FUNC(wrefresh);
+CURSES_VOID_FUNC(wrefresh)
 
 // @method: scrl
 // @param[n]: #int the number of lines to scroll
 // @description: Scrolls the window a given number of lines.
-CURSES_INT_FUNC(wscrl);
+CURSES_INT_FUNC(wscrl)
 
 // @method: scrollok
 // @param[bf]: #bool is scrolling allowed?
 // @description: Toggles scrollability for the window.
-CURSES_BOOL_FUNC(scrollok);
+CURSES_BOOL_FUNC(scrollok)
 
 // @method: setscrreg
 // @param[top]: #int the top line in the scroll region
 // @param[bot]: #int the bottom line in the scroll region
 // @description: Establishes a section of the screen for scrolling.
-CURSES_YX_FUNC(wsetscrreg);
+CURSES_YX_FUNC(wsetscrreg)
 
 // @method: standend
 // @description: Ends standout mode.
-CURSES_VOID_FUNC(wstandend);
+CURSES_VOID_FUNC(wstandend)
 
 // @method: standout
 // @description: Begins standout mode.
-CURSES_VOID_FUNC(wstandout);
+CURSES_VOID_FUNC(wstandout)
 
 // @method: insch
 // @param[ch]: #char the character to insert
