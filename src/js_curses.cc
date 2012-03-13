@@ -6,7 +6,6 @@
 #include <glog/logging.h>
 #include <glog/log_severity.h>
 
-#include <map>
 #include <string>
 
 #include "./js.h"
@@ -39,7 +38,7 @@ Handle<Value> Curses ## capname(const Arguments& args) {  \
 }
 
 #define CURSES_ACCESSOR(macroname)                                      \
-  Handle<Value> JS_##macroname (Local<String> property,                 \
+  Handle<Value> JS_##macroname(Local<String> property,                  \
                                 const AccessorInfo& info) {             \
     HandleScope scope;                                                  \
     return scope.Close(Integer::New(macroname));                        \
@@ -190,11 +189,6 @@ Handle<Value> CursesNewwin(const Arguments& args) {
   LOG(INFO) << "new window is " << w;
   JSCursesWindow *cw = new JSCursesWindow(w);
   return scope.Close(cw->ToScript());
-}
-
-std::map<std::string, js::JSCallback> GetCursesCallbacks() {
-  std::map<std::string, js::JSCallback> callbacks;
-  return callbacks;
 }
 
 Local<Object> GetCursesObj() {

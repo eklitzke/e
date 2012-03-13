@@ -26,8 +26,6 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
-//#define RETURN_SELF return scope.Close(
-//    String::New(self->value.c_str(), self->value.length()))
 #define RETURN_SELF return scope.Close(\
     String::New(self->value.c_str(), self->value.size()))
 
@@ -39,18 +37,22 @@ Line::Line(const std::string &line)
 
 void Line::Replace(const std::string &new_line) {
   value = new_line;
-  //for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
-  //  (*it)(new_line);
-  //}
+#if 0
+  for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
+    (*it)(new_line);
+  }
+#endif
 }
 
 const std::string& Line::ToString() const {
   return value;
 }
 
-//void Line::OnChange(StringCallback cb) {
-  //callbacks_.push_back(cb);
-//}
+#if 0
+void Line::OnChange(StringCallback cb) {
+  callbacks_.push_back(cb);
+}
+#endif
 
 namespace {
 // @class: Line

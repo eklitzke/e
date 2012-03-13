@@ -22,7 +22,7 @@ using v8::Persistent;
 using v8::String;
 using v8::Value;
 
-template<typename T> T* Unwrap(Handle<Object> holder, int field=0) {
+template<typename T> T* Unwrap(Handle<Object> holder, int field = 0) {
   Local<External> wrap = Local<External>::Cast(holder->GetInternalField(field));
   return static_cast<T*>(wrap->Value());
 }

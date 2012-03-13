@@ -43,6 +43,7 @@ class State: public Embeddable {
   bool HandleKey(KeyCode *k);
 
   v8::Persistent<v8::Object> callback_o;
+
  private:
   bool load_core_;
   std::vector<std::string> scripts_;

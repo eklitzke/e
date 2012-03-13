@@ -10,4 +10,4 @@ namespace e {
 v8::Handle<v8::ObjectTemplate> GetSignalTemplate();
 }
 
-#endif  // SRC_JS_SIGNAL_H
+#endif  // SRC_JS_SIGNAL_H_

@@ -10,6 +10,7 @@
 #include <v8.h>
 
 #include <string>
+#include <vector>
 
 #include "./keycode.h"
 #include "./state.h"

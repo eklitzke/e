@@ -35,7 +35,8 @@ void InitializeCurses() {
 CursesWindow::CursesWindow(bool load_core,
                            const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
-    :state_(load_core, scripts, files), window_(nullptr), args_(files), term_in_(io_service_) {
+    :state_(load_core, scripts, files), window_(nullptr), args_(files),
+     term_in_(io_service_) {
 }
 
 CursesWindow::~CursesWindow() {
@@ -93,7 +94,7 @@ void CursesWindow::OnRead(const boost::system::error_code& error,
       break;
   }
   if (keep_going) {
-    v8::V8::IdleNotification(); // tell v8 we're idle (it may want to GC)
+    v8::V8::IdleNotification();  // tell v8 we're idle (it may want to GC)
     EstablishReadLoop();
   }
 }
@@ -109,7 +110,8 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
   // Once initscr() has been called, we can create an object to hold the stdscr
   // pointer.
   JSCursesWindow jcw(stdscr);
-  Local<Object> curses = c->Global()->Get(String::NewSymbol("curses"))->ToObject();
+  Local<Object> curses = c->Global()->Get(
+      String::NewSymbol("curses"))->ToObject();
   curses->Set(String::NewSymbol("stdscr"), jcw.ToScript());
 
   state_.GetListener()->Dispatch("load", c->Global(), args);

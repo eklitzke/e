@@ -8,4 +8,4 @@ namespace e {
 v8::Handle<v8::ObjectTemplate> GetErrnoTemplate();
 }
 
-#endif  // SRC_JS_ERRNO_H
+#endif  // SRC_JS_ERRNO_H_

@@ -26,14 +26,14 @@ using v8::Undefined;
 using v8::Value;
 
 #define CURSES_VOID_FUNC(name)                              \
-  Handle<Value> JS_##name (const Arguments& args) {         \
+  Handle<Value> JS_##name(const Arguments& args) {          \
     CHECK_ARGS(0);                                          \
     GET_SELF(JSCursesWindow);                               \
     return scope.Close(Integer::New(name(self->window_)));  \
   }
 
 #define CURSES_STRING_FUNC(name)                                        \
-  Handle<Value> JS_##name (const Arguments& args) {                     \
+  Handle<Value> JS_##name(const Arguments& args) {                      \
     CHECK_ARGS(1);                                                      \
     GET_SELF(JSCursesWindow);                                           \
     String::AsciiValue value(args[0]);                                  \
@@ -42,7 +42,7 @@ using v8::Value;
   }
 
 #define CURSES_INT_FUNC(name)                                           \
-  Handle<Value> JS_##name (const Arguments& args) {                     \
+  Handle<Value> JS_##name(const Arguments& args) {                      \
     CHECK_ARGS(1);                                                      \
     GET_SELF(JSCursesWindow);                                           \
     int val = static_cast<int>(args[0]->Int32Value());                  \
@@ -50,7 +50,7 @@ using v8::Value;
   }
 
 #define CURSES_BOOL_FUNC(name)                                          \
-  Handle<Value> JS_##name (const Arguments& args) {                     \
+  Handle<Value> JS_##name(const Arguments& args) {                      \
     CHECK_ARGS(1);                                                      \
     GET_SELF(JSCursesWindow);                                           \
     bool b = args[0]->BooleanValue();                                   \
@@ -58,7 +58,7 @@ using v8::Value;
   }
 
 #define CURSES_YX_FUNC(name)                                            \
-  Handle<Value> JS_##name (const Arguments& args) {                     \
+  Handle<Value> JS_##name(const Arguments& args) {                      \
     CHECK_ARGS(2);                                                      \
     GET_SELF(JSCursesWindow);                                           \
     int y = static_cast<int>(args[0]->Int32Value());                    \
@@ -67,7 +67,7 @@ using v8::Value;
   }
 
 #define CURSES_YX_STRING_FUNC(name)                                     \
-  Handle<Value> JS_##name (const Arguments& args) {                     \
+  Handle<Value> JS_##name(const Arguments& args) {                      \
     CHECK_ARGS(3);                                                      \
     GET_SELF(JSCursesWindow);                                           \
     int y = static_cast<int>(args[0]->Int32Value());                    \
@@ -142,11 +142,14 @@ CURSES_VOID_FUNC(werase);
 CURSES_VOID_FUNC(getattrs);
 
 // @method: getbegx
-// @description: Returns the absolute x-coordinate of the origin of the current window.
+// @description: Returns the absolute x-coordinate of the origin of the current
+//               window.
+
 CURSES_VOID_FUNC(getbegx);
 
 // @method: getbegy
-// @description: Returns the absolute y-coordinate of the origin of the current window.
+// @description: Returns the absolute y-coordinate of the origin of the current
+//               window.
 CURSES_VOID_FUNC(getbegy);
 
 // @method: getcurx

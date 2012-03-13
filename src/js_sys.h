@@ -8,4 +8,4 @@ namespace e {
 v8::Handle<v8::ObjectTemplate> GetSysTemplate();
 }
 
-#endif  // SRC_JS_SYS_H
+#endif  // SRC_JS_SYS_H_

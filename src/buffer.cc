@@ -46,12 +46,12 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
 void Buffer::OpenFile(const std::string &filepath) {
   int fd = open(filepath.c_str(), O_RDONLY);
   if (fd == -1) {
-    throw 1; // FIXME(eklitzke)
+    throw 1;  // FIXME(eklitzke)
   }
   struct stat sb;
   if (fstat(fd, &sb) == -1) {
     close(fd);
-    throw 1; // FIXME(eklitzke)
+    throw 1;  // FIXME(eklitzke)
   }
 
   // clear the old buffer

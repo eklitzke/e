@@ -93,7 +93,8 @@ Handle<Value> JSGetChar(const Arguments& args) {
   std::unique_ptr<UChar> data(new uint16_t[length]);
   UErrorCode err;
   us.extract(data.get(), length, err);
-  Local<String> js_string = String::New(static_cast<const uint16_t*>(data.get()), length);
+  Local<String> js_string = String::New(
+      static_cast<const uint16_t*>(data.get()), length);
   return scope.Close(js_string);
 }
 
@@ -180,14 +181,13 @@ Persistent<Value> KeyCode::ToScript() {
     keycode_template = Persistent<ObjectTemplate>::New(raw_template);
   }
 
-  //Local<Object> kc_local = keycode_template->NewInstance();
-  Persistent<Object> kc = Persistent<Object>::New(keycode_template->NewInstance());
+  Persistent<Object> kc = Persistent<Object>::New(
+          keycode_template->NewInstance());
 
   kc.MakeWeak(nullptr, CleanupKeycode);
 
   assert(kc->InternalFieldCount() == 1);
   kc->SetInternalField(0, External::New(this));
-  //return scope.Close(kc);
   return kc;
 }
 
@@ -205,7 +205,7 @@ namespace keycode {
       size_t offset = static_cast<size_t>(wch);
       assert(offset <= max_code);
       const char *name = keycode_arr[offset];
-      assert (name != nullptr);
+      assert(name != nullptr);
       return new KeyCode(wch, name);
     } else {
       return new KeyCode(wch);

@@ -1,6 +1,5 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include <curses.h> // naughty, for OK and ERR
 #include <v8.h>
 #include <glog/logging.h>
 
@@ -106,8 +105,8 @@ State::~State() {
   }
 }
 
-void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then) {
-
+void State::LoadScript(bool run,
+                       boost::function<void(Persistent<Context>)> then) {
   HandleScope scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("log"),
@@ -123,7 +122,8 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
 
   Local<Object> world = world_templ->NewInstance();
   world->SetInternalField(0, External::New(this));
-  world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(), v8::ReadOnly);
+  world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(),
+             v8::ReadOnly);
   context_->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
   Local<Array> args = Array::New(args_.size());
   for (auto it = args_.begin(); it != args_.end(); ++it) {
@@ -131,11 +131,15 @@ void State::LoadScript(bool run, boost::function<void(Persistent<Context>)> then
   }
   world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 
-  context_->Global()->Set(String::NewSymbol("curses"), GetCursesObj(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("curses"), GetCursesObj(),
+                          v8::ReadOnly);
 
-  context_->Global()->Set(String::NewSymbol("errno"), GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("signal"), GetSignalTemplate()->NewInstance(), v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("sys"), GetSysTemplate()->NewInstance(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("errno"),
+                          GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("signal"),
+                          GetSignalTemplate()->NewInstance(), v8::ReadOnly);
+  context_->Global()->Set(String::NewSymbol("sys"),
+                          GetSysTemplate()->NewInstance(), v8::ReadOnly);
 
   bool bail = false;
   if (run) {

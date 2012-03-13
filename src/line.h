@@ -6,7 +6,9 @@
 #ifndef SRC_LINE_H_
 #define SRC_LINE_H_
 
-//#include <boost/function.hpp>
+#if 0
+#include <boost/function.hpp>
+#endif
 #include <v8.h>
 
 #include <string>
@@ -26,13 +28,17 @@ class Line: public Embeddable {
 
   void Replace(const std::string&);
   const std::string& ToString() const;
-  //void OnChange(StringCallback);
+#if 0
+  void OnChange(StringCallback);
+#endif
   Handle<Value> ToScript();
 
  public:
   std::string value;
-  //private:
-  //std::vector<StringCallback> callbacks_;
+#if 0
+ private:
+  std::vector<StringCallback> callbacks_;
+#endif
 };
 }
 

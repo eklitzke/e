@@ -34,9 +34,13 @@ using v8::Value;
 namespace e {
 namespace js {
 
-void AddTemplateFunction(Handle<ObjectTemplate>, const std::string &, v8::InvocationCallback);
-void AddTemplateAccessor(Handle<ObjectTemplate>, const std::string &, v8::AccessorGetter, v8::AccessorSetter);
-  //void AddTemplateAccessor(Handle<ObjectTemplate>, const std::string &, v8::AccessorGetter, v8::AccessorSetter=0);
+void AddTemplateFunction(Handle<ObjectTemplate>,
+                         const std::string &,
+                         v8::InvocationCallback);
+void AddTemplateAccessor(Handle<ObjectTemplate>,
+                         const std::string &,
+                         v8::AccessorGetter,
+                         v8::AccessorSetter);
 
 typedef Handle<Value>(*JSCallback)(const Arguments&);
 typedef Handle<Value>(*JSAccessor)(Local<String>, const AccessorInfo&);
