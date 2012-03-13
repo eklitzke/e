@@ -4,6 +4,11 @@ import pprint
 import sys
 import urllib
 import urllib2
+try:
+    import jsmin
+    has_jsmin = True
+except ImportError:
+    has_jsmin = False
 import json
 
 h_template = """
@@ -51,13 +56,9 @@ v8::Local<v8::Script> GetCoreScript() {
 }
 }"""
 
-def get_compiled_code(input_files, use_advanced=False):
-    code = []
-    for filename in input_files:
-        with open(filename) as f:
-            code.append(f.read())
+def get_closure_code(code, use_advanced=False):
     request_params = [
-        ('js_code', '\n'.join(code)),
+        ('js_code', code),
         ('compilation_level', 'ADVANCED_OPTIMIZATIONS' if use_advanced else 'SIMPLE_OPTIMIZATIONS'),
         ('output_format', 'json'),
         ('output_info', 'compiled_code'),
@@ -88,6 +89,9 @@ def get_compiled_code(input_files, use_advanced=False):
 
     return response['compiledCode']
 
+def get_jsmin_code(code):
+    minifier = jsmin.JavaScriptMinifier()
+    return minifier.JSMinify(code)
 
 def write_output(code, output):
     current_year = datetime.date.today().year
@@ -122,14 +126,30 @@ def write_output(code, output):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings')
-    parser.add_option('-s', '--statistics', action='store_true', help='Get statistics')
-    parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit')
-    parser.add_option('-a', '--advanced-optimizations', action='store_true', help='Use ADVANCED_OPTIMIZATIONS')
+    parser.add_option('--use-closure', default=False, action='store_true',
+                      help='Use closure instead of jsmin (this generates '
+                      'significantly more compact JS, but is slower and '
+                      'requires network access).')
+    parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings.')
+    parser.add_option('-s', '--statistics', action='store_true', help='Get statistics.')
+    parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit.')
+    parser.add_option('-a', '--advanced-optimizations', action='store_true', help='Use ADVANCED_OPTIMIZATIONS with closure.')
     opts, args = parser.parse_args()
     if not opts.outfile:
         parser.error('must have an outfile')
         sys.exit(1)
 
-    code = get_compiled_code(args, opts.advanced_optimizations)
+    code = []
+    for filename in args:
+        with open(filename) as f:
+            code.append(f.read())
+    code = '\n'.join(code)
+
+    if opts.use_closure:
+        code = get_closure_code(code, opts.advanced_optimizations)
+    elif not has_jsmin:
+        parser.error('jsmin is not present, please use --use-closure')
+        sys.exit(1)
+    else:
+        code = get_jsmin_code(code)
     write_output(code, opts.outfile)
