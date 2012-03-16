@@ -58,10 +58,10 @@ cc_template = """
 #include <wchar.h>
 
 #include <cassert>
-#include <memory>
 #include <string>
 
 #include "./embeddable.h"
+#include "./unicode.h"
 
 using v8::Arguments;
 using v8::Boolean;
@@ -86,25 +86,18 @@ namespace {
 //               unicode character.
 Handle<Value> JSGetChar(const Arguments& args) {
   HandleScope scope;
-  GET_SELF(KeyCode);
+  KeyCode *self = Unwrap<KeyCode>(args);
 
   UnicodeString us(static_cast<UChar32>(self->code_));
-  int length = us.length();
-  std::unique_ptr<UChar> data(new uint16_t[length]);
-  UErrorCode err;
-  us.extract(data.get(), length, err);
-  Local<String> js_string = String::New(
-      static_cast<const uint16_t*>(data.get()), length);
-  return scope.Close(js_string);
+  return scope.Close(UnicodeToString(us));
 }
 
 // @method: getCode
 // @description: Returns the integral code for a character (generally its
 //               Unicode codepoint).
 Handle<Value> JSGetCode(const Arguments& args) {
-  GET_SELF(KeyCode);
-
   HandleScope scope;
+  KeyCode *self = Unwrap<KeyCode>(args);
   Local<Integer> code = Integer::New(self->code_);
   return scope.Close(code);
 }
@@ -113,20 +106,22 @@ Handle<Value> JSGetCode(const Arguments& args) {
 // @description: Returns the name for a keypress; this will be an empty string
 //               unless the keycode represents a keypad hit
 Handle<Value> JSGetName(const Arguments& args) {
-  GET_SELF(KeyCode);
-
   HandleScope scope;
-  const std::string &s = self->name_;
-  Local<String> name = String::NewSymbol(s.c_str(), s.length());
-  return scope.Close(name);
+  KeyCode *self = Unwrap<KeyCode>(args);
+  if (self->is_keypad_) {
+    return scope.Close(String::Empty());
+  } else {
+    const std::string &s = self->name_;
+    Local<String> name = String::NewSymbol(s.c_str(), s.length());
+    return scope.Close(name);
+  }
 }
 
 // @method: isKeypad
 // @description: Returns true if this was a keypad hit, false otherwise.
 Handle<Value> JSIsKeypad(const Arguments& args) {
-  GET_SELF(KeyCode);
-
   HandleScope scope;
+  KeyCode *self = Unwrap<KeyCode>(args);
   Handle<Boolean> b = Boolean::New(self->is_keypad_);
   return scope.Close(b);
 }
@@ -167,7 +162,7 @@ void CleanupKeycode(Persistent<Value> val, void*) {
   HandleScope scope;
   assert(val->IsObject());
   Local<Object> obj = val->ToObject();
-  KeyCode *kc = Unwrap<KeyCode>(obj);
+  KeyCode *kc = UnwrapObj<KeyCode>(obj);
   delete kc;
   val.Dispose();
 }
