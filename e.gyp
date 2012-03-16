@@ -14,6 +14,7 @@
             '<!@(pkg-config --libs-only-l libglog)',
             '<!@(pkg-config --libs-only-l icu-uc)',
             '<!@(pkg-config --libs-only-l ncursesw)',
+            '-ltcmalloc',
             '-lv8',
           ],
          'defines': [ 'USE_LINUX', ],
