@@ -33,7 +33,7 @@ $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
 	make -C build
 
 e: $(TARGET)
-	@if [ ! -e "e" ]; then echo -n "Creating ./e symlink..."; ln -s $(TARGET) e; echo " done!"; fi
+	@if [ ! -e "e" ]; then echo -n "Creating ./e symlink..."; ln -sf $(TARGET) e; echo " done!"; fi
 
 
 .PHONY: all clean lint

@@ -9,8 +9,10 @@
 namespace po = boost::program_options;
 
 namespace e {
-// sentinel to not use the return value from ParseOptions()
-const int NO_EXIT = 1;
+enum {
+  // sentinel to not use the return value from ParseOptions()
+  NO_EXIT = 1
+};
 
 // parse argc and argv
 int ParseOptions(int argc, char **argv);
