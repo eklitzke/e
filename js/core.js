@@ -287,9 +287,11 @@ world.addEventListener("keypress", function (event) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
-	log("isKeypad = " + event.isKeypad() + ", code = " + code);
+	var msg = "@ isKeypad = " + event.isKeypad() + ", code = " + code;
 	if (!event.isKeypad()) {
 		var wch = event.getChar();
+		msg += ", wch = '" + wch + "'";
+		log(msg);
 		switch (code) {
 		case 1: // Ctrl-A
 			core.move.left();
@@ -342,6 +344,8 @@ world.addEventListener("keypress", function (event) {
 		}
 	} else {
 		var name = event.getName();
+		msg += ", name = " + name;
+		log(msg);
 		switch (name) {
 		case "KEY_BACKSPACE":
 			if (core.column > 0) {
@@ -353,10 +357,13 @@ world.addEventListener("keypress", function (event) {
 			} else if (core.line > 0) {
 				// update the buffers
 				var curline = world.buffer.getLine(core.line);
+				log("curline1 = \"" + curline.value() + "\"");
 				var origSize = curline.length;
 				var contents = curline.value();
 				world.buffer.deleteLine(core.line--);
 				curline = world.buffer.getLine(core.line);
+				core.column = curline.length;
+				log("curline2 = \"" + curline.value() + "\"");
 				if (contents) {
 					curline.append(contents);
 				}
@@ -366,7 +373,6 @@ world.addEventListener("keypress", function (event) {
 				core.windows.buffer.clrtoeol();
 				// scroll up
 				// redraw the previous line
-				core.column = origSize;
 				core.moveAbsolute(cury - 1, core.column);
 				if (contents) {
 					core.windows.buffer.addstr(contents)
@@ -410,11 +416,13 @@ world.addEventListener("keypress", function (e) {
 });
 
 world.addEventListener("keypress", function (e) {
-	//log("===============");
-	//var lines = world.buffer.getContents();
-	/*for (var i = 0; i < lines.length; i++) {
-		log(lines[i]);
-	}*/
+	log("");
+	log("<<<<<< START <<<<<<");
+	var lines = world.buffer.getContents();
+	for (var i = 0; i < lines.length; i++) {
+		log('"' + lines[i] + '"');
+	}
+	log(">>>>>>> END >>>>>>>");
 });
 
 // This is the callback that specifically causes curses to flush all of its

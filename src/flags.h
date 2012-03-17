@@ -6,8 +6,6 @@
 
 #include <boost/program_options.hpp>
 
-namespace po = boost::program_options;
-
 namespace e {
 enum {
   // sentinel to not use the return value from ParseOptions()
@@ -18,7 +16,7 @@ enum {
 int ParseOptions(int argc, char **argv);
 
 // get the variables map
-const po::variables_map& vm();
+const boost::program_options::variables_map& vm();
 }
 
 #endif  // SRC_FLAGS_H_
