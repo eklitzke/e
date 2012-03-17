@@ -119,15 +119,15 @@ Building on Linux
 
 You'll need [GYP](http://code.google.com/p/gyp/) installed. You ought to then be
 able to simply run `make` to build the project. Internally, this will create a
-directory called `gyp.out` with a generated `Makefile` from GYP, and then
-invoking `make` in the future will mostly do a recursive make using that file.
+directory called `build` with a generated `Makefile` from GYP, and then invoking
+`make` in the future will mostly do a recursive make using that file.
 
 Do to a bug in GYP, running `make` in a fresh checkout may not properly
 bootstrap GYP. If that happens (e.g. it looks like running `make` isn't actually
 compiling anything), run the following command manually (if you get an `OSError`
 in the output, ignore it and run the command a second time):
 
-    gyp --toplevel-dir=. --depth=src/ --generator-output=gyp.out e.gyp
+    gyp --toplevel-dir=. --depth=src/ --generator-output=build e.gyp
 
 If you have build problems, you might want to try invoking `make` as
 
