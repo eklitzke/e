@@ -109,11 +109,11 @@ Handle<Value> JSGetName(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
   if (self->is_keypad_) {
-    return scope.Close(String::Empty());
-  } else {
     const std::string &s = self->name_;
     Local<String> name = String::NewSymbol(s.c_str(), s.length());
     return scope.Close(name);
+  } else {
+    return scope.Close(String::Empty());
   }
 }
 

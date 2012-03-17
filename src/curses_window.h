@@ -34,6 +34,7 @@ class CursesWindow {
   void InnerLoop(v8::Persistent<v8::Context>);
 
   void OnRead(const boost::system::error_code&, std::size_t);
+  bool InnerOnRead();
   bool HandleKey(KeyCode *k);
   void EstablishReadLoop();
 };

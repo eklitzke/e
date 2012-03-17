@@ -25,6 +25,7 @@
         'src/bundled_core.cc',
         'src/curses_window.cc',
         'src/embeddable.cc',
+        'src/flags.cc',
         'src/js.cc',
         'src/js_curses.cc',
         'src/js_curses_window.cc',

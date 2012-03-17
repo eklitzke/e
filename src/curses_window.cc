@@ -14,12 +14,17 @@
 #include <term.h>
 #include <termios.h>
 
+#include "./flags.h"
 #include "./keycode.h"
 #include "./js_curses_window.h"
 
 namespace e {
 namespace {
 bool is_initialized = false;
+
+bool UseAsio() {
+  return !vm().count("without-boost-asio");
+}
 
 void InitializeCurses() {
   if (!is_initialized) {
@@ -52,14 +57,18 @@ void CursesWindow::Initialize() {
   keypad(window_, TRUE);
   clearok(window_, TRUE);
   notimeout(window_, TRUE);
-  nodelay(window_, true);
+  if (UseAsio()) {
+    nodelay(window_, true);
+  }
 
   struct termios ttystate;
   tcgetattr(STDIN_FILENO, &ttystate);
   ttystate.c_iflag &= ~IXON;  // allow capturs Ctrl-Q/Ctrl-S
   tcsetattr(0, TCSANOW, &ttystate);
 
-  term_in_.assign(STDIN_FILENO);
+  if (UseAsio()) {
+    term_in_.assign(STDIN_FILENO);
+  }
 }
 
 /* Add a read-event to the ioservice loop that will fire as soon as keyboard
@@ -79,6 +88,14 @@ bool CursesWindow::HandleKey(KeyCode *keycode) {
 
 void CursesWindow::OnRead(const boost::system::error_code& error,
                            std::size_t bytes_transferred) {
+  if (error) {
+    LOG(FATAL) << "boot::asio error " << error.message();
+  } else {
+    InnerOnRead();
+  }
+}
+
+bool CursesWindow::InnerOnRead() {
   // there should be at least one byte to read (and possibly more); keep reading
   // bytes until getch() returns ERR
   bool keep_going = true;
@@ -97,6 +114,7 @@ void CursesWindow::OnRead(const boost::system::error_code& error,
     v8::V8::IdleNotification();  // tell v8 we're idle (it may want to GC)
     EstablishReadLoop();
   }
+  return keep_going;
 }
 
 void CursesWindow::Loop() {
@@ -116,7 +134,11 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
 
   state_.GetListener()->Dispatch("load", c->Global(), args);
 
-  EstablishReadLoop();
-  io_service_.run();
+  if (UseAsio()) {
+    EstablishReadLoop();
+    io_service_.run();
+  } else {
+    while (InnerOnRead()) { }
+  }
 }
 }
