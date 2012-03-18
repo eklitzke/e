@@ -165,7 +165,9 @@ When you invoke `make`, the file contents of `js/core.js` will be minified using
 jsmin, and dumped into `src/bundled_core.h` and `src/bundled_core.cc` (along
 with some boilerplate). These files are used for bootstrapping the editor. The
 way it works is that when you invoke `e` without any arguments, it runs the
-script bundled into these files.
+script bundled into these files. This avoids hard coding the location of the
+core JavaScript files, and means that (in theory) it's possible to statically
+link the editor and distribute it as a standalone binary.
 
 If you don't want to run the editor with the bundled JavaScript, invoke it like
 
