@@ -38,7 +38,6 @@ void InitializeCurses() {
     nonl();  // don't turn LF into CRLF
     raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
     ASSERT(atexit(EndCurses) == 0);
-    ASSERT(false);
   }
 }
 }

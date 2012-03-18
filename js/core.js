@@ -1,4 +1,4 @@
-core = { column: 0, line: 0, windowTop: 0 };
+core = { column: 0, line: 0 };
 
 log("entered core.js");
 
@@ -29,6 +29,20 @@ core.toBool = function (val, defaultValue) {
 };
 
 /**
+ * Get the line number of the top line in the window (zero indexed).
+ */
+core.windowTop = function () {
+	return core.line - core.windows.buffer.getcury();
+}
+
+/**
+ * Get the line number of the bottom line in the window (zero indexed).
+ */
+core.windowBottom = function () {
+	return core.windowTop() + core.windows.buffer.getmaxy();
+}
+
+/**
  * Low-level method to scroll a region of the screen. If lines is positive then
  * the screen is scrolled UP, i.e. line (n + lines) moves to the position on the
  * screen formerly occoupied by line n. And vice versa for negative lines.
@@ -44,10 +58,18 @@ core.scrollRegion = function (lines, top, bot) {
 
 	var cury = core.windows.buffer.getcury();
 	var maxy = core.windows.buffer.getmaxy();
-	log("cury = " + cury + ", core.line = " + core.line);
+	var maxAllowed = world.buffer.length - 1;
+	log("lines = " + lines + ", cury = " + cury + ", core.line = " + core.line);
 
-	if (top == 0) {
-		core.windowTop += lines;
+	var wt = core.windowTop();
+	if (wt + lines <= 0) {
+		lines = -wt;
+	} else if (wt + lines > maxAllowed) {
+		lines -= (wt + lines - maxAllowed);
+	}
+	log("now lines is " + lines);
+	if (lines == 0) {
+		return lines;
 	}
 
 	var newLine, newLinePos;
@@ -65,7 +87,7 @@ core.scrollRegion = function (lines, top, bot) {
 	}
 	log("moving to " + cury);
 	core.moveAbsolute(cury, core.column);
-	return;
+	return lines;
 
 };
 
@@ -195,7 +217,15 @@ core.drawTabBar = function () {
 core.drawStatus = function () {
 	core.windows.status.standout();
 	core.windows.status.mvaddstr(0, 0, "  ");
-	core.windows.status.addstr(core.line + 1 + "," + core.column);
+	var tabStr = "" + (core.line + 1) + "," + core.column;
+	var ratio = core.windowBottom() * 100 / world.buffer.length;
+	if (ratio > 100) {
+		ratio = 100;
+	}
+	ratio = parseInt(ratio);
+	tabStr += "  (" + ratio + "%)  ";
+
+	core.windows.status.addstr(tabStr);
 
 	var spaces = "";
 	var curx = core.windows.status.getcurx();
@@ -238,6 +268,12 @@ core.scrollTo = function (lineNumber) {
 
 // Called when the editor is loaded
 world.addEventListener("load", function (event) {
+	if (world.args.length) {
+		world.buffer.open(world.args[0]);
+	}
+});
+
+world.addEventListener("load", function (event) {
 	core.windows = {};
 	core.windows.tab = curses.stdscr.subwin(1, curses.stdscr.getmaxx(), 0, 0);
 	core.drawTabBar();
@@ -247,12 +283,6 @@ world.addEventListener("load", function (event) {
 
 	core.windows.status = curses.stdscr.subwin(2, curses.stdscr.getmaxx(), curses.stdscr.getmaxy() - 2, 0);
 	core.drawStatus();
-});
-
-world.addEventListener("load", function (event) {
-	if (world.args.length) {
-		world.buffer.open(world.args[0]);
-	}
 });
 
 world.addEventListener("load", function (event) {
@@ -395,14 +425,12 @@ world.addEventListener("keypress", function (event) {
 		case "KEY_NPAGE": // page down
 			var maxy = core.windows.buffer.getmaxy();
 			var delta = maxy - 1 - cury;
-			core.scrollRegion(maxy - 1, 0, maxy);
-			core.line += delta;
+			core.line += core.scrollRegion(maxy - 1, 0, maxy);
 			break;
 		case "KEY_PPAGE": // page up
 			var maxy = core.windows.buffer.getmaxy();
 			var delta = maxy - 1 - cury;
-			core.scrollRegion(1 - maxy, 0, maxy);
-			core.line += delta;
+			core.line += core.scrollRegion(1 - maxy, 0, maxy);
 			break;
 		case "KEY_RIGHT":
 			core.move(0, 1);
