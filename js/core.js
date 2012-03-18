@@ -3,16 +3,29 @@ core = { column: 0, line: 0 };
 log("entered core.js");
 
 /**
+ * Adds a function to the core object, and adds a displayName attribute.
+ *
+ * @param {string} name The name of the function
+ * @param {function} func The function object
+ */
+core.addFunction = function (name, func) {
+	func.displayName = name;
+	core[name] = func;
+	return func;
+};
+core.addFunction.displayName = "addFunction";
+
+/**
  * Gets the current line in the buffer.
  *
  * @param {number} [line] the "current" line
  */
-core.currentLine = function (line) {
+core.addFunction("currentLine", function (line) {
 	if (line === undefined) {
 		line = core.line;
 	}
 	return world.buffer.getLine(core.line);
-};
+});
 
 /**
  * Converts a value to a boolean, optionally with a default value for undefined
@@ -21,26 +34,26 @@ core.currentLine = function (line) {
  * @param val The current value
  * @param {boolean} [defaultValue] the default value, if val is undefined
  */
-core.toBool = function (val, defaultValue) {
+core.addFunction("toBool", function (val, defaultValue) {
 	if (val === undefined) {
 		val = defaultValue;
 	}
 	return !!val;
-};
+});
 
 /**
  * Get the line number of the top line in the window (zero indexed).
  */
-core.windowTop = function () {
+core.addFunction("windowTop", function () {
 	return core.line - core.windows.buffer.getcury();
-}
+});
 
 /**
  * Get the line number of the bottom line in the window (zero indexed).
  */
-core.windowBottom = function () {
+core.addFunction("windowBottom", function () {
 	return core.windowTop() + core.windows.buffer.getmaxy();
-}
+});
 
 /**
  * Low-level method to scroll a region of the screen. If lines is positive then
@@ -53,13 +66,11 @@ core.windowBottom = function () {
  * @param {number} top The top line of the scroll region
  * @param {number} bot The bottom line of the scroll region
  */
-core.scrollRegion = function (lines, top, bot) {
-	log("ENTERING scrollRegion(" + lines + ", " + top + ", " + bot + ")");
-
+core.addFunction("scrollRegion", function (lines, top, bot) {
+	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var maxy = core.windows.buffer.getmaxy();
 	var maxAllowed = world.buffer.length - 1;
-	log("lines = " + lines + ", cury = " + cury + ", core.line = " + core.line);
 
 	var wt = core.windowTop();
 	if (wt + lines <= 0) {
@@ -67,7 +78,6 @@ core.scrollRegion = function (lines, top, bot) {
 	} else if (wt + lines > maxAllowed) {
 		lines -= (wt + lines - maxAllowed);
 	}
-	log("now lines is " + lines);
 	if (lines == 0) {
 		return lines;
 	}
@@ -85,11 +95,9 @@ core.scrollRegion = function (lines, top, bot) {
 		core.windows.buffer.mvaddstr(i, 0, newLine);
 		core.windows.buffer.clrtoeol();
 	}
-	log("moving to " + cury);
-	core.moveAbsolute(cury, core.column);
 	return lines;
 
-};
+});
 
 // higher-level method to scroll a region
 //
@@ -97,7 +105,7 @@ core.scrollRegion = function (lines, top, bot) {
 // tophalf -- if true, top half is scrolled down, if false, bottom half is
 //            scrolled up
 // lines -- the number of lines to scroll by, always positive
-core.scroll = function (partition, tophalf, lines) {
+core.addFunction("scroll", function (partition, tophalf, lines) {
 	var top, bot;
 	if (tophalf) {
 		top = 0;
@@ -107,45 +115,68 @@ core.scroll = function (partition, tophalf, lines) {
 		bot = core.windows.buffer.getmaxy();
 	}
 	core.scrollRegion(top, bot, lines);
-};
+});
+
+/**
+ * Attempt to log a traceback.
+ */
+core.addFunction("logTrace", function () {
+	var currentFunction = arguments.callee.caller;
+	log("STACK TRACE");
+	log("===========");
+	while (currentFunction) {
+		var fname = currentFunction.displayName;
+		if (!fname) {
+			var fn = currentFunction.toString();
+			fname = fn.substring(fn.indexOf("function") + 8, fn.indexOf("")) || "anonymous";
+		}
+		log(fname + "()");
+		currentFunction = currentFunction.caller;
+	}
+});
 
 // move to an absolute window position (specified relative to the
 // core.windows.buffer window)
-core.moveAbsolute = function (y, x) {
+core.addFunction("moveAbsolute", function (y, x) {
 	core.windows.buffer.move(y, x);
 	curses.stdscr.move(y + 1, x);
-};
+});
 
 // move to a new position, relative to the current cursor position (delta-y =
 // `up` and delta-x = `over`).
-core.move = function (up, over, restrictRight) {
+core.addFunction("move", function (up, over, restrictRight) {
 	up = parseInt(up || 0);
 	over = parseInt(over || 0);
 	restrictRight = core.toBool(restrictRight, true);
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
-	var newx = curx;
 	var newy = cury;
+
+	var enforcePosition = function () {
+		var newx = core.restrictX(curx + over);
+		if (newy < 0) {
+			newy = 0;
+		}
+		//if (newx != curx || newy != cury) {
+		core.moveAbsolute(newy, newx);
+		//}
+	};
+
 	if (up) {
 		var newy = cury + up;
 		var maxy = core.windows.buffer.getmaxy();
-		if (newy < 0 || newy > maxy - 1) {
+		if (newy < 0 || newy >= maxy) {
 			core.scrollRegion(up, 0, maxy);
 			core.line += newy - cury;
+			enforcePosition();
 			return;
 		}
 		if (newy != cury) {
 			core.line += newy - cury;
 		}
 	}
-	newx = core.restrictX(curx + over);
-	if (newx != curx) {
-		core.column += newx - curx;
-	}
-	if (newx != curx || newy != cury) {
-		core.moveAbsolute(newy, newx);
-	}
-};
+	enforcePosition();
+});
 
 core.move.absolute = core.moveAbsolute;
 
@@ -176,7 +207,7 @@ core.move.right = function (pastText, updateBuffer) {
 	}
 };
 
-core.restrictX = function (newx, lineNum) {
+core.addFunction("restrictX", function (newx, lineNum) {
 	var line;
 	if (lineNum === undefined) {
 		lineNum = core.line;
@@ -191,10 +222,11 @@ core.restrictX = function (newx, lineNum) {
 	if (newx > maxx) {
 		newx = maxx;
 	}
+	core.column = newx;
 	return newx;
-};
+});
 
-core.drawTabBar = function () {
+core.addFunction("drawTabBar", function () {
 	core.windows.tab.standend();
 	core.windows.tab.attron(curses.A_BOLD);
 	core.windows.tab.addstr(" " + world.buffer.getName() + " ");
@@ -212,9 +244,9 @@ core.drawTabBar = function () {
 	core.windows.tab.attron(curses.A_BOLD);
 	core.windows.tab.attron(curses.A_UNDERLINE);
 	core.windows.tab.addstr("X");
-};
+});
 
-core.drawStatus = function () {
+core.addFunction("drawStatus", function () {
 	core.windows.status.standout();
 	core.windows.status.mvaddstr(0, 0, "  ");
 	var tabStr = "" + (core.line + 1) + "," + core.column;
@@ -235,10 +267,10 @@ core.drawStatus = function () {
 	}
 	core.windows.status.addstr(spaces);
 	core.windows.status.standend();
-	core.moveAbsolute(core.windows.buffer.getcury(), core.windows.buffer.getcurx());
-};
+	core.moveAbsolute(core.windows.buffer.getcury(), core.column);
+});
 
-core.updateAllWindows = function (doupdate) {
+core.addFunction("updateAllWindows", function (doupdate) {
 	if (doupdate === undefined) {
 		doupdate = true;
 	}
@@ -254,17 +286,7 @@ core.updateAllWindows = function (doupdate) {
 
 	// do the update
 	curses.doupdate();
-};
-
-// This function is called when the terminal needs to be scrolled (e.g. after
-// using an arrow key, after hitting a newline, etc.). The screen contents may
-// or may not be scolled, but the cursor will generally move.
-core.scrollTo = function (lineNumber) {
-	if (lineNumber === undefined) {
-		lineNumber = core.line;
-	}
-	curses.move(1 + lineNumber, core.rightmost());
-};
+});
 
 // Called when the editor is loaded
 world.addEventListener("load", function (event) {
@@ -382,13 +404,11 @@ world.addEventListener("keypress", function (event) {
 			} else if (core.line > 0) {
 				// update the buffers
 				var curline = world.buffer.getLine(core.line);
-				log("curline1 = \"" + curline.value() + "\"");
 				var origSize = curline.length;
 				var contents = curline.value();
 				world.buffer.deleteLine(core.line--);
 				curline = world.buffer.getLine(core.line);
 				core.column = curline.length;
-				log("curline2 = \"" + curline.value() + "\"");
 				if (contents) {
 					curline.append(contents);
 				}
@@ -407,9 +427,7 @@ world.addEventListener("keypress", function (event) {
 			}
 			break;
 		case "KEY_DOWN":
-			log("DOWN, core.line = " + core.line + ", world.buffer.length = " + world.buffer.length);
 			if (core.line < world.buffer.length - 1) {
-				log("moving");
 				core.move(1);
 			}
 			break;
