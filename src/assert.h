@@ -6,6 +6,7 @@
 
 namespace e {
 void PrintAssertThenExit(const char *, const char *, int);
+}
 
 // This is our custom assertion function. It varies from the standard assert(3)
 // in a few ways:
@@ -25,8 +26,7 @@ void PrintAssertThenExit(const char *, const char *, int);
       ::e::PrintAssertThenExit(#expr, __FILE__, __LINE__);  \
     }                                                       \
   } while (0)
-#else
+#else   // DEBUG
 #define ASSERT(e) do { } while (0)
-#endif
-}
+#endif  // DEBUG
 #endif  // SRC_ASSERT_H_
