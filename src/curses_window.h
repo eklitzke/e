@@ -21,7 +21,6 @@ class CursesWindow {
   explicit CursesWindow(bool load_core,
                         const std::vector<std::string> &scripts,
                         const std::vector<std::string> &files);
-  ~CursesWindow();
   void Initialize();
   void Loop();
  private:
@@ -38,6 +37,7 @@ class CursesWindow {
   bool HandleKey(KeyCode *k);
   void EstablishReadLoop();
 };
+void EndCurses();
 }
 
 #endif  // SRC_CURSES_WINDOW_H_

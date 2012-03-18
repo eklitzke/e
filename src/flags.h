@@ -9,7 +9,7 @@
 namespace e {
 enum {
   // sentinel to not use the return value from ParseOptions()
-  NO_EXIT = 1
+  NO_EXIT = 42
 };
 
 // parse argc and argv

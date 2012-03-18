@@ -7,6 +7,7 @@
 #include <boost/program_options.hpp>
 #include <glog/logging.h>
 
+#include "./assert.h"
 #include "./curses_window.h"
 #include "./flags.h"
 #include "./list_environment.h"

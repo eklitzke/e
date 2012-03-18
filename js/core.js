@@ -29,49 +29,44 @@ core.toBool = function (val, defaultValue) {
 };
 
 /**
- * Low-level method to scroll a region of the screen.
+ * Low-level method to scroll a region of the screen. If lines is positive then
+ * the screen is scrolled UP, i.e. line (n + lines) moves to the position on the
+ * screen formerly occoupied by line n. And vice versa for negative lines.
+ *
+ * The value of core.line will *not* change as a result of calling this function.
  *
  * @param {number} lines The number of lines to scroll
  * @param {number} top The top line of the scroll region
  * @param {number} bot The bottom line of the scroll region
  */
 core.scrollRegion = function (lines, top, bot) {
+	log("ENTERING scrollRegion(" + lines + ", " + top + ", " + bot + ")");
+
 	var cury = core.windows.buffer.getcury();
 	var maxy = core.windows.buffer.getmaxy();
-	if (lines < 0 && core.line == 0) {
-		// if we're already at the top of the screen, we can't scroll up
-		return;
-	}
-	else if (lines > 0) {
-		// make sure the last effective line isn't past the last line we can see
-		// in the buffer
-		var maxEffectiveLine = world.buffer.length + maxy - 1;
-		// XXX: off by one error?
-		if (core.windowTop + lines + maxy > maxEffectiveLine) {
-			return;
-		}
-	}
-	core.line += (lines - cury);
-	core.windowTop += lines;
-	core.windows.buffer.setscrreg(top, bot);
-	core.windows.buffer.scrl(lines);
-	log("a " + lines);
+	log("cury = " + cury + ", core.line = " + core.line);
 
-	if (lines > 0) {
-		for (var i = maxy - lines; i < maxy; i++) {
-			var lineNum = core.windowTop + i;
-			log("lineNum " + lineNum);
-			if (lineNum > world.buffer.length) {
-				core.windows.buffer.mvaddstr(i, 0, "~");
-			} else {
-				var val = world.buffer.getLine(lineNum).value();
-				log(val);
-				core.windows.buffer.mvaddstr(i, 0, val);
-			}
-		}
-		//core.windows.buffer.moveAbsolute(0, 0);
-		core.moveAbsolute(0, 0);
+	if (top == 0) {
+		core.windowTop += lines;
 	}
+
+	var newLine, newLinePos;
+	var lineDelta = core.line - cury;
+	for (var i = top; i <= bot; i++) {
+		//log("moving line at " + (i + lineDelta + lines) + " to screen position " + i);
+		newLinePos = i + lineDelta + lines;
+		if (newLinePos >= world.buffer.length) {
+			newLine = "~";
+		} else {
+			newLine = world.buffer.getLine(i + lineDelta + lines).value();
+		}
+		core.windows.buffer.mvaddstr(i, 0, newLine);
+		core.windows.buffer.clrtoeol();
+	}
+	log("moving to " + cury);
+	core.moveAbsolute(cury, core.column);
+	return;
+
 };
 
 // higher-level method to scroll a region
@@ -112,11 +107,9 @@ core.move = function (up, over, restrictRight) {
 	if (up) {
 		var newy = cury + up;
 		var maxy = core.windows.buffer.getmaxy();
-		if (newy < 0) {
-			newy = 0;
-		} else if (newy > maxy - 1) {
-			//newy = maxy - 1;
+		if (newy < 0 || newy > maxy - 1) {
 			core.scrollRegion(up, 0, maxy);
+			core.line += newy - cury;
 			return;
 		}
 		if (newy != cury) {
@@ -287,7 +280,7 @@ world.addEventListener("keypress", function (event) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
-	var msg = "@ isKeypad = " + event.isKeypad() + ", code = " + code;
+	var msg = "@(" + core.line + ", " + core.column + ")  isKeypad = " + event.isKeypad() + ", code = " + code;
 	if (!event.isKeypad()) {
 		var wch = event.getChar();
 		msg += ", wch = '" + wch + "'";
@@ -297,6 +290,7 @@ world.addEventListener("keypress", function (event) {
 			core.move.left();
 			break;
 		case 3: // Ctrl-C
+			log("calling world.stopLoop()");
 			world.stopLoop();
 			break;
 		case 5: // Ctrl-E
@@ -348,6 +342,7 @@ world.addEventListener("keypress", function (event) {
 		log(msg);
 		switch (name) {
 		case "KEY_BACKSPACE":
+			log("backspace, core.line = " + core.line);
 			if (core.column > 0) {
 				var curline = world.buffer.getLine(core.line);
 				core.windows.buffer.mvdelch(cury, curx - 1);
@@ -372,6 +367,7 @@ world.addEventListener("keypress", function (event) {
 				core.moveAbsolute(cury, 0);
 				core.windows.buffer.clrtoeol();
 				// scroll up
+				core.scrollRegion(1, core.windows.buffer.getcury(), core.windows.buffer.getmaxy());
 				// redraw the previous line
 				core.moveAbsolute(cury - 1, core.column);
 				if (contents) {
@@ -381,7 +377,9 @@ world.addEventListener("keypress", function (event) {
 			}
 			break;
 		case "KEY_DOWN":
+			log("DOWN, core.line = " + core.line + ", world.buffer.length = " + world.buffer.length);
 			if (core.line < world.buffer.length - 1) {
+				log("moving");
 				core.move(1);
 			}
 			break;
@@ -395,10 +393,16 @@ world.addEventListener("keypress", function (event) {
 			core.move(0, -1);
 			break;
 		case "KEY_NPAGE": // page down
-			core.scrollRegion(1);
+			var maxy = core.windows.buffer.getmaxy();
+			var delta = maxy - 1 - cury;
+			core.scrollRegion(maxy - 1, 0, maxy);
+			core.line += delta;
 			break;
 		case "KEY_PPAGE": // page up
-			core.scrollRegion(-1);
+			var maxy = core.windows.buffer.getmaxy();
+			var delta = maxy - 1 - cury;
+			core.scrollRegion(1 - maxy, 0, maxy);
+			core.line += delta;
 			break;
 		case "KEY_RIGHT":
 			core.move(0, 1);
@@ -416,6 +420,7 @@ world.addEventListener("keypress", function (e) {
 });
 
 world.addEventListener("keypress", function (e) {
+	return;
 	log("");
 	log("<<<<<< START <<<<<<");
 	var lines = world.buffer.getContents();

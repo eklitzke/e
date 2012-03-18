@@ -11,9 +11,9 @@
 #include <v8.h>
 
 #include <algorithm>
-#include <cassert>
 #include <vector>
 
+#include "./assert.h"
 #include "./buffer.h"
 #include "./js.h"
 
@@ -112,7 +112,7 @@ Handle<Value> JSAddLine(const Arguments& args) {
     lineValue.insert(0, *value, value.length());
   }
   std::vector<Line *> *lines = self->Lines();
-  assert(offset <= lines->size());
+  ASSERT(offset <= lines->size());
 
   Line *line = new Line(lineValue);
   if (offset == lines->size()) {
@@ -153,7 +153,7 @@ Handle<Value> JSGetLine(const Arguments& args) {
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
   std::vector<Line *> l = *(self->Lines());
-  assert(offset < l.size());
+  ASSERT(offset < l.size());
   return scope.Close(l[offset]->ToScript());
 }
 
@@ -234,7 +234,7 @@ Handle<Value> Buffer::ToScript() {
     buffer_template = Persistent<ObjectTemplate>::New(raw_template);
   }
   Handle<Object> buf = buffer_template->NewInstance();
-  assert(buf->InternalFieldCount() == 1);
+  ASSERT(buf->InternalFieldCount() == 1);
   buf->SetInternalField(0, External::New(this));
   return scope.Close(buf);
 }
