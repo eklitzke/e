@@ -124,7 +124,7 @@ These are some of the known dependencies:
 
 * [boost](http://www.boost.org/), including the
   [boost::asio](http://www.boost.org/libs/asio) and
-  [boost::program_options](www.boost.org/libs/program_options) components
+  [boost::program_options](http://www.boost.org/libs/program_options) components
 * [glog](http://code.google.com/p/google-glog/) (you might need an older
   version)
 * [ICU](http://site.icu-project.org/)
@@ -136,6 +136,10 @@ These are some of the known dependencies:
 
 For an authoritative list of the dependencies, it's probably best to manually
 inspect `e.gyp`.
+
+It's also worth noting that some of the dependencies (for instance, on tcmalloc
+and libunwind) could probably easily be made optional with a relatively small
+amount of work, if one were so inclined.
 
 Building on Linux
 -----------------
