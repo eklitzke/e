@@ -29,10 +29,28 @@ using v8::Value;
 #define RETURN_SELF return scope.Close(\
     String::New(self->value.c_str(), self->value.size()))
 
+#ifndef TAB_SIZE
+#define TAB_SIZE 4
+#endif
+
 namespace e {
 
-Line::Line(const std::string &line)
-    :value(line) {
+Line::Line(const std::string &line) {
+  std::string::size_type lo = 0;
+  std::string::size_type hi = 0;
+  while (true) {
+    hi = line.find('\t', lo);
+    if (hi == std::string::npos) {
+      value += line.substr(lo, hi);
+      break;
+    } else {
+      if (lo != hi) {
+        value += line.substr(lo, hi - lo);
+      }
+      value += std::string(TAB_SIZE, ' ');
+    }
+    lo = hi + 1;
+  }
 }
 
 void Line::Replace(const std::string &new_line) {

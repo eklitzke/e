@@ -40,7 +40,7 @@
         'src/state.cc',
         'src/unicode.cc',
     ],
-    'defines': [ 'USE_CURSES', ],
+    'defines': [ 'USE_CURSES', 'TAB_SIZE=4', ],
   },
   'targets': [
     {
