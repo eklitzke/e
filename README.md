@@ -90,11 +90,14 @@ Uses Ctrl-C to exit the editor.
 Javascript API
 ==============
 
-Try running the editor as
+When running `make`, documentation will be generated at `docs/jsdoc.html`. This
+will happen every time the `e` binary is successfully compiled. You're also
+encouraged to try running the editor as
 
     e --list-api
 
-to look at the available JavaScript API.
+to look at a subset of the available JavaScript API in the default globals
+dictionary.
 
 Code Layout
 ===========
@@ -113,6 +116,26 @@ Building
 ========
 
 Read on to get the appropriate instructions for your operating system.
+
+Dependencies
+------------
+
+These are some of the known dependencies:
+
+* [boost](http://www.boost.org/), including the
+  [boost::asio](http://www.boost.org/libs/asio) and
+  [boost::program_options](www.boost.org/libs/program_options) components
+* [glog](http://code.google.com/p/google-glog/) (you might need an older
+  version)
+* [ICU](http://site.icu-project.org/)
+* [libunwind](http://www.nongnu.org/libunwind/)
+* [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
+  this; other curses implementations might work too)
+* [tcmalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
+* [V8](http://code.google.com/p/v8/) (built as a shared library)
+
+For an authoritative list of the dependencies, it's probably best to manually
+inspect `e.gyp`.
 
 Building on Linux
 -----------------
@@ -134,16 +157,6 @@ If you have build problems, you might want to try invoking `make` as
     make V=1
 
 which sets verbose build output.
-
-You'll probably also need at least the following libraries:
-
-* http://www.boost.org/ (any recent-ish version)
-* http://code.google.com/p/google-glog/ (you might need an older version)
-* http://code.google.com/p/v8/ (built as a shared library, `v8.so`)
-* http://www.gnu.org/software/ncurses/ (you probably already have this)
-
-There might be more or fewer libraries as the code changes; check out `e.gyp` to
-see what shared libraries it's trying to link in.
 
 Building on Mac OS X
 --------------------
