@@ -67,7 +67,6 @@ core.addFunction("windowBottom", function () {
  * @param {number} bot The bottom line of the scroll region
  */
 core.addFunction("scrollRegion", function (lines, top, bot) {
-	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var maxy = core.windows.buffer.getmaxy();
 	var maxAllowed = world.buffer.length - 1;
@@ -87,7 +86,7 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 	for (var i = top; i <= bot; i++) {
 		//log("moving line at " + (i + lineDelta + lines) + " to screen position " + i);
 		newLinePos = i + lineDelta + lines;
-		if (newLinePos >= world.buffer.length) {
+		if (newLinePos > maxAllowed) {
 			newLine = "~";
 		} else {
 			newLine = world.buffer.getLine(i + lineDelta + lines).value();
@@ -142,42 +141,74 @@ core.addFunction("moveAbsolute", function (y, x) {
 	curses.stdscr.move(y + 1, x);
 });
 
-// move to a new position, relative to the current cursor position (delta-y =
-// `up` and delta-x = `over`).
-core.addFunction("move", function (up, over, restrictRight) {
-	up = parseInt(up || 0);
+/**
+ * This is the main interface to move the cursor. This takes of not only moving
+ * the actual cursor on the screen, but also bounds checking (ensuring you can't
+ * move off the end of the buffer), making sure that the screen is scrolled, and
+ * that the current column/line is adjust appropriately.
+ *
+ * It is expected that this will be the main interface that almost all functions
+ * that want to do movement commands will do. There should be almost no reason
+ * for user-supplied JavaScript to be manually scrolling the screen, moving the
+ * curses cursor, or using any of the other movement commands.
+ *
+ * @param {number} down The number of lines to scroll odwn; positive down means
+ *                      moving DOWN, negative down means moving UP.
+ * @param {number} [over] The number of columns to scroll horizontally. Positive
+ *                        over means moving to the right, negative over means
+ *                        moving to the left.
+ * @param {bool} [restrictRight] If not explicitly set to false, we'll restrict
+ *                               the cursor from scrolling past the right edge
+ *                               of the new line.
+ */
+core.addFunction("move", function (down, over, restrictRight) {
+	down = parseInt(down || 0);
 	over = parseInt(over || 0);
 	restrictRight = core.toBool(restrictRight, true);
-	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
-	var newy = cury;
+	var newy = cury, newx;
 
-	var enforcePosition = function () {
-		var newx = core.restrictX(curx + over);
-		if (newy < 0) {
-			newy = 0;
-		}
-		//if (newx != curx || newy != cury) {
-		core.moveAbsolute(newy, newx);
-		//}
-	};
+	if (down) {
+		var newLine = core.line + down;
 
-	if (up) {
-		var newy = cury + up;
-		var maxy = core.windows.buffer.getmaxy();
-		if (newy < 0 || newy >= maxy) {
-			core.scrollRegion(up, 0, maxy);
-			core.line += newy - cury;
-			enforcePosition();
-			return;
+		// don't allow moving the cursor past the end of the buffer
+		if (newLine >= world.buffer.length) {
+			newLine = world.buffer.length - 1;
+		} else if (newLine < 0) {
+			newLine = 0;
 		}
-		if (newy != cury) {
-			core.line += newy - cury;
+
+		// Compute the actual delta, after restricting scrolling past the end of
+		// the buffer. Don't update core.line until after we've called
+		// core.scrollRegion.
+		var actualDelta = newLine - core.line;
+		if (actualDelta != 0) {
+			var maxy = core.windows.buffer.getmaxy();
+			var targety = cury + actualDelta;
+			if (targety < 0) {
+				// we tried to move too far up, need to scroll the screen DOWN
+				core.scrollRegion(targety, 0, maxy);
+				core.line = newLine;
+				newy = 0;
+			} else if (targety >= maxy) {
+				// we tried to move too far down, need to scroll the screen UP
+				core.scrollRegion(targety - maxy + 1, 0, maxy);
+				core.line = newLine;
+				newy = maxy;
+			} else {
+				// just move the cursor
+				core.line = newLine;
+				newy = cury + actualDelta;
+			}
 		}
 	}
-	enforcePosition();
-});
 
+	newx = core.restrictX(core.column + over);
+	core.column = newx;
+	var maxx = core.windows.buffer.getmaxx();
+	core.move.absolute(newy, maxx < newx ? maxx : newx);
+});
+				
 core.move.absolute = core.moveAbsolute;
 
 core.move.left = function (updateBuffer) {
@@ -391,7 +422,7 @@ world.addEventListener("keypress", function (event) {
 	} else {
 		var name = event.getName();
 		msg += ", name = " + name;
-		log(msg);
+		//log(msg);
 		switch (name) {
 		case "KEY_BACKSPACE":
 			log("backspace, core.line = " + core.line);
@@ -443,12 +474,12 @@ world.addEventListener("keypress", function (event) {
 		case "KEY_NPAGE": // page down
 			var maxy = core.windows.buffer.getmaxy();
 			var delta = maxy - 1 - cury;
-			core.line += core.scrollRegion(maxy - 1, 0, maxy);
+			core.move(maxy - 1);
 			break;
 		case "KEY_PPAGE": // page up
 			var maxy = core.windows.buffer.getmaxy();
 			var delta = maxy - 1 - cury;
-			core.line += core.scrollRegion(1 - maxy, 0, maxy);
+			core.move(1 - maxy);
 			break;
 		case "KEY_RIGHT":
 			core.move(0, 1);
