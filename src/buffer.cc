@@ -76,6 +76,9 @@ void Buffer::OpenFile(const std::string &filepath) {
 
   munmap(mmaddr, sb.st_size);
   close(fd);
+
+  filepath_ = filepath;
+  name_ = filepath;
 }
 
 size_t Buffer::Size() const {
