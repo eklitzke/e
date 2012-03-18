@@ -7,10 +7,10 @@
 #include <glog/logging.h>
 #include <v8.h>
 
-#include <cassert>
 #include <string>
 #include <vector>
 
+#include "./assert.h"
 #include "./embeddable.h"
 #include "./js.h"
 
@@ -167,7 +167,7 @@ Handle<Value> Line::ToScript() {
     line_template = Persistent<ObjectTemplate>::New(raw_template);
   }
   Handle<Object> line = line_template->NewInstance();
-  assert(line->InternalFieldCount() == 1);
+  ASSERT(line->InternalFieldCount() == 1);
   line->SetInternalField(0, External::New(this));
   return scope.Close(line);
 }

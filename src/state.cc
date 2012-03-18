@@ -3,7 +3,6 @@
 #include <v8.h>
 #include <glog/logging.h>
 
-#include <cassert>
 #include <string>
 
 #include "./bundled_core.h"

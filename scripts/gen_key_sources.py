@@ -57,9 +57,9 @@ cc_template = """
 #include <v8.h>
 #include <wchar.h>
 
-#include <cassert>
 #include <string>
 
+#include "./assert.h"
 #include "./embeddable.h"
 #include "./unicode.h"
 
@@ -160,7 +160,7 @@ namespace {
 // this callback will be invoked when the V8 keypress object is GC'ed
 void CleanupKeycode(Persistent<Value> val, void*) {
   HandleScope scope;
-  assert(val->IsObject());
+  ASSERT(val->IsObject());
   Local<Object> obj = val->ToObject();
   KeyCode *kc = UnwrapObj<KeyCode>(obj);
   delete kc;
@@ -181,7 +181,7 @@ Persistent<Value> KeyCode::ToScript() {
 
   kc.MakeWeak(nullptr, CleanupKeycode);
 
-  assert(kc->InternalFieldCount() == 1);
+  ASSERT(kc->InternalFieldCount() == 1);
   kc->SetInternalField(0, External::New(this));
   return kc;
 }
@@ -198,9 +198,9 @@ namespace keycode {
     // V8 object is garbage collected.
     if (is_keypad) {
       size_t offset = static_cast<size_t>(wch);
-      assert(offset <= max_code);
+      ASSERT(offset <= max_code);
       const char *name = keycode_arr[offset];
-      assert(name != nullptr);
+      ASSERT(name != nullptr);
       return new KeyCode(wch, name);
     } else {
       return new KeyCode(wch);

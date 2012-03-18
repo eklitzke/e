@@ -7,10 +7,10 @@
 #include <glog/logging.h>
 #include <v8.h>
 
-#include <cassert>
 #include <string>
 #include <vector>
 
+#include "./assert.h"
 #include "./js.h"
 
 using v8::AccessorInfo;
@@ -256,7 +256,7 @@ Handle<Value> JS_winsch(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(JSCursesWindow);                                           \
   String::AsciiValue value(args[0]);                                  \
-  assert(value.length() == 1);
+  ASSERT(value.length() == 1);
 
   // a chtype is wider than a char, so cast to a char before casting to chtype
   char char_val = static_cast<char>(**value);
@@ -336,7 +336,7 @@ Handle<Value> JSCursesWindow::ToScript() {
     templ = Persistent<ObjectTemplate>::New(raw_template);
   }
   Handle<Object> cw = templ->NewInstance();
-  assert(cw->InternalFieldCount() == 1);
+  ASSERT(cw->InternalFieldCount() == 1);
   cw->SetInternalField(0, External::New(this));
   return scope.Close(cw);
 }
