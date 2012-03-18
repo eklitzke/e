@@ -4,12 +4,21 @@ Overview
 This is the source code for e, a text editor. It's implemented using C++ and
 JavaScript (via Google's [V8](http://code.google.com/p/v8/)).
 
+A key feature is that *all* editor functionality is written in JavaScript which
+can be extended and customized by the user, without the need to recompile the
+binary. There is *zero* editor logic hard coded in C++. There is *zero* editor
+logic hard coded in JavaScript. Everything is completely extensible.
+
 How well does it work?
 ----------------------
 
-It doesn't work very well at all. You can compile it and type stuff, but it's
-not very functional. The project is not yet self-hosting (I'm editing the code
-in Emacs).
+It doesn't work very well at all. You can build it and mess around in buffers,
+but it's not very functional. The project is not yet self-hosting (I'm editing
+the code in Emacs).
+
+You might get some crashes too, even when doing basic things. If everything is
+working right (i.e. the crash was caused by an assertion failure and not by a
+segfault) you'll get a nice traceback, to assist with debugging.
 
 Why JavaScript?
 ---------------
@@ -86,6 +95,13 @@ Help! How do I quit?
 
 Uses Ctrl-C to exit the editor.
 
+How do I save files? How do I open new buffers?
+-----------------------------------------------
+
+Neither of these features are implemented yet. Saving files ought to be easy,
+but I'm holding off on adding that functionality until the editor is more
+funcitonal, to prevent anyone from actually thinking that this is a complete
+product.
 
 Javascript API
 ==============
@@ -128,6 +144,7 @@ These are some of the known dependencies:
 * [glog](http://code.google.com/p/google-glog/) (you might need an older
   version)
 * [ICU](http://site.icu-project.org/)
+* [jsmin] (this is part of V8; it needs to be part of your `PYTHONPATH`)
 * [libunwind](http://www.nongnu.org/libunwind/)
 * [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
   this; other curses implementations might work too)
@@ -140,6 +157,23 @@ inspect `e.gyp`.
 It's also worth noting that some of the dependencies (for instance, on tcmalloc
 and libunwind) could probably easily be made optional with a relatively small
 amount of work, if one were so inclined.
+
+Bundled Javascript
+------------------
+
+When you invoke `make`, the file contents of `js/core.js` will be minified using
+jsmin, and dumped into `src/bundled_core.h` and `src/bundled_core.cc` (along
+with some boilerplate). These files are used for bootstrapping the editor. The
+way it works is that when you invoke `e` without any arguments, it runs the
+script bundled into these files.
+
+If you don't want to run the editor with the bundled JavaScript, invoke it like
+
+    e --skip-core -s path/to/something.js <args>
+
+If you're editing the JavaScript code in `core.js` a lot, you may find that it's
+faster for you to just keep invoking the editor as `e --skip-core -s js/core.js
+<args>` rather than constantly rebuild the editor.
 
 Building on Linux
 -----------------
