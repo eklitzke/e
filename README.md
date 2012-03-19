@@ -98,10 +98,7 @@ Uses Ctrl-C to exit the editor.
 How do I save files? How do I open new buffers?
 -----------------------------------------------
 
-Neither of these features are implemented yet. Saving files ought to be easy,
-but I'm holding off on adding that functionality until the editor is more
-funcitonal, to prevent anyone from actually thinking that this is a complete
-product.
+You can save a file with Ctrl-S. There's currently no way to open a new buffer.
 
 Javascript API
 ==============

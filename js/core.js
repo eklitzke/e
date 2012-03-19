@@ -404,6 +404,8 @@ world.addEventListener("keypress", function (event) {
 			core.line++;
 			core.column = 0;
 			break;
+		case 19: // Ctrl-S
+			world.buffer.persist(world.buffer.getFile())
 		case 26: // Ctrl-Z
 			sys.kill(sys.getpid(), sys.SIGTSTP);
 			break;

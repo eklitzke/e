@@ -37,6 +37,7 @@
         'src/line.cc',
         'src/list_environment.cc',
         'src/main.cc',
+        'src/mmap.cc',
         'src/state.cc',
         'src/unicode.cc',
     ],

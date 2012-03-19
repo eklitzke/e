@@ -31,9 +31,13 @@ class Buffer: public Embeddable {
   explicit Buffer(const std::string &name, const std::string &filepath);
 
   void OpenFile(const std::string &filepath);
+  void Persist(const std::string &filepath);  // write the buffer to disk
 
   // get the name of the buffer
   const std::string & GetBufferName() const;
+
+  // get the name of the filepath
+  const std::string & GetFilePath() const;
 
   // set the buffer name
   void SetBufferName(const std::string &);

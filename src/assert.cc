@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <glog/logging.h>
+#include <glog/log_severity.h>
+
 #include <string>
 #include <vector>
 
@@ -63,8 +66,10 @@ void ShowBacktrace(void) {
 
 void PrintAssertThenExit(const char *exprname, const char *filename, int line) {
   EndCurses();
-  printf("Assertion failed <%s:%d>: %s\n\n", filename, line, exprname);
+  printf("Assertion failed <%s:%d>: %s\n(errno is %d)\n\n",
+         filename, line, exprname, errno);
   ShowBacktrace();
+  google::FlushLogFiles(google::INFO);
   exit(EXIT_FAILURE);
 }
 }

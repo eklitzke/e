@@ -2,20 +2,18 @@
 
 #include <glog/logging.h>
 
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include <v8.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "./assert.h"
 #include "./buffer.h"
 #include "./js.h"
+#include "./mmap.h"
 
 using v8::AccessorInfo;
 using v8::Arguments;
@@ -44,15 +42,7 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
 }
 
 void Buffer::OpenFile(const std::string &filepath) {
-  int fd = open(filepath.c_str(), O_RDONLY);
-  if (fd == -1) {
-    throw 1;  // FIXME(eklitzke)
-  }
-  struct stat sb;
-  if (fstat(fd, &sb) == -1) {
-    close(fd);
-    throw 1;  // FIXME(eklitzke)
-  }
+  MmapFile mapping(filepath);
 
   // clear the old buffer
   for (auto it = lines_.begin(); it != lines_.end(); ++it) {
@@ -60,25 +50,59 @@ void Buffer::OpenFile(const std::string &filepath) {
   }
   lines_.clear();
 
-  char *mmaddr = static_cast<char *>(mmap(nullptr, sb.st_size, PROT_READ,
-                                          MAP_PRIVATE, fd, 0));
-  madvise(mmaddr, sb.st_size, MADV_SEQUENTIAL);
-
   // read each line of the file into a new std::string, and store the string
   // into lines
+  char *mmaddr = static_cast<char *>(mapping.GetMapping());
+  const size_t mmlen = mapping.Size();
   char *p = mmaddr;
-  while (p < mmaddr + sb.st_size) {
-    char *n = static_cast<char *>(memchr(p, '\n', mmaddr + sb.st_size - p));
+  while (p < mmaddr + mmlen) {
+    char *n = static_cast<char *>(memchr(p, '\n', mmaddr + mmlen - p));
     Line *l = new Line(std::string(p, n - p));
     lines_.push_back(l);
     p = n + sizeof(char);  // NOLINT
   }
 
-  munmap(mmaddr, sb.st_size);
-  close(fd);
-
   filepath_ = filepath;
   name_ = filepath;
+}
+
+// FIXME: we definitely need more robust error handling
+void Buffer::Persist(const std::string &filepath) {
+#if 0
+  std::string tmp_template;
+  if (getenv("TEMPDIR") != nullptr) {
+    tmp_template = getenv("TEMPDIR");
+  } else {
+    tmp_template = "/tmp";
+  }
+  while (tmp_template.length() &&
+         tmp_template[tmp_template.length() - 1] == '/') {
+    tmp_template.pop_back();
+  }
+  tmp_template += "/.e-XXXXXX~";
+#else
+  std::string tmp_template = "./.e-XXXXXX~";
+#endif
+
+  std::unique_ptr<char> filename(new char[tmp_template.length()]);
+  memcpy(filename.get(), tmp_template.c_str(), tmp_template.length());
+  filename.get()[tmp_template.length()] = '\0';
+  int fd = mkstemps(filename.get(), 1);
+  ASSERT(fd >= 0);
+
+  for (auto it = lines_.begin(); it != lines_.end(); ++it) {
+    const std::string &line = (*it)->ToString();
+    size_t written = 0;
+    while (written < line.length()) {
+      ssize_t w = write(fd, line.c_str() + written, line.length() - written);
+      ASSERT(w >= 0);
+      written += w;
+    }
+    ASSERT(write(fd, "\n", 1) == 1);
+  }
+  ASSERT(fsync(fd) == 0);
+  ASSERT(rename(filename.get(), filepath.c_str()) == 0);
+  ASSERT(close(fd) == 0);
 }
 
 size_t Buffer::Size() const {
@@ -87,6 +111,11 @@ size_t Buffer::Size() const {
 
 const std::string & Buffer::GetBufferName() const {
   return name_;
+}
+
+
+const std::string & Buffer::GetFilePath() const {
+  return filepath_;
 }
 
 bool Buffer::IsDirty(void) const {
@@ -174,6 +203,16 @@ Handle<Value> JSGetContents(const Arguments& args) {
   return scope.Close(arr);
 }
 
+// @method: getFile
+// @description: Returns the name of the file backing the buffer.
+Handle<Value> JSGetFile(const Arguments& args) {
+  GET_SELF(Buffer);
+
+  HandleScope scope;
+  std::string buffer_name = self->GetFilePath();
+  return scope.Close(String::New(buffer_name.c_str(), buffer_name.length()));
+}
+
 // @method: getName
 // @description: Returns the name of the buffer.
 Handle<Value> JSGetName(const Arguments& args) {
@@ -202,6 +241,9 @@ void JSSetLength(Local<String> property, Local<Value> value,
 }
 */
 
+// @method: open
+// @param[filename]: #string The name of the file to open.
+// @description: Open a file (this method blocks).
 Handle<Value> JSOpenFile(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
@@ -209,6 +251,19 @@ Handle<Value> JSOpenFile(const Arguments& args) {
   String::AsciiValue filename(args[0]);
   const std::string filename_s(*filename, filename.length());
   self->OpenFile(filename_s);
+  return scope.Close(Undefined());
+}
+
+// @method: persist
+// @param[filename]: #string The name of the file to write to.
+// @description: Persist the buffer contents to a file (this method blocks).
+Handle<Value> JSPersist(const Arguments& args) {
+  CHECK_ARGS(1);
+  GET_SELF(Buffer);
+
+  String::AsciiValue filename(args[0]);
+  const std::string filename_s(*filename, filename.length());
+  self->Persist(filename_s);
   return scope.Close(Undefined());
 }
 
@@ -222,10 +277,12 @@ Handle<ObjectTemplate> MakeBufferTemplate() {
   js::AddTemplateFunction(result, "addLine", JSAddLine);
   js::AddTemplateFunction(result, "deleteLine", JSDeleteLine);
   js::AddTemplateFunction(result, "getContents", JSGetContents);
+  js::AddTemplateFunction(result, "getFile", JSGetFile);
   js::AddTemplateFunction(result, "getLine", JSGetLine);
   js::AddTemplateFunction(result, "getName", JSGetName);
   js::AddTemplateAccessor(result, "length", JSGetLength, nullptr);
   js::AddTemplateFunction(result, "open", JSOpenFile);
+  js::AddTemplateFunction(result, "persist", JSPersist);
   return scope.Close(result);
 }
 }

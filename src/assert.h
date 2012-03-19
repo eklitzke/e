@@ -27,6 +27,6 @@ void PrintAssertThenExit(const char *, const char *, int);
     }                                                       \
   } while (0)
 #else   // DEBUG
-#define ASSERT(e) do { } while (0)
+#define ASSERT(e) do { (e); } while (0)
 #endif  // DEBUG
 #endif  // SRC_ASSERT_H_
