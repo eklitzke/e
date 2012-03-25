@@ -387,7 +387,8 @@ world.addEventListener("keypress", function (event) {
 			var line = core.currentLine();
 			var chopped = "";
 			if (core.column < line.length) {
-				chopped = line.chop(core.column);
+				chopped = line.value().substring(core.column, line.length - core.column + 1);
+				line.chop(core.column);
 			}
 			// add the new line, with the chopped contents
 			world.buffer.addLine(core.line + 1, chopped);

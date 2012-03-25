@@ -34,98 +34,19 @@ using v8::Value;
 
 namespace e {
 
-void Line::ResetFromString(const std::string &str) {
-  for (auto it = str.begin(); it != str.end(); ++it) {
-    char c = *it;
-    if (c == '\t') {
-      for (size_t i = 0; i < TAB_SIZE; i++) {
-        front_.push_back(static_cast<uint16_t>(' '));
-      }
-    } else {
-      front_.push_back(static_cast<uint16_t>(c));
-    }
+void Line::Replace(const std::string& newline) {
+  std::vector<uint16_t> data;
+  for (auto it = newline.begin(); it != newline.end(); ++it) {
+    data.push_back(static_cast<uint16_t>(*it));
   }
-}
-
-void Line::Replace(const std::string &str) {
-  front_.clear();
-  back_.clear();
-  ResetFromString(str);
-}
-
-void Line::Refocus(const size_t position) {
-  ASSERT(position <= Size());
-  const size_t current = front_.size();
-  if (current > position) {
-    for (size_t i = 0; i < current - position; i++) {
-      back_.push_back(front_.back());
-      front_.pop_back();
-    }
-  } else if (current < position) {
-    for (size_t i = 0; i < position - current; i++) {
-      front_.push_back(back_.back());
-      back_.pop_back();
-    }
-  }
-  ASSERT(front_.size() == position);
-}
-
-void Line::Flatten() const {
-  const size_t back_size = back_.size();
-  for (size_t i = 0; i < back_size; i++) {
-    front_.push_back(back_.back());
-    back_.pop_back();
-  }
-}
-
-void Line::Chop(size_t new_length) {
-  const size_t current_size = Size();
-  if (current_size > new_length) {
-    Refocus(Size());
-    for (size_t i = 0; i < current_size - new_length; i++) {
-      front_.pop_back();
-    }
-  }
-}
-
-void Line::Append(const uint16_t *buf, size_t length) {
-  Refocus(Size());
-  for (size_t i = 0; i < length; i++, buf++) {
-    front_.push_back(*buf);
-  }
-}
-
-void Line::Erase(size_t position, size_t count) {
-  Refocus(position + count);
-  for (size_t i = 0; i < count; i++) {
-    front_.pop_back();
-  }
-}
-
-void Line::ToBuffer(uint16_t *buf, bool refocus) const {
-  if (refocus) {
-    Flatten();
-  }
-  // copy the front
-  if (front_.size()) {
-    memcpy(static_cast<void *>(buf),
-           static_cast<const void *>(front_.data()),
-           front_.size() * sizeof(uint16_t));
-  }
-  // copy the back
-  if (back_.size()) {
-    std::vector<uint16_t> back_copy = back_;
-    std::reverse(back_copy.begin(), back_copy.end());
-    memcpy(static_cast<void *>(buf),
-           static_cast<const void *>(back_copy.data()),
-           back_copy.size() * sizeof(uint16_t));
-  }
+  zipper_.Clear();
+  zipper_.Append(data.data(), newline.size());
 }
 
 Local<String> Line::ToV8String(bool refocus) const {
   HandleScope scope;
   std::unique_ptr<uint16_t> buf(new uint16_t[Size()]);
-  ToBuffer(buf.get(), refocus);
+  zipper_.ToBuffer(buf.get(), refocus);
   return scope.Close(String::New(buf.get(),
                                  static_cast<int>(Size())));
 }
@@ -163,25 +84,13 @@ Handle<Value> JSAppend(const Arguments& args) {
 
 // @method: chop
 // @param[offset]: #int the offset to chop at
-// @description: Chops from the offset to the end of the line. Returns the
-//               chopped section as a JavaScript string.
+// @description: Chops from the offset to the end of the line.
 Handle<Value> JSChop(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Line);
-
   uint32_t offset = args[0]->Uint32Value();
-
-  // get the back part of the line as a JS string
-  std::unique_ptr<uint16_t> buf(new uint16_t[self->Size()]);
-  self->ToBuffer(buf.get(), true);
-  Local<String> back = String::New(buf.get() + offset * sizeof(uint16_t),
-                                   static_cast<int>(self->Size() - offset));
-
-  // chop the string
   self->Chop(static_cast<size_t>(offset));
-
-  // return the chopped part
-  return scope.Close(back);
+  return scope.Close(Undefined());
 }
 
 // @method: erase

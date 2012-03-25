@@ -11,36 +11,22 @@
 #include <v8.h>
 
 #include <curses.h>
-#include <stdlib.h>
 #include <term.h>
 #include <termios.h>
 
 #include "./assert.h"
+#include "./curses_low_level.h"
 #include "./flags.h"
 #include "./keycode.h"
 #include "./js_curses_window.h"
 
 namespace e {
 namespace {
-bool is_initialized = false;
-
 bool UseAsio() {
   return !vm().count("without-boost-asio");
 }
+}
 
-void InitializeCurses() {
-  if (!is_initialized) {
-    is_initialized = true;
-    mousemask(ALL_MOUSE_EVENTS, nullptr);
-    start_color();
-    use_default_colors();  // ncurses extension!
-    noecho();
-    nonl();  // don't turn LF into CRLF
-    raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
-    ASSERT(atexit(EndCurses) == 0);
-  }
-}
-}
 CursesWindow::CursesWindow(bool load_core,
                            const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
@@ -138,13 +124,6 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
     io_service_.run();
   } else {
     while (InnerOnRead()) { }
-  }
-}
-
-void EndCurses() {
-  if (is_initialized) {
-    is_initialized = false;
-    endwin();
   }
 }
 }

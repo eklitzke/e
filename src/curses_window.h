@@ -37,7 +37,6 @@ class CursesWindow {
   bool HandleKey(KeyCode *k);
   void EstablishReadLoop();
 };
-void EndCurses();
 }
 
 #endif  // SRC_CURSES_WINDOW_H_

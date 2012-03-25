@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "./curses_window.h"
+#include "./curses_low_level.h"
 
 namespace e {
 namespace {
