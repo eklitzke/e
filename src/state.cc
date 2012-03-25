@@ -108,8 +108,10 @@ void State::LoadScript(bool run,
                        boost::function<void(Persistent<Context>)> then) {
   HandleScope scope;
   Handle<ObjectTemplate> global = ObjectTemplate::New();
+  global->Set(String::NewSymbol("assert"),
+              FunctionTemplate::New(js::JSAssert), v8::ReadOnly);
   global->Set(String::NewSymbol("log"),
-              FunctionTemplate::New(js::LogCallback), v8::ReadOnly);
+              FunctionTemplate::New(js::JSLog), v8::ReadOnly);
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);

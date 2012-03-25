@@ -91,7 +91,7 @@ void Buffer::Persist(const std::string &filepath) {
   ASSERT(fd >= 0);
 
   for (auto it = lines_.begin(); it != lines_.end(); ++it) {
-    const std::string &line = (*it)->ToString();
+    std::string line = (*it)->ToString();
     size_t written = 0;
     while (written < line.length()) {
       ssize_t w = write(fd, line.c_str() + written, line.length() - written);
@@ -197,7 +197,7 @@ Handle<Value> JSGetContents(const Arguments& args) {
   const std::vector<Line *> l = *(self->Lines());
   Local<Array> arr = Array::New(l.size());
   for (size_t i = 0; i < l.size(); i++) {
-    const std::string &s = l[i]->ToString();
+    std::string s = l[i]->ToString();
     arr->Set(i, String::New(s.c_str(), s.size()));
   }
   return scope.Close(arr);

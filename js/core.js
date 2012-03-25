@@ -499,7 +499,6 @@ world.addEventListener("keypress", function (e) {
 });
 
 world.addEventListener("keypress", function (e) {
-	return;
 	log("");
 	log("<<<<<< START <<<<<<");
 	var lines = world.buffer.getContents();

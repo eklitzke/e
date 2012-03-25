@@ -1,5 +1,7 @@
 SRCFILES := $(shell git ls-files src/)
+TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
+TEST_TARGET := build/out/Default/test
 TEMPLATES := $(shell echo scripts/templates/*.html)
 BUNDLED_JS = src/bundled_core.cc src/bundled_core.h
 KEYCODE_FILES = src/keycode.cc src/keycode.h
@@ -30,10 +32,15 @@ lint:
 	python third_party/cpplint.py $(SRCFILES)
 
 $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
-	make -C build
+	make -C build e
+
+$(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
+	make -C build test
+
+test: $(TEST_TARGET)
 
 e: $(TARGET)
 	@if [ ! -e "e" ]; then echo -n "Creating ./e symlink..."; ln -sf $(TARGET) e; echo " done!"; fi
 
 
-.PHONY: all clean lint
+.PHONY: all clean lint test

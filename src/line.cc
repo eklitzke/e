@@ -7,6 +7,8 @@
 #include <glog/logging.h>
 #include <v8.h>
 
+#include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,8 +28,7 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
-#define RETURN_SELF return scope.Close(\
-    String::New(self->value.c_str(), self->value.size()))
+#define RETURN_SELF return scope.Close(self->ToV8String())
 
 #ifndef TAB_SIZE
 #define TAB_SIZE 4
@@ -35,42 +36,106 @@ using v8::Value;
 
 namespace e {
 
-Line::Line(const std::string &line) {
-  std::string::size_type lo = 0;
-  std::string::size_type hi = 0;
-  while (true) {
-    hi = line.find('\t', lo);
-    if (hi == std::string::npos) {
-      value += line.substr(lo, hi);
-      break;
-    } else {
-      if (lo != hi) {
-        value += line.substr(lo, hi - lo);
+void Line::ResetFromString(const std::string &str) {
+  for (auto it = str.begin(); it != str.end(); ++it) {
+    char c = *it;
+    if (c == '\t') {
+      for (size_t i = 0; i < TAB_SIZE; i++) {
+        front_.push_back(static_cast<uint16_t>(' '));
       }
-      value += std::string(TAB_SIZE, ' ');
+    } else {
+      front_.push_back(static_cast<uint16_t>(c));
     }
-    lo = hi + 1;
   }
 }
 
-void Line::Replace(const std::string &new_line) {
-  value = new_line;
-#if 0
-  for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
-    (*it)(new_line);
+void Line::Replace(const std::string &str) {
+  front_.clear();
+  back_.clear();
+  ResetFromString(str);
+}
+
+void Line::Refocus(const size_t position) const {
+  ASSERT(position <= Size());
+  const size_t current = front_.size();
+  if (current > position) {
+    for (size_t i = 0; i < current - position; i++) {
+      back_.push_back(front_.back());
+      front_.pop_back();
+    }
+  } else if (current < position) {
+    for (size_t i = 0; i < position - current; i++) {
+      front_.push_back(back_.back());
+      back_.pop_back();
+    }
   }
-#endif
+  ASSERT(front_.size() == position);
 }
 
-const std::string& Line::ToString() const {
-  return value;
+void Line::Chop(size_t new_length) {
+  const size_t current_size = Size();
+  if (current_size > new_length) {
+    Refocus(Size());
+    for (size_t i = 0; i < current_size - new_length; i++) {
+      front_.pop_back();
+    }
+  }
 }
 
-#if 0
-void Line::OnChange(StringCallback cb) {
-  callbacks_.push_back(cb);
+void Line::Append(const uint16_t *buf, size_t length) {
+  Refocus(Size());
+  for (size_t i = 0; i < length; i++, buf++) {
+    front_.push_back(*buf);
+  }
 }
-#endif
+
+void Line::Erase(size_t position, size_t count) {
+  Refocus(position + count);
+  for (size_t i = 0; i < count; i++) {
+    front_.pop_back();
+  }
+}
+
+void Line::ToBuffer(uint16_t *buf, bool refocus) const {
+  if (refocus) {
+    Refocus(0);
+  }
+  // copy the front
+  if (front_.size()) {
+    memcpy(static_cast<void *>(buf),
+           static_cast<const void *>(front_.data()),
+           front_.size() * sizeof(uint16_t));
+  }
+  // copy the back
+  if (back_.size()) {
+    std::vector<uint16_t> back_copy = back_;
+    std::reverse(back_copy.begin(), back_copy.end());
+    memcpy(static_cast<void *>(buf),
+           static_cast<const void *>(back_copy.data()),
+           back_copy.size() * sizeof(uint16_t));
+  }
+}
+
+Local<String> Line::ToV8String(bool refocus) const {
+  HandleScope scope;
+  std::unique_ptr<uint16_t> buf(new uint16_t[Size()]);
+  ToBuffer(buf.get(), refocus);
+  return scope.Close(String::New(buf.get(),
+                                 static_cast<int>(Size())));
+}
+
+std::string Line::ToString(bool refocus) const {
+  std::string str;
+  HandleScope scope;
+  Local<String> jstr = ToV8String(refocus);
+  if (jstr->Utf8Length()) {
+    std::unique_ptr<char> buf(new char[jstr->Utf8Length() + 1]);
+    jstr->WriteUtf8(buf.get(), jstr->Utf8Length());
+    buf.get()[jstr->Utf8Length()] = '\0';
+    str = buf.get();
+  }
+  return str;
+}
 
 namespace {
 // @class: Line
@@ -85,8 +150,8 @@ Handle<Value> JSAppend(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Line);
 
-  String::AsciiValue value(args[0]);
-  self->value.append(*value, value.length());
+  String::Value value(args[0]);
+  self->Append(*value, static_cast<size_t>(value.length()));
   RETURN_SELF;
 }
 
@@ -99,9 +164,18 @@ Handle<Value> JSChop(const Arguments& args) {
   GET_SELF(Line);
 
   uint32_t offset = args[0]->Uint32Value();
-  std::string chopped = self->value.substr(offset, std::string::npos);
-  self->value.erase(self->value.begin() + offset, self->value.end());
-  return scope.Close(String::New(chopped.c_str(), chopped.size()));
+
+  // get the back part of the line as a JS string
+  std::unique_ptr<uint16_t> buf(new uint16_t[self->Size()]);
+  self->ToBuffer(buf.get());
+  Local<String> back = String::New(buf.get() + offset * sizeof(uint16_t),
+                                   static_cast<int>(self->Size() - offset));
+
+  // chop the string
+  self->Chop(static_cast<size_t>(offset));
+
+  // return the chopped part
+  return scope.Close(back);
 }
 
 // @method: erase
@@ -114,9 +188,9 @@ Handle<Value> JSErase(const Arguments& args) {
   GET_SELF(Line);
   Handle<Value> arg0 = args[0];
   Handle<Value> arg1 = args[1];
-  uint32_t offset = arg0->Uint32Value();
-  uint32_t amt = arg1->Uint32Value();
-  self->value.erase(static_cast<size_t>(offset), static_cast<size_t>(amt));
+  size_t offset = static_cast<size_t>(arg0->Uint32Value());
+  size_t amt = static_cast<size_t>(arg1->Uint32Value());
+  self->Erase(offset, amt);
   RETURN_SELF;
 }
 
@@ -130,10 +204,13 @@ Handle<Value> JSInsert(const Arguments& args) {
   GET_SELF(Line);
   Handle<Value> arg0 = args[0];
   Handle<Value> arg1 = args[1];
-  uint32_t position = arg0->Uint32Value();
+  size_t position = static_cast<size_t>(arg0->Uint32Value());
   String::Utf8Value chars(arg1);
 
-  self->value.insert(static_cast<size_t>(position), *chars, chars.length());
+  for (int i = 0; i < chars.length(); i++) {
+    self->InsertChar(position++, (*chars)[i]);
+  }
+
   RETURN_SELF;
 }
 
@@ -150,7 +227,7 @@ Handle<Value> JSValue(const Arguments& args) {
 Handle<Value> JSGetLength(Local<String> property, const AccessorInfo& info) {
   HandleScope scope;
   ACCESSOR_GET_SELF(Line);
-  return scope.Close(Integer::New(self->value.length()));
+  return scope.Close(Integer::New(self->Size()));
 }
 
 void JSSetLength(Local<String> property, Local<Value> value,
@@ -158,7 +235,7 @@ void JSSetLength(Local<String> property, Local<Value> value,
   ACCESSOR_GET_SELF(Line);
   HandleScope scope;
   uint32_t newsize = value->Uint32Value();
-  self->value.resize(static_cast<std::string::size_type>(newsize));
+  self->Chop(static_cast<size_t>(newsize));
 }
 
 Persistent<ObjectTemplate> line_template;
@@ -178,13 +255,13 @@ Handle<ObjectTemplate> MakeLineTemplate() {
 }
 }
 
-Handle<Value> Line::ToScript() {
+Local<Value> Line::ToScript() {
   HandleScope scope;
   if (line_template.IsEmpty()) {
     Handle<ObjectTemplate> raw_template = MakeLineTemplate();
     line_template = Persistent<ObjectTemplate>::New(raw_template);
   }
-  Handle<Object> line = line_template->NewInstance();
+  Local<Object> line = line_template->NewInstance();
   ASSERT(line->InternalFieldCount() == 1);
   line->SetInternalField(0, External::New(this));
   return scope.Close(line);

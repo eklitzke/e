@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "./assert.h"
+
 namespace e {
 namespace js {
 
@@ -142,15 +144,37 @@ Handle<String> ReadFile(const std::string& name) {
   return result;
 }
 
-Handle<Value> LogCallback(const Arguments& args) {
-  if (args.Length() < 1) {
-    return Undefined();
-  }
-  HandleScope scope;
-  Handle<Value> arg = args[0];
+// @class: Global
+// @description: The globals object
+
+// @method: log
+// @param[msg]: #string Log message
+// @description: Logs a message
+Handle<Value> JSLog(const Arguments& args) {
+  CHECK_ARGS(1);
+  Local<Value> arg = args[0];
   String::Utf8Value value(arg);
   LOG(INFO) << (*value);
   google::FlushLogFiles(google::INFO);
+  return Undefined();
+}
+
+// @method: assert
+// @param[condition]: #bool Condition to check
+// @param[msg]: #string Log message (optional)
+// @description: Asserts truth
+Handle<Value> JSAssert(const Arguments& args) {
+  CHECK_ARGS(1);
+  Local<Value> cond = args[0];
+  if (cond->ToBoolean()->Value() == false) {
+    if (args.Length() >= 2) {
+      Local<Value> msg = args[1];
+      String::Utf8Value value(msg);
+      LOG(INFO) << "Assertion failed: " << (*value);
+      google::FlushLogFiles(google::INFO);
+    }
+    exit(EXIT_FAILURE);
+  }
   return Undefined();
 }
 

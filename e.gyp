@@ -2,7 +2,7 @@
 {
   'target_defaults': {
     'type': 'executable',
-    'cflags': ['-pedantic', '-Wall', '-std=c++11'],
+    'cflags': ['-pedantic', '-Wall', '-std=c++11', '-g'],
     'conditions': [
        ['OS=="linux"', {
          'ldflags': [
@@ -18,36 +18,45 @@
             '-lunwind',
             '-lv8',
           ],
+          'sources': [
+            'src/assert.cc',
+            'src/buffer.cc',
+            'src/bundled_core.cc',
+            'src/curses_window.cc',
+            'src/embeddable.cc',
+            'src/flags.cc',
+            'src/js.cc',
+            'src/js_curses.cc',
+            'src/js_curses_window.cc',
+            'src/js_errno.cc',
+            'src/js_signal.cc',
+            'src/js_sys.cc',
+            'src/keycode.cc',
+            'src/line.cc',
+            'src/list_environment.cc',
+            'src/mmap.cc',
+            'src/state.cc',
+            'src/unicode.cc',
+          ],
          'defines': [ 'USE_LINUX', ],
     }]],
-    'sources': [
-        'src/assert.cc',
-        'src/buffer.cc',
-        'src/bundled_core.cc',
-        'src/curses_window.cc',
-        'src/embeddable.cc',
-        'src/flags.cc',
-        'src/js.cc',
-        'src/js_curses.cc',
-        'src/js_curses_window.cc',
-        'src/js_errno.cc',
-        'src/js_signal.cc',
-        'src/js_sys.cc',
-        'src/keycode.cc',
-        'src/line.cc',
-        'src/list_environment.cc',
-        'src/main.cc',
-        'src/mmap.cc',
-        'src/state.cc',
-        'src/unicode.cc',
-    ],
-    'defines': [ 'USE_CURSES', 'TAB_SIZE=4', ],
+    'defines': [ 'DEBUG', 'USE_CURSES', 'TAB_SIZE=4', ],
   },
   'targets': [
     {
       'target_name': 'e',
-      'cflags': ['-g'],
-      'defines': [ 'DEBUG', ],
+      'sources': [
+        'src/main.cc',
+      ],
+    },
+    {
+      'target_name': 'test',
+      'sources': [
+        'src/tests/test.cc',
+      ],
+      'libraries': [
+        '-lboost_unit_test_framework'
+      ],
     },
   ],
 }
