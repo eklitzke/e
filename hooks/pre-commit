@@ -71,3 +71,7 @@ if __name__ == '__main__':
                 sys.exit(1)
         except subprocess.CalledProcessError:
             sys.exit(1)
+
+    subprocess.check_call(['make'])
+    subprocess.check_call(['make', 'test'])
+    subprocess.check_call(['./test'])
