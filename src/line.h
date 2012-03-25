@@ -1,7 +1,18 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 //
-// Implementation of a line of code
+// Implementation of a line in the buffer. Lines are made up of wide characters
+// (therefore they support Unicode), and are implemented using "zippers"
+// (somewhat like gap buffers). Each line implicitly has a "focus" point, and
+// operations like inserting or deleting characters at the focus point have
+// amortized O(1) running time. Moving the focus point is O(n) (the running time
+// is linear with the distance that the focus point has to move). For a
+// "standard" STL implementation (vectors are up to 2x overallocated) the worst
+// case storage space is 2x the length of the line.
+//
+// For real world use cases where a user is typing or deleting consecutive
+// characters in a line, the zipper representation should be very good (about
+// O(1)).
 
 #ifndef SRC_LINE_H_
 #define SRC_LINE_H_
