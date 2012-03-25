@@ -64,7 +64,6 @@ void ShowBacktrace(void) {
 }
 }
 
-
 void PrintAssertThenExit(const char *exprname, const char *filename, int line) {
   EndCurses();
   printf("Assertion failed <%s:%d>: %s\n(errno is %d)\n\n",
