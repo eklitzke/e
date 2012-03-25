@@ -54,13 +54,13 @@ class Line: public Embeddable {
 
   // Write the contents to a buffer. This buffer *must* be large enough to hold
   // the string contents
-  void ToBuffer(uint16_t *buffer, bool refocus = false) const;
+  void ToBuffer(uint16_t *buffer, bool refocus) const;
 
   // Write the contents to a V8 string.
-  Local<String> ToV8String(bool refocus = false) const;
+  Local<String> ToV8String(bool refocus = true) const;
 
   // Write the UTF-8 contents to a std::string (slow)
-  std::string ToString(bool refocus = false) const;
+  std::string ToString(bool refocus = true) const;
 
   Local<Value> ToScript();
 
@@ -76,7 +76,8 @@ class Line: public Embeddable {
   uint16_t indentation_;
   std::vector<Token> tokens_;
 
-  void Refocus(const size_t) const;
+  void Refocus(const size_t);
+  void Flatten() const;  // actually mutates front_ and back_!
   void ResetFromString(const std::string &);
 };
 }

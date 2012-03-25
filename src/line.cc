@@ -28,8 +28,6 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
-#define RETURN_SELF return scope.Close(self->ToV8String())
-
 #ifndef TAB_SIZE
 #define TAB_SIZE 4
 #endif
@@ -55,7 +53,7 @@ void Line::Replace(const std::string &str) {
   ResetFromString(str);
 }
 
-void Line::Refocus(const size_t position) const {
+void Line::Refocus(const size_t position) {
   ASSERT(position <= Size());
   const size_t current = front_.size();
   if (current > position) {
@@ -70,6 +68,14 @@ void Line::Refocus(const size_t position) const {
     }
   }
   ASSERT(front_.size() == position);
+}
+
+void Line::Flatten() const {
+  const size_t back_size = back_.size();
+  for (size_t i = 0; i < back_size; i++) {
+    front_.push_back(back_.back());
+    back_.pop_back();
+  }
 }
 
 void Line::Chop(size_t new_length) {
@@ -98,7 +104,7 @@ void Line::Erase(size_t position, size_t count) {
 
 void Line::ToBuffer(uint16_t *buf, bool refocus) const {
   if (refocus) {
-    Refocus(0);
+    Flatten();
   }
   // copy the front
   if (front_.size()) {
@@ -152,7 +158,7 @@ Handle<Value> JSAppend(const Arguments& args) {
 
   String::Value value(args[0]);
   self->Append(*value, static_cast<size_t>(value.length()));
-  RETURN_SELF;
+  return scope.Close(Undefined());
 }
 
 // @method: chop
@@ -167,7 +173,7 @@ Handle<Value> JSChop(const Arguments& args) {
 
   // get the back part of the line as a JS string
   std::unique_ptr<uint16_t> buf(new uint16_t[self->Size()]);
-  self->ToBuffer(buf.get());
+  self->ToBuffer(buf.get(), true);
   Local<String> back = String::New(buf.get() + offset * sizeof(uint16_t),
                                    static_cast<int>(self->Size() - offset));
 
@@ -191,14 +197,13 @@ Handle<Value> JSErase(const Arguments& args) {
   size_t offset = static_cast<size_t>(arg0->Uint32Value());
   size_t amt = static_cast<size_t>(arg1->Uint32Value());
   self->Erase(offset, amt);
-  RETURN_SELF;
+  return scope.Close(Undefined());
 }
 
 // @method: insert
 // @param[offset]: #int the offset to insert at
 // @param[str]: #string the string to insert
-// @description: Inserts characters in the middle of the line. Returns the new
-//               Line.
+// @description: Inserts characters in the middle of the line.
 Handle<Value> JSInsert(const Arguments& args) {
   CHECK_ARGS(2);
   GET_SELF(Line);
@@ -211,15 +216,20 @@ Handle<Value> JSInsert(const Arguments& args) {
     self->InsertChar(position++, (*chars)[i]);
   }
 
-  RETURN_SELF;
+  return scope.Close(Undefined());
 }
 
 // @method: value
+// @param[refocus]: #bool whether to refocus (optional), defaults true
 // @description: Returns the contents of the line as a JavaScript string.
 Handle<Value> JSValue(const Arguments& args) {
   HandleScope scope;
   GET_SELF(Line);
-  RETURN_SELF;
+  bool refocus = true;
+  if (args.Length() >= 1) {
+    refocus = args[0]->ToBoolean()->Value();
+  }
+  return scope.Close(self->ToV8String(refocus));
 }
 
 // @accessor: length
