@@ -13,3 +13,4 @@ src/bundled_core.cc
 src/bundled_core.h
 src/keycode.cc
 src/keycode.h
+test

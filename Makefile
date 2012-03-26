@@ -9,7 +9,7 @@ KEYCODE_FILES = src/keycode.cc src/keycode.h
 all: docs/jsdoc.html
 
 clean:
-	rm -rf build/out/ docs/ $(BUNDLED_JS) $(KEYCODE_FILES) e
+	rm -rf build/out/ build/src/ docs/ $(BUNDLED_JS) $(KEYCODE_FILES) e test
 
 docs:
 	@mkdir -p docs
@@ -40,7 +40,10 @@ $(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
 test: $(TEST_TARGET)
 
 e: $(TARGET)
-	@if [ ! -e "e" ]; then echo -n "Creating ./e symlink..."; ln -sf $(TARGET) e; echo " done!"; fi
+	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(TARGET) $@; echo " done!"; fi
+
+test: $(TEST_TARGET)
+	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(TEST_TARGET) $@; echo " done!"; fi
 
 
 .PHONY: all clean lint test
