@@ -26,7 +26,7 @@ $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps
 	python $^
 
 build:
-	gyp --toplevel-dir=. --depth=src/ --generator-output=build e.gyp
+	./configure
 
 lint:
 	python third_party/cpplint.py $(SRCFILES)
