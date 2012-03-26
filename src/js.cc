@@ -179,6 +179,9 @@ Handle<Value> JSAssert(const Arguments& args) {
   return Undefined();
 }
 
+// @method: require
+// @param[file]: #string The module to load
+// @description: Loads a new JavaScript module
 Handle<Value> JSRequire(const Arguments& args) {
   CHECK_ARGS(1);
   String::Utf8Value value(args[0]->ToString());
