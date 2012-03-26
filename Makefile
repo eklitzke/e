@@ -19,7 +19,7 @@ docs/jsdoc.html: scripts/gen_js_docs.py e docs
 	@python scripts/gen_js_docs.py -o $@ $(SRCFILES) $(KEYCODE_FILES)
 	@echo " done!"
 
-$(BUNDLED_JS): scripts/gen_bundled_core.py js/core.js
+$(BUNDLED_JS): scripts/gen_bundled_core.py js/core.js js/parser.js
 	python $^
 
 $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps

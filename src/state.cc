@@ -175,6 +175,7 @@ void State::LoadScript(bool run,
       }
     }
   }
+
   if (!bail) {
     then(context);
   }
@@ -195,11 +196,10 @@ bool
 State::HandleKey(KeyCode *k) {
   HandleScope scope;
 
-  Persistent<Context> context = GetContext();
   std::vector<Handle<Value> > args;
   args.push_back(k->ToScript());
-  listener_.Dispatch("keypress", context->Global(), args);
-  listener_.Dispatch("after_keypress", context->Global(), args);
+  listener_.Dispatch("keypress", args);
+  listener_.Dispatch("after_keypress", args);
 
   return keep_going;
 }

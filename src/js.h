@@ -49,8 +49,11 @@ class EventListener {
  public:
   bool Add(const std::string&, Handle<Object>, bool);
   bool Remove(const std::string&, Handle<Object>, bool);
-  void Dispatch(const std::string&, Handle<Object>,
-                const std::vector<Handle<Value> >&);
+  void Dispatch(const std::string& name);
+  void Dispatch(const std::string& name,
+                const std::vector<Handle<Value> >& args);
+  void Dispatch(const std::string& name, Handle<Object> this_object,
+                const std::vector<Handle<Value> >& args);
  private:
   std::map<std::string, std::vector<Handle<Object> > > capture_;
   std::map<std::string, std::vector<Handle<Object> > > bubble_;

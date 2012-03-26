@@ -107,7 +107,6 @@ void CursesWindow::Loop() {
 }
 
 void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
-  std::vector<Handle<Value> > args;
   Initialize();
 
   // Once initscr() has been called, we can create an object to hold the stdscr
@@ -117,7 +116,7 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
       String::NewSymbol("curses"))->ToObject();
   curses->Set(String::NewSymbol("stdscr"), jcw.ToScript());
 
-  state_.GetListener()->Dispatch("load", c->Global(), args);
+  state_.GetListener()->Dispatch("load");
 
   if (UseAsio()) {
     EstablishReadLoop();

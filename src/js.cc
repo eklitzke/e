@@ -27,19 +27,18 @@ using v8::Value;
 
 namespace e {
 namespace js {
-std::vector<Handle<Object> > &
-EventListener::CallbackMap(const std::string &callback_name,
-                            bool use_capture) {
+std::vector<Handle<Object> > & EventListener::CallbackMap(
+    const std::string &callback_name,
+    bool use_capture) {
   if (use_capture)
     return capture_[callback_name];
   else
     return bubble_[callback_name];
 }
 
-bool
-EventListener::Add(const std::string& callback_name,
-                   Handle<Object> callback,
-                   bool use_capture) {
+bool EventListener::Add(const std::string& callback_name,
+                        Handle<Object> callback,
+                        bool use_capture) {
   std::vector<Handle<Object> > &callback_list = CallbackMap(callback_name,
                                                             use_capture);
   std::vector<Handle<Object> >::iterator it;
@@ -52,10 +51,9 @@ EventListener::Add(const std::string& callback_name,
   return true;
 }
 
-bool
-EventListener::Remove(const std::string &callback_name,
-                      Handle<Object>  callback,
-                      bool use_capture) {
+bool EventListener::Remove(const std::string &callback_name,
+                           Handle<Object>  callback,
+                           bool use_capture) {
   std::vector<Handle<Object> > &callback_list = CallbackMap(callback_name,
                                                             use_capture);
   std::vector<Handle<Object> >::iterator it;
@@ -68,11 +66,10 @@ EventListener::Remove(const std::string &callback_name,
   return false;
 }
 
-bool
-EventListener::CallHandler(Handle<Value> h,
-                            Handle<Object> this_argument,
-                            size_t argc,
-                            Handle<Value> argv[]) {
+bool EventListener::CallHandler(Handle<Value> h,
+                                Handle<Object> this_argument,
+                                size_t argc,
+                                Handle<Value> argv[]) {
   HandleScope scope;
   if (h->IsObject()) {
     Handle<Object> o = Handle<Object>::Cast(h);
@@ -94,9 +91,21 @@ EventListener::CallHandler(Handle<Value> h,
   return false;
 }
 
-void
-EventListener::Dispatch(const std::string &name, Handle<Object> this_argument,
-                        const std::vector<Handle<Value> > &arguments) {
+void EventListener::Dispatch(const std::string& name) {
+  Handle<Object> globals = GetContext()->Global();
+  std::vector<Handle<Value> > arguments;
+  Dispatch(name, globals, arguments);
+}
+
+void EventListener::Dispatch(const std::string& name,
+                             const std::vector<Handle<Value> >& args) {
+  Handle<Object> globals = GetContext()->Global();
+  Dispatch(name, globals, args);
+}
+
+void EventListener::Dispatch(const std::string &name,
+                             Handle<Object> this_argument,
+                             const std::vector<Handle<Value> > &arguments) {
   std::vector<Handle<Object> > &captures = capture_[name];
   std::vector<Handle<Object> > &bubbles = bubble_[name];
 
@@ -129,17 +138,19 @@ Handle<String> ReadFile(const std::string& name) {
     return Handle<String>();
   }
 
-  fseek(file, 0, SEEK_END);
+  ASSERT(fseek(file, 0, SEEK_END) == 0);
   int size = ftell(file);
+  ASSERT(size > 0);
   rewind(file);
 
   boost::scoped_array<char> chars(new char[size + 1]);
   chars[size] = '\0';
   for (int i = 0; i < size;) {
-    int read = fread(&chars[i], 1, size - i, file);
+    ssize_t read = fread(&chars[i], 1, size - i, file);
+    ASSERT(read >= 0);
     i += read;
   }
-  fclose(file);
+  ASSERT(fclose(file) == 0);
 
   Handle<String> result = String::New(chars.get(), size);
   return result;

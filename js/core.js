@@ -1,4 +1,5 @@
 core = { column: 0, line: 0 };
+core.parser = null;
 
 log("entered core.js");
 
