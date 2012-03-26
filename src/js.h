@@ -61,8 +61,9 @@ class EventListener {
 
 // Reads a file into a v8 string.
 Handle<v8::String> ReadFile(const std::string& name);
-Handle<Value> JSLog(const Arguments& args);
 Handle<Value> JSAssert(const Arguments& args);
+Handle<Value> JSLog(const Arguments& args);
+Handle<Value> JSRequire(const Arguments& args);
 std::string ValueToString(Local<Value>);
 
 std::map<std::string, JSCallback> GetCallbacks();  // all of the callbacks

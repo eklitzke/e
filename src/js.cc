@@ -12,9 +12,7 @@
 #include <vector>
 
 #include "./assert.h"
-
-namespace e {
-namespace js {
+#include "./embeddable.h"
 
 using v8::Arguments;
 using v8::External;
@@ -22,10 +20,13 @@ using v8::Handle;
 using v8::HandleScope;
 using v8::Integer;
 using v8::Object;
+using v8::Script;
 using v8::String;
 using v8::Undefined;
 using v8::Value;
 
+namespace e {
+namespace js {
 std::vector<Handle<Object> > &
 EventListener::CallbackMap(const std::string &callback_name,
                             bool use_capture) {
@@ -176,6 +177,17 @@ Handle<Value> JSAssert(const Arguments& args) {
     exit(EXIT_FAILURE);
   }
   return Undefined();
+}
+
+Handle<Value> JSRequire(const Arguments& args) {
+  CHECK_ARGS(1);
+  String::Utf8Value value(args[0]->ToString());
+
+  std::string script_name(*value, value.length());
+  Handle<String> source = ReadFile(script_name);
+  Handle<Script> scr = Script::New(
+      source, String::New(script_name.c_str(), script_name.size()));
+  return scr->Run();
 }
 
 // Convert a JavaScript string to a std::string.  To not bother too

@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-namespace e {
-
 using v8::Arguments;
 using v8::Context;
 using v8::External;
@@ -20,10 +18,12 @@ using v8::Handle;
 using v8::HandleScope;
 using v8::Local;
 using v8::Object;
+using v8::ObjectTemplate;
 using v8::Persistent;
 using v8::String;
 using v8::Value;
 
+namespace e {
 template<typename T> T* Unwrap(Handle<Object> holder, int field = 0) {
   Local<External> wrap = Local<External>::Cast(holder->GetInternalField(field));
 }
@@ -52,14 +52,14 @@ template<typename T, typename A> T* Unwrap(const A &args, int field = 0) {
 
 class Embeddable {
  public:
-  virtual ~Embeddable() { context_.Dispose(); }
   Local<FunctionTemplate> ToCallable(InvocationCallback);
   Local<Value> ToExternal();
   template <typename T> static T *FromExternal(Handle<Value>);
-
- protected:
-  Persistent<Context> context_;
 };
+
+Persistent<Context> InitializeContext(Handle<ObjectTemplate> global);
+Persistent<Context> GetContext();  // FIXME(eklitzke): use GetCurrent() instead?
+void DisposeContext();
 }
 
 #endif  // SRC_EMBEDDABLE_H_

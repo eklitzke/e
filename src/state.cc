@@ -112,35 +112,37 @@ void State::LoadScript(bool run,
               FunctionTemplate::New(js::JSAssert), v8::ReadOnly);
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(js::JSLog), v8::ReadOnly);
+  global->Set(String::NewSymbol("require"),
+              FunctionTemplate::New(js::JSRequire), v8::ReadOnly);
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);
   js::AddTemplateFunction(world_templ, "addEventListener", AddEventListener);
   js::AddTemplateFunction(world_templ, "stopLoop", JSStopLoop);
 
-  context_ = Context::New(nullptr, global);
-  Context::Scope context_scope(context_);
+  Persistent<Context> context = InitializeContext(global);
+  Context::Scope context_scope(context);
 
   Local<Object> world = world_templ->NewInstance();
   world->SetInternalField(0, External::New(this));
   world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(),
              v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
+  context->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
   Local<Array> args = Array::New(args_.size());
   for (auto it = args_.begin(); it != args_.end(); ++it) {
     args->Set(it - args_.begin(), String::New(it->c_str(), it->size()));
   }
   world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 
-  context_->Global()->Set(String::NewSymbol("curses"), GetCursesObj(),
+  context->Global()->Set(String::NewSymbol("curses"), GetCursesObj(),
                           v8::ReadOnly);
 
-  context_->Global()->Set(String::NewSymbol("errno"),
-                          GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("signal"),
-                          GetSignalTemplate()->NewInstance(), v8::ReadOnly);
-  context_->Global()->Set(String::NewSymbol("sys"),
-                          GetSysTemplate()->NewInstance(), v8::ReadOnly);
+  context->Global()->Set(String::NewSymbol("errno"),
+                         GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
+  context->Global()->Set(String::NewSymbol("signal"),
+                         GetSignalTemplate()->NewInstance(), v8::ReadOnly);
+  context->Global()->Set(String::NewSymbol("sys"),
+                         GetSysTemplate()->NewInstance(), v8::ReadOnly);
 
   bool bail = false;
   if (run) {
@@ -173,8 +175,10 @@ void State::LoadScript(bool run,
       }
     }
   }
-  if (!bail)
-    then(context_);
+  if (!bail) {
+    then(context);
+  }
+  DisposeContext();
 }
 
 Buffer *
@@ -191,10 +195,11 @@ bool
 State::HandleKey(KeyCode *k) {
   HandleScope scope;
 
+  Persistent<Context> context = GetContext();
   std::vector<Handle<Value> > args;
   args.push_back(k->ToScript());
-  listener_.Dispatch("keypress", context_->Global(), args);
-  listener_.Dispatch("after_keypress", context_->Global(), args);
+  listener_.Dispatch("keypress", context->Global(), args);
+  listener_.Dispatch("after_keypress", context->Global(), args);
 
   return keep_going;
 }
