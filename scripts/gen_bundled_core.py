@@ -139,7 +139,7 @@ if __name__ == '__main__':
         parser.error('must have an outfile')
         sys.exit(1)
 
-    code = ['"use strict";']
+    code = ['"use strict";']  # enforce strict mode for bundled JS, gh-15
     for filename in args:
         with open(filename) as f:
             code.append(f.read())
