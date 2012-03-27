@@ -2,9 +2,12 @@
 
 #include <glog/logging.h>
 
+#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include <v8.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <memory>
@@ -42,6 +45,12 @@ Buffer::Buffer(const std::string &name, const std::string &filepath)
 }
 
 void Buffer::OpenFile(const std::string &filepath) {
+  if (access(filepath.c_str(), R_OK) != 0) {
+    ASSERT(errno == ENOENT);
+    int fd = creat(filepath.c_str(), S_IRWXU);
+    ASSERT(fd != -1);
+    ASSERT(close(fd) == 0);
+  }
   MmapFile mapping(filepath);
 
   // clear the old buffer
@@ -54,12 +63,18 @@ void Buffer::OpenFile(const std::string &filepath) {
   // into lines
   char *mmaddr = static_cast<char *>(mapping.GetMapping());
   const size_t mmlen = mapping.Size();
-  char *p = mmaddr;
-  while (p < mmaddr + mmlen) {
-    char *n = static_cast<char *>(memchr(p, '\n', mmaddr + mmlen - p));
-    Line *l = new Line(std::string(p, n - p));
+  if (mmlen == 0) {
+    // an empty file still has a blank line in it
+    Line *l = new Line("");
     lines_.push_back(l);
-    p = n + sizeof(char);  // NOLINT
+  } else {
+    char *p = mmaddr;
+    while (p < mmaddr + mmlen) {
+      char *n = static_cast<char *>(memchr(p, '\n', mmaddr + mmlen - p));
+      Line *l = new Line(std::string(p, n - p));
+      lines_.push_back(l);
+      p = n + sizeof(char);  // NOLINT
+    }
   }
 
   filepath_ = filepath;
