@@ -139,7 +139,7 @@ if __name__ == '__main__':
         parser.error('must have an outfile')
         sys.exit(1)
 
-    code = []
+    code = ['"use strict";']
     for filename in args:
         with open(filename) as f:
             code.append(f.read())

@@ -146,13 +146,14 @@ void State::LoadScript(bool run,
 
   bool bail = false;
   if (run) {
-    // compile the JS source code, and run it
+    // load the core file; this should be known to be good and not throw
+    // exceptions
     if (load_core_) {
-      // load the core file; this should be known to be good and not throw
-      // exceptions
       Local<Script> core_scr = GetCoreScript();
       core_scr->Run();
     }
+
+    // Load other scripts
     for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
       TryCatch trycatch;
       Handle<String> source = js::ReadFile(*it);

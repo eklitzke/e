@@ -132,7 +132,8 @@ void EventListener::Dispatch(const std::string &name,
 }
 
 // Reads a file into a v8 string.
-Handle<String> ReadFile(const std::string& name) {
+Handle<String> ReadFile(const std::string& name, bool prefix_use_strict) {
+  HandleScope scope;
   FILE* file = fopen(name.c_str(), "rb");
   if (file == nullptr) {
     return Handle<String>();
@@ -152,8 +153,15 @@ Handle<String> ReadFile(const std::string& name) {
   }
   ASSERT(fclose(file) == 0);
 
-  Handle<String> result = String::New(chars.get(), size);
-  return result;
+  if (prefix_use_strict) {
+    std::string strict = "\"use strict\";\n";
+    strict += std::string(chars.get(), size);
+    Handle<String> result = String::New(strict.c_str(), strict.size());
+    return scope.Close(result);
+  } else {
+    Handle<String> result = String::New(chars.get(), size);
+    return scope.Close(result);
+  }
 }
 
 // @class: Global

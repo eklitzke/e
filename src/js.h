@@ -63,7 +63,8 @@ class EventListener {
 };
 
 // Reads a file into a v8 string.
-Handle<v8::String> ReadFile(const std::string& name);
+Handle<v8::String> ReadFile(const std::string& name,
+                            bool prefix_use_strict = false);
 Handle<Value> JSAssert(const Arguments& args);
 Handle<Value> JSLog(const Arguments& args);
 Handle<Value> JSRequire(const Arguments& args);
