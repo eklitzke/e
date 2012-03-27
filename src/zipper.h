@@ -52,6 +52,8 @@ class Zipper {
   // the zipper contents
   void ToBuffer(T buffer[], bool refocus) const;
 
+  T operator[](size_t offset) const;
+
  private:
   // Character data for the zipper; these are declared as mutable to allow
   // refocusing on certain "const" operations.
@@ -132,6 +134,18 @@ void Zipper<T>::Flatten() const {
     back_.pop_back();
   }
   ASSERT(back_.empty());
+}
+
+template <typename T>
+T Zipper<T>::operator[](size_t offset) const {
+  ASSERT(offset < Size());
+  size_t front_size = front_.size();
+  if (offset < front_size) {
+    return front_[offset];
+  } else {
+    // index from the back of back_
+    return back_[back_.size() - offset + front_size - 1];
+  }
 }
 }
 

@@ -23,12 +23,13 @@ class Buffer: public Embeddable {
 
   bool dirty_;
 
-  std::vector<Line *> lines_;
+  Zipper<Line *> lines_;
 
  public:
   // constructors
   explicit Buffer(const std::string &name);
   explicit Buffer(const std::string &name, const std::string &filepath);
+  ~Buffer();
 
   void OpenFile(const std::string &filepath);
   void Persist(const std::string &filepath);  // write the buffer to disk
@@ -43,9 +44,21 @@ class Buffer: public Embeddable {
   void SetBufferName(const std::string &);
 
   // get the number of lines in the buffer
-  size_t Size() const;
+  inline size_t Size() const { return lines_.Size(); }
 
-  std::vector<Line*>* Lines();
+  // append a line to the buffer
+  inline void AppendLine(const std::string &s) {
+    Line *l = new Line(s);
+    lines_.Insert(Size(), l);
+  }
+
+  inline Line* operator[](size_t offset) { return lines_[offset]; }
+
+  // insert a line at some offset
+  Line* Insert(size_t, const std::string &);
+
+  // erase a line at some offset
+  void Erase(size_t);
 
   // is the buffer dirty?
   bool IsDirty(void) const;

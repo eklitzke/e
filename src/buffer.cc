@@ -35,13 +35,19 @@ using v8::Value;
 namespace e {
 Buffer::Buffer(const std::string &name)
     :name_(name), dirty_(false) {
-  Line *l = new Line();
-  lines_.push_back(l);
+  AppendLine("");
 }
 
 Buffer::Buffer(const std::string &name, const std::string &filepath)
     :filepath_(filepath), name_(name), dirty_(false) {
   OpenFile(filepath);
+}
+
+Buffer::~Buffer() {
+  // FIXME(eklitzke): add iterators to Zipper to do this directly
+  for (size_t i = 0; i < lines_.Size(); i++) {
+    delete lines_[i];
+  }
 }
 
 void Buffer::OpenFile(const std::string &filepath) {
@@ -54,25 +60,22 @@ void Buffer::OpenFile(const std::string &filepath) {
   MmapFile mapping(filepath);
 
   // clear the old buffer
-  for (auto it = lines_.begin(); it != lines_.end(); ++it) {
-    delete *it;
+  for (size_t i = 0; i < lines_.Size(); i++) {
+    delete lines_[i];
   }
-  lines_.clear();
+  lines_.Clear();
 
   // read each line of the file into a new std::string, and store the string
   // into lines
   char *mmaddr = static_cast<char *>(mapping.GetMapping());
   const size_t mmlen = mapping.Size();
   if (mmlen == 0) {
-    // an empty file still has a blank line in it
-    Line *l = new Line("");
-    lines_.push_back(l);
+    AppendLine("");  // an empty file still has a blank line in it
   } else {
     char *p = mmaddr;
     while (p < mmaddr + mmlen) {
       char *n = static_cast<char *>(memchr(p, '\n', mmaddr + mmlen - p));
-      Line *l = new Line(std::string(p, n - p));
-      lines_.push_back(l);
+      AppendLine(std::string(p, n - p));
       p = n + sizeof(char);  // NOLINT
     }
   }
@@ -105,8 +108,8 @@ void Buffer::Persist(const std::string &filepath) {
   int fd = mkstemps(filename.get(), 1);
   ASSERT(fd >= 0);
 
-  for (auto it = lines_.begin(); it != lines_.end(); ++it) {
-    std::string line = (*it)->ToString();
+  for (size_t i = 0; i < lines_.Size(); i++) {
+    std::string line = lines_[i]->ToString();
     size_t written = 0;
     while (written < line.length()) {
       ssize_t w = write(fd, line.c_str() + written, line.length() - written);
@@ -118,10 +121,6 @@ void Buffer::Persist(const std::string &filepath) {
   ASSERT(fsync(fd) == 0);
   ASSERT(rename(filename.get(), filepath.c_str()) == 0);
   ASSERT(close(fd) == 0);
-}
-
-size_t Buffer::Size() const {
-  return lines_.size();
 }
 
 const std::string & Buffer::GetBufferName() const {
@@ -137,8 +136,18 @@ bool Buffer::IsDirty(void) const {
   return dirty_;
 }
 
-std::vector<Line*>* Buffer::Lines() {
-  return &lines_;
+Line* Buffer::Insert(size_t offset, const std::string &s) {
+  ASSERT(offset < Size());
+  Line *l = new Line(s);
+  lines_.Insert(offset, l);
+  return l;
+}
+
+void Buffer::Erase(size_t offset) {
+  ASSERT(offset < Size());
+  Line *l = lines_[offset];
+  delete l;
+  lines_.Erase(offset);
 }
 
 namespace {
@@ -155,19 +164,10 @@ Handle<Value> JSAddLine(const Arguments& args) {
   uint32_t offset = args[0]->Uint32Value();
   std::string lineValue;
   if (args.Length() >= 2) {
-    String::AsciiValue value(args[1]);
+    String::AsciiValue value(args[1]);  // FIXME(eklitzke): handle unicode
     lineValue.insert(0, *value, value.length());
   }
-  std::vector<Line *> *lines = self->Lines();
-  ASSERT(offset <= lines->size());
-
-  Line *line = new Line(lineValue);
-  if (offset == lines->size()) {
-    lines->push_back(line);
-  } else {
-    lines->insert(lines->begin() + offset, line);
-  }
-
+  Line *line = self->Insert(static_cast<size_t>(offset), lineValue);
   return scope.Close(line->ToScript());
 }
 
@@ -180,14 +180,8 @@ Handle<Value> JSDeleteLine(const Arguments& args) {
   GET_SELF(Buffer);
 
   uint32_t offset = args[0]->Uint32Value();
-  std::vector<Line *> *lines = self->Lines();
-  if (offset < lines->size()) {
-    delete (*lines)[offset];
-    lines->erase(lines->begin() + offset);
-    return scope.Close(Boolean::New(true));
-  } else {
-    return scope.Close(Boolean::New(false));
-  }
+  self->Erase(static_cast<size_t>(offset));
+  return scope.Close(Boolean::New(true));
 }
 
 // @method: getLine
@@ -199,9 +193,8 @@ Handle<Value> JSGetLine(const Arguments& args) {
 
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
-  std::vector<Line *> l = *(self->Lines());
-  ASSERT(offset < l.size());
-  return scope.Close(l[offset]->ToScript());
+  Line *l = (*self)[static_cast<size_t>(offset)];
+  return scope.Close(l->ToScript());
 }
 
 // @method: getContents
@@ -209,10 +202,9 @@ Handle<Value> JSGetLine(const Arguments& args) {
 Handle<Value> JSGetContents(const Arguments& args) {
   GET_SELF(Buffer);
   HandleScope scope;
-  const std::vector<Line *> l = *(self->Lines());
-  Local<Array> arr = Array::New(l.size());
-  for (size_t i = 0; i < l.size(); i++) {
-    std::string s = l[i]->ToString();
+  Local<Array> arr = Array::New(self->Size());
+  for (size_t i = 0; i < self->Size(); i++) {
+    std::string s = (*self)[i]->ToString();
     arr->Set(i, String::New(s.c_str(), s.size()));
   }
   return scope.Close(arr);
