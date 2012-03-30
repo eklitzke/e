@@ -137,9 +137,18 @@ bool Buffer::IsDirty(void) const {
 }
 
 Line* Buffer::Insert(size_t offset, const std::string &s) {
-  ASSERT(offset < Size());
-  Line *l = new Line(s);
-  lines_.Insert(offset, l);
+  Line *l;
+  size_t size = Size();
+  if (offset < size) {
+    l = new Line(s);
+    lines_.Insert(offset, l);
+  } else if (offset == size) {
+    l = new Line(s);
+    AppendLine(s);
+  } else {
+    ASSERT(false);
+    l = nullptr;  // not reached
+  }
   return l;
 }
 
