@@ -106,8 +106,11 @@ def maybe_replace_file(name, contents):
     # to avoid rebuilding too much (specifically rebuiding state.cc) when
     # bundled_core.{h,cc} are re-generated, we only re-write the contents of
     # files when they actually change
-    with open(name) as f:
-        file_hash = hashlib.sha1(f.read()).digest()
+    try:
+        with open(name) as f:
+            file_hash = hashlib.sha1(f.read()).digest()
+    except IOError:
+        file_hash = ''
     if not contents.endswith('\n'):
         contents += '\n'
     content_hash = hashlib.sha1(contents).digest()

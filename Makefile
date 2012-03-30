@@ -13,7 +13,7 @@ KEYCODE_FILES = src/keycode.cc src/keycode.h
 all: docs/jsdoc.html
 
 clean:
-	rm -rf build/out/ build/src/ docs/ $(BUNDLED_JS) $(REAL_BUNDLED_JS) $(KEYCODE_FILES) e test
+	rm -rf build/out/ build/src/ docs/ $(BUNDLED_JS) $(REAL_BUNDLED_JS) $(KEYCODE_FILES) $(JSMIN) e test
 
 docs:
 	@mkdir -p docs
