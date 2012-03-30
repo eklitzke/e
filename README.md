@@ -141,7 +141,6 @@ These are some of the known dependencies:
 * [glog](http://code.google.com/p/google-glog/) (you might need an older
   version)
 * [ICU](http://site.icu-project.org/)
-* [jsmin] (this is part of V8; it needs to be part of your `PYTHONPATH`)
 * [libunwind](http://www.nongnu.org/libunwind/)
 * [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
   this; other curses implementations might work too)
@@ -159,7 +158,7 @@ Bundled Javascript
 ------------------
 
 When you invoke `make`, the file contents of `js/core.js` will be minified using
-jsmin, and dumped into `src/bundled_core.h` and `src/bundled_core.cc` (along
+jsmin.c, and dumped into `src/bundled_core.h` and `src/bundled_core.cc` (along
 with some boilerplate). These files are used for bootstrapping the editor. The
 way it works is that when you invoke `e` without any arguments, it runs the
 script bundled into these files. This avoids hard coding the location of the

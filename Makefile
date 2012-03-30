@@ -1,3 +1,6 @@
+CC := gcc
+JSMIN := third_party/jsmin
+JS_SOURCE := js/core.js js/parser.js
 SRCFILES := $(shell git ls-files src/)
 TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
@@ -20,8 +23,11 @@ docs/jsdoc.html: scripts/gen_js_docs.py e docs
 	@python scripts/gen_js_docs.py -o $@ $(SRCFILES) $(KEYCODE_FILES)
 	@echo " done!"
 
-$(BUNDLED_JS): scripts/gen_bundled_core.py js/core.js js/parser.js
-	python $^
+$(JSMIN): $(JSMIN).c
+	$(CC) -Os $< -o $@
+
+$(BUNDLED_JS): scripts/gen_bundled_core.py $(JSMIN) $(JS_SOURCE)
+	python $< $(JS_SOURCE)
 
 $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps
 	python $^

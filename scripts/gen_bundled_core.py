@@ -2,15 +2,15 @@ import datetime
 import hashlib
 import optparse
 import pprint
+import subprocess
 import sys
 import urllib
 import urllib2
+import json
 try:
     import jsmin
-    has_jsmin = True
 except ImportError:
-    has_jsmin = False
-import json
+    pass
 
 h_template = """
 // -*- C++ -*-
@@ -90,9 +90,17 @@ def get_closure_code(code, use_advanced=False):
 
     return response['compiledCode']
 
-def get_jsmin_code(code):
+def get_py_jsmin_code(code):
     minifier = jsmin.JavaScriptMinifier()
     return minifier.JSMinify(code)
+
+def get_jsmin_code(code):
+    p = subprocess.Popen(['third_party/jsmin'], stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+    p.stdin.write(code)
+    out, err = p.communicate()
+    assert not err, er
+    return out
 
 def maybe_replace_file(name, contents):
     # to avoid rebuilding too much (specifically rebuiding state.cc) when
@@ -147,6 +155,8 @@ if __name__ == '__main__':
                       help='Use closure instead of jsmin (this generates '
                       'significantly more compact JS, but is slower and '
                       'requires network access).')
+    parser.add_option('--use-py-jsmin', default=False, action='store_true',
+                      help='Use V8\'s jsmin instead of Douglas Crockford\'s')
     parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings.')
     parser.add_option('-s', '--statistics', action='store_true', help='Get statistics.')
     parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit.')
@@ -164,9 +174,8 @@ if __name__ == '__main__':
 
     if opts.use_closure:
         code = get_closure_code(code, opts.advanced_optimizations)
-    elif not has_jsmin:
-        parser.error('jsmin is not present, please use --use-closure')
-        sys.exit(1)
+    elif opts.use_py_jsmin:
+        code = get_py_jsmin_code(code)
     else:
         code = get_jsmin_code(code)
     write_output(code, opts.outfile)
