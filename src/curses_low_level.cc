@@ -4,7 +4,7 @@
 #include "./curses_low_level.h"
 
 #include <curses.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "./assert.h"
 

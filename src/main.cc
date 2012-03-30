@@ -1,6 +1,5 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include <stdio.h>
 #include <unistd.h>
 
 #include <boost/lexical_cast.hpp>

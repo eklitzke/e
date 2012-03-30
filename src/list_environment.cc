@@ -3,6 +3,7 @@
 #include "./list_environment.h"
 
 #include <v8.h>
+#include <cstdio>
 #include <string>
 
 #include "./js.h"

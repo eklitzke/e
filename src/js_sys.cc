@@ -1,17 +1,19 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include "./js.h"
 #include "./js_sys.h"
 
-#include <unistd.h>
-#include <signal.h>
 #include <v8.h>
+#include <unistd.h>
 
 #ifdef USE_LINUX
 #include <linux/limits.h>
 #else
 #define PATH_MAX 4096
 #endif
+
+#include <csignal>
+
+#include "./js.h"
 
 using v8::Arguments;
 using v8::HandleScope;

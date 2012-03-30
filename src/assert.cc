@@ -7,12 +7,12 @@
 
 #include <boost/lexical_cast.hpp>
 #include <cxxabi.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include <glog/logging.h>
 #include <glog/log_severity.h>
 
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 

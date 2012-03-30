@@ -10,7 +10,7 @@ import tempfile
 button_macro = re.compile(r'^#define\s+(BUTTON\d?_[_A-Z]+)\s+')
 undeclared = re.compile(r"'([A-Z_0-9]+)' undeclared")
 
-hdr = """#include <stdio.h>
+hdr = """#include <cstdio>
 #include <%(header)s>
 
 int main(int argc, char **argv) {

@@ -4,9 +4,9 @@
 
 #include <glog/logging.h>
 #include <unicode/unistr.h>
-#include <stdint.h>
 #include <v8.h>
 
+#include <cstdint>
 #include <memory>
 
 using v8::HandleScope;

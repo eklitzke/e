@@ -4,6 +4,8 @@
 #ifndef SRC_JS_SYS_H_
 #define SRC_JS_SYS_H_
 
+#include <v8.h>
+
 namespace e {
 v8::Handle<v8::ObjectTemplate> GetSysTemplate();
 }

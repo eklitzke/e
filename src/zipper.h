@@ -6,9 +6,8 @@
 #ifndef SRC_ZIPPER_H_
 #define SRC_ZIPPER_H_
 
-#include <string.h>  // for memcpy
-
 #include <algorithm>
+#include <cstring>  // for memcpy
 #include <vector>
 
 #include "./assert.h"
