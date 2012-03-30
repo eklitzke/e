@@ -1,6 +1,7 @@
 *.log
 *.py[co]
 *~
+.bundled_core
 \.#*
 build/
 docs/

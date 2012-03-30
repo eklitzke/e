@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import optparse
 import pprint
 import sys
@@ -93,6 +94,19 @@ def get_jsmin_code(code):
     minifier = jsmin.JavaScriptMinifier()
     return minifier.JSMinify(code)
 
+def maybe_replace_file(name, contents):
+    # to avoid rebuilding too much (specifically rebuiding state.cc) when
+    # bundled_core.{h,cc} are re-generated, we only re-write the contents of
+    # files when they actually change
+    with open(name) as f:
+        file_hash = hashlib.sha1(f.read()).digest()
+    if not contents.endswith('\n'):
+        contents += '\n'
+    content_hash = hashlib.sha1(contents).digest()
+    if file_hash != content_hash:
+        with open(name, 'w') as wf:
+            wf.write(contents)
+
 def write_output(code, output):
     current_year = datetime.date.today().year
 
@@ -118,11 +132,14 @@ def write_output(code, output):
         }
     h_src = h_template.strip() % {'current_year': current_year}
 
-    with open(output + '.h', 'w') as h:
-        h.write(h_src + '\n')
-    with open(output + '.cc', 'w') as cc:
-        cc.write(cc_src + '\n')
+    maybe_replace_file(output + '.h', h_src)
+    maybe_replace_file(output + '.cc', cc_src)
 
+    # create a fake .bundled_core file to please `make'; the reason this is
+    # necessary is because Make will get confused if we don't actually end up
+    # updating the .h or .cc files
+    with open('.bundled_core', 'w') as b:
+        pass
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()

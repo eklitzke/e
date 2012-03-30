@@ -3,13 +3,14 @@ TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
 TEST_TARGET := build/out/Default/test
 TEMPLATES := $(shell echo scripts/templates/*.html)
-BUNDLED_JS = src/bundled_core.cc src/bundled_core.h
+BUNDLED_JS = .bundled_core
+REAL_BUNDLED_JS = src/bundled_core.cc src/bundled_core.h
 KEYCODE_FILES = src/keycode.cc src/keycode.h
 
 all: docs/jsdoc.html
 
 clean:
-	rm -rf build/out/ build/src/ docs/ $(BUNDLED_JS) $(KEYCODE_FILES) e test
+	rm -rf build/out/ build/src/ docs/ $(BUNDLED_JS) $(REAL_BUNDLED_JS) $(KEYCODE_FILES) e test
 
 docs:
 	@mkdir -p docs
