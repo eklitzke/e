@@ -22,6 +22,8 @@ using v8::HandleScope;
 using v8::Integer;
 using v8::Object;
 using v8::Script;
+using v8::StackFrame;
+using v8::StackTrace;
 using v8::String;
 using v8::Undefined;
 using v8::Value;
@@ -67,7 +69,7 @@ Handle<String> ReadFile(const std::string& name, bool prefix_use_strict) {
 // @method: log
 // @param[msg]: #string Log message
 // @param[flush]: #bool whether to flush after logging (optional, default false)
-// @description: Logs a message
+// @description: Logs a message (with the file name and line number)
 Handle<Value> JSLog(const Arguments& args) {
   CHECK_ARGS(1);
   Local<Value> arg = args[0];
@@ -75,8 +77,16 @@ Handle<Value> JSLog(const Arguments& args) {
   if (args.Length() >= 2) {
     flush = args[1]->BooleanValue();
   }
-  String::Utf8Value value(arg);
-  LOG(INFO) << (*value);
+  String::Utf8Value msg(arg);
+  std::string std_msg(*msg, msg.length());
+
+  // Extract a stack trace
+  Local<StackTrace> trace = StackTrace::CurrentStackTrace(1);
+  Local<StackFrame> top = trace->GetFrame(0);
+  String::Utf8Value script_name(top->GetScriptName());
+  std::string std_name(*script_name, script_name.length());
+  int line_no = top->GetLineNumber();
+  LOG(INFO) << "<" << std_name << ":" << line_no << "> " << std_msg;
   if (flush) {
     google::FlushLogFiles(google::INFO);
   }
