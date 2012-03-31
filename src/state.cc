@@ -176,7 +176,7 @@ void State::LoadScript(bool run,
     }
   }
 
-  if (!bail) {
+  if (!bail && keep_going) {
     then(context);
   }
   DisposeContext();
