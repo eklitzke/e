@@ -30,7 +30,7 @@ using v8::Value;
 class State {
  public:
   State() {}
-  explicit State(bool load_core, const std::vector<std::string> &scripts,
+  explicit State(const std::vector<std::string> &scripts,
                  const std::vector<std::string> &args);
   ~State();
   void LoadScript(bool, boost::function<void(Persistent<Context>)>);
@@ -46,7 +46,6 @@ class State {
   v8::Persistent<v8::Object> callback_o;
 
  private:
-  bool load_core_;
   std::vector<std::string> scripts_;
   std::vector<std::string> args_;
 

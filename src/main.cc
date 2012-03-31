@@ -21,7 +21,6 @@ int main(int argc, char **argv) {
     e::State state;
     state.LoadScript(false, e::ListEnvironment);
   } else {
-    bool load_core = !vm.count("skip-core");
     std::vector<std::string> files;
     if (vm.count("file")) {
       files = vm["file"].as< std::vector<std::string> >();
@@ -30,7 +29,7 @@ int main(int argc, char **argv) {
     if (vm.count("script")) {
       scripts = vm["script"].as<std::vector<std::string> >();
     }
-    e::CursesWindow window(load_core, scripts, files);
+    e::CursesWindow window(scripts, files);
     window.Loop();
   }
   LOG(INFO) << "main() finishing with status 0";

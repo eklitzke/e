@@ -27,10 +27,9 @@ bool UseAsio() {
 }
 }
 
-CursesWindow::CursesWindow(bool load_core,
-                           const std::vector<std::string> &scripts,
+CursesWindow::CursesWindow(const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
-    :state_(load_core, scripts, files), window_(nullptr), args_(files),
+    :state_(scripts, files), window_(nullptr), args_(files),
      term_in_(io_service_) {
 }
 

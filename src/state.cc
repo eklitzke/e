@@ -9,6 +9,7 @@
 
 #include "./bundled_core.h"
 #include "./embeddable.h"
+#include "./flags.h"
 #include "./js.h"
 #include "./js_curses.h"
 #include "./js_curses_window.h"
@@ -91,10 +92,9 @@ AddEventListener(const Arguments& args) {
 }
 }
 
-State::State(bool load_core, const std::vector<std::string> &scripts,
+State::State(const std::vector<std::string> &scripts,
              const std::vector<std::string> &args)
-    :load_core_(load_core), scripts_(scripts), args_(args),
-     active_buffer_(new Buffer("*temp*")) {
+    :scripts_(scripts), args_(args), active_buffer_(new Buffer("*temp*")) {
   buffers_.push_back(active_buffer_);
 }
 
@@ -143,7 +143,7 @@ void State::LoadScript(bool run,
   if (run) {
     // load the core file; this should be known to be good and not throw
     // exceptions
-    if (load_core_) {
+    if (!vm().count("skip-core")) {
       Local<Script> core_scr = GetCoreScript();
       core_scr->Run();
     }
