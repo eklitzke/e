@@ -12,7 +12,9 @@ using v8::Handle;
 using v8::Value;
 
 namespace e {
-v8::Local<v8::Object> GetCursesObj();
+namespace js_curses {
+bool Build(v8::Handle<v8::Object>);
+}
 }
 
 #endif  // SRC_JS_CURSES_H_

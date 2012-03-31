@@ -17,6 +17,9 @@ typedef bool (*ModuleBuilder)(Handle<Object>);
 
 void DeclareModule(const std::string &name, ModuleBuilder builder);
 Persistent<Value> GetModule(const std::string &name);
+void AddAccessor(Handle<Object>, const std::string &,
+                 v8::AccessorGetter, v8::AccessorSetter = nullptr);
 void AddFunction(Handle<Object>, const std::string&, v8::InvocationCallback);
+void AddInteger(Handle<Object>, const std::string&, int);
 }
 #endif  // SRC_MODULE_H_

@@ -11,6 +11,7 @@
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::HandleScope;
+using v8::Integer;
 using v8::Local;
 using v8::Object;
 using v8::Persistent;
@@ -23,7 +24,6 @@ std::map<std::string, Persistent<Object> > modules_;
 }
 
 namespace e {
-
 void DeclareModule(const std::string &name, ModuleBuilder builder) {
   auto it = builders_.find(name);
   ASSERT(it == builders_.end());
@@ -53,11 +53,22 @@ Persistent<Value> GetModule(const std::string &name) {
   return Persistent<Value>::New(Undefined());
 }
 
+void AddAccessor(Handle<Object> obj, const std::string &name,
+                 v8::AccessorGetter getter, v8::AccessorSetter setter) {
+  HandleScope scope;
+  obj->SetAccessor(
+      String::NewSymbol(name.c_str(), name.size()), getter, setter);
+}
+
 void AddFunction(Handle<Object> obj, const std::string &name,
                  v8::InvocationCallback func) {
   HandleScope scope;
   Persistent<Function> pfunc = Persistent<Function>::New(
       FunctionTemplate::New(func)->GetFunction());
   obj->Set(String::NewSymbol(name.c_str()), pfunc, v8::ReadOnly);
+}
+
+void AddInteger(Handle<Object> obj, const std::string &name, int value) {
+  obj->Set(String::NewSymbol(name.c_str()), Integer::New(value), v8::ReadOnly);
 }
 }

@@ -5,7 +5,7 @@
 #define SRC_MODULE_DECL_H_
 
 namespace e {
-void InitializeModules();
+void InitializeBuiltinModules();
 }
 
 #endif  // SRC_MODULE_DECL_H_

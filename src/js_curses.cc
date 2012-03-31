@@ -10,6 +10,7 @@
 
 #include "./js.h"
 #include "./js_curses_window.h"
+#include "./module.h"
 
 using v8::AccessorInfo;
 using v8::Arguments;
@@ -24,30 +25,32 @@ using v8::Undefined;
 using v8::Value;
 
 #define CURSES_VOID_FUNC(capname, func)\
-Handle<Value> Curses ## capname(const Arguments& args) {  \
-  HandleScope scope;\
-  Local<Integer> ret = Integer::New(func());\
-  return scope.Close(ret);\
-}
+  Handle<Value> Curses ## capname(const Arguments& args) {  \
+    HandleScope scope;                                      \
+    Local<Integer> ret = Integer::New(func());              \
+    return scope.Close(ret);                                \
+  }
 
-#define CURSES_WINDOW_FUNC(capname, func)\
-Handle<Value> Curses ## capname(const Arguments& args) {  \
-  HandleScope scope;\
-  Local<Integer> ret = Integer::New(func(stdscr));\
-  return scope.Close(ret);\
-}
+#define CURSES_WINDOW_FUNC(capname, func)                   \
+  Handle<Value> Curses ## capname(const Arguments& args) {  \
+    HandleScope scope;                                      \
+    Local<Integer> ret = Integer::New(func(stdscr));        \
+    return scope.Close(ret);                                \
+  }
 
 #define CURSES_ACCESSOR(macroname)                                      \
   Handle<Value> JS_##macroname(Local<String> property,                  \
-                                const AccessorInfo& info) {             \
+                               const AccessorInfo& info) {              \
     HandleScope scope;                                                  \
     return scope.Close(Integer::New(macroname));                        \
   }
 
-#define DECLARE_ACCESSOR(macroname)             \
-  js::AddTemplateAccessor(curses, #macroname, JS_##macroname, nullptr)
 
-namespace e {
+#define NEW_INTEGER(obj, name) AddInteger(obj, #name, name)
+#define DECLARE_ACCESSOR(obj, macroname)                                \
+  AddAccessor(obj, #macroname, JS_##macroname, nullptr)
+
+namespace {
 // @class: curses
 // @description: A low-level interface to ncurses.
 
@@ -185,134 +188,137 @@ Handle<Value> CursesNewwin(const Arguments& args) {
   LOG(INFO) << "calling newwin";
   WINDOW *w = newwin(nlines, ncols, begin_y, begin_x);
   LOG(INFO) << "new window is " << w;
-  JSCursesWindow *cw = new JSCursesWindow(w);
+  e::JSCursesWindow *cw = new e::JSCursesWindow(w);
   return scope.Close(cw->ToScript());
 }
+}
 
-Local<Object> GetCursesObj() {
+namespace e {
+namespace js_curses {
+bool Build(Handle<Object> obj) {
   HandleScope scope;
-  Local<ObjectTemplate> curses = ObjectTemplate::New();
 
   // @accessor: OK
-  // @description: The value of `OK` in the underlying curses implementation.
-  NEW_INTEGER(curses, OK);
+  // @description: The value of `OK` in the underlying obj implementation.
+  NEW_INTEGER(obj, OK);
 
   // @accessor: ERR
-  // @description: The value of `ERR` in the underlying curses implementation.
-  NEW_INTEGER(curses, ERR);
+  // @description: The value of `ERR` in the underlying obj implementation.
+  NEW_INTEGER(obj, ERR);
 
   // @accessor: BUTTON1_CLICKED
-  NEW_INTEGER(curses, BUTTON1_CLICKED);
+  NEW_INTEGER(obj, BUTTON1_CLICKED);
 
   // @accessor: BUTTON1_DOUBLE_CLICKED
-  NEW_INTEGER(curses, BUTTON1_DOUBLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON1_DOUBLE_CLICKED);
 
   // @accessor: BUTTON1_PRESSED
-  NEW_INTEGER(curses, BUTTON1_PRESSED);
+  NEW_INTEGER(obj, BUTTON1_PRESSED);
 
   // @accessor: BUTTON1_RELEASED
-  NEW_INTEGER(curses, BUTTON1_RELEASED);
+  NEW_INTEGER(obj, BUTTON1_RELEASED);
 
   // @accessor: BUTTON1_RESERVED_EVENT
-  NEW_INTEGER(curses, BUTTON1_RESERVED_EVENT);
+  NEW_INTEGER(obj, BUTTON1_RESERVED_EVENT);
 
   // @accessor: BUTTON1_TRIPLE_CLICKED
-  NEW_INTEGER(curses, BUTTON1_TRIPLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON1_TRIPLE_CLICKED);
 
   // @accessor: BUTTON2_CLICKED
-  NEW_INTEGER(curses, BUTTON2_CLICKED);
+  NEW_INTEGER(obj, BUTTON2_CLICKED);
 
   // @accessor: BUTTON2_DOUBLE_CLICKED
-  NEW_INTEGER(curses, BUTTON2_DOUBLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON2_DOUBLE_CLICKED);
 
   // @accessor: BUTTON2_PRESSED
-  NEW_INTEGER(curses, BUTTON2_PRESSED);
+  NEW_INTEGER(obj, BUTTON2_PRESSED);
 
   // @accessor: BUTTON2_RELEASED
-  NEW_INTEGER(curses, BUTTON2_RELEASED);
+  NEW_INTEGER(obj, BUTTON2_RELEASED);
 
   // @accessor: BUTTON2_RESERVED_EVENT
-  NEW_INTEGER(curses, BUTTON2_RESERVED_EVENT);
+  NEW_INTEGER(obj, BUTTON2_RESERVED_EVENT);
 
   // @accessor: BUTTON2_TRIPLE_CLICKED
-  NEW_INTEGER(curses, BUTTON2_TRIPLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON2_TRIPLE_CLICKED);
 
   // @accessor: BUTTON3_CLICKED
-  NEW_INTEGER(curses, BUTTON3_CLICKED);
+  NEW_INTEGER(obj, BUTTON3_CLICKED);
 
   // @accessor: BUTTON3_DOUBLE_CLICKED
-  NEW_INTEGER(curses, BUTTON3_DOUBLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON3_DOUBLE_CLICKED);
 
   // @accessor: BUTTON3_PRESSED
-  NEW_INTEGER(curses, BUTTON3_PRESSED);
+  NEW_INTEGER(obj, BUTTON3_PRESSED);
 
   // @accessor: BUTTON3_RELEASED
-  NEW_INTEGER(curses, BUTTON3_RELEASED);
+  NEW_INTEGER(obj, BUTTON3_RELEASED);
 
   // @accessor: BUTTON3_RESERVED_EVENT
-  NEW_INTEGER(curses, BUTTON3_RESERVED_EVENT);
+  NEW_INTEGER(obj, BUTTON3_RESERVED_EVENT);
 
   // @accessor: BUTTON3_TRIPLE_CLICKED
-  NEW_INTEGER(curses, BUTTON3_TRIPLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON3_TRIPLE_CLICKED);
 
   // @accessor: BUTTON4_CLICKED
-  NEW_INTEGER(curses, BUTTON4_CLICKED);
+  NEW_INTEGER(obj, BUTTON4_CLICKED);
 
   // @accessor: BUTTON4_DOUBLE_CLICKED
-  NEW_INTEGER(curses, BUTTON4_DOUBLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON4_DOUBLE_CLICKED);
 
   // @accessor: BUTTON4_PRESSED
-  NEW_INTEGER(curses, BUTTON4_PRESSED);
+  NEW_INTEGER(obj, BUTTON4_PRESSED);
 
   // @accessor: BUTTON4_RELEASED
-  NEW_INTEGER(curses, BUTTON4_RELEASED);
+  NEW_INTEGER(obj, BUTTON4_RELEASED);
 
   // @accessor: BUTTON4_RESERVED_EVENT
-  NEW_INTEGER(curses, BUTTON4_RESERVED_EVENT);
+  NEW_INTEGER(obj, BUTTON4_RESERVED_EVENT);
 
   // @accessor: BUTTON4_TRIPLE_CLICKED
-  NEW_INTEGER(curses, BUTTON4_TRIPLE_CLICKED);
+  NEW_INTEGER(obj, BUTTON4_TRIPLE_CLICKED);
 
   // @accessor: BUTTON_ALT
-  NEW_INTEGER(curses, BUTTON_ALT);
+  NEW_INTEGER(obj, BUTTON_ALT);
 
   // @accessor: BUTTON_CTRL
-  NEW_INTEGER(curses, BUTTON_CTRL);
+  NEW_INTEGER(obj, BUTTON_CTRL);
 
   // @accessor: BUTTON_SHIFT
-  NEW_INTEGER(curses, BUTTON_SHIFT);
+  NEW_INTEGER(obj, BUTTON_SHIFT);
 
-  DECLARE_ACCESSOR(COLOR_PAIRS);
-  DECLARE_ACCESSOR(COLORS);
-  DECLARE_ACCESSOR(COLS);
-  DECLARE_ACCESSOR(ESCDELAY);
-  DECLARE_ACCESSOR(LINES);
-  DECLARE_ACCESSOR(TABSIZE);
-  DECLARE_ACCESSOR(COLOR_BLACK);
-  DECLARE_ACCESSOR(COLOR_RED);
-  DECLARE_ACCESSOR(COLOR_GREEN);
-  DECLARE_ACCESSOR(COLOR_YELLOW);
-  DECLARE_ACCESSOR(COLOR_BLUE);
-  DECLARE_ACCESSOR(COLOR_MAGENTA);
-  DECLARE_ACCESSOR(COLOR_CYAN);
-  DECLARE_ACCESSOR(COLOR_WHITE);
-  DECLARE_ACCESSOR(A_NORMAL);
-  DECLARE_ACCESSOR(A_STANDOUT);
-  DECLARE_ACCESSOR(A_UNDERLINE);
-  DECLARE_ACCESSOR(A_REVERSE);
-  DECLARE_ACCESSOR(A_BLINK);
-  DECLARE_ACCESSOR(A_DIM);
-  DECLARE_ACCESSOR(A_BOLD);
-  DECLARE_ACCESSOR(A_PROTECT);
-  DECLARE_ACCESSOR(A_INVIS);
-  DECLARE_ACCESSOR(A_ALTCHARSET);
-  DECLARE_ACCESSOR(A_CHARTEXT);
+  DECLARE_ACCESSOR(obj, COLOR_PAIRS);
+  DECLARE_ACCESSOR(obj, COLORS);
+  DECLARE_ACCESSOR(obj, COLS);
+  DECLARE_ACCESSOR(obj, ESCDELAY);
+  DECLARE_ACCESSOR(obj, LINES);
+  DECLARE_ACCESSOR(obj, TABSIZE);
+  DECLARE_ACCESSOR(obj, COLOR_BLACK);
+  DECLARE_ACCESSOR(obj, COLOR_RED);
+  DECLARE_ACCESSOR(obj, COLOR_GREEN);
+  DECLARE_ACCESSOR(obj, COLOR_YELLOW);
+  DECLARE_ACCESSOR(obj, COLOR_BLUE);
+  DECLARE_ACCESSOR(obj, COLOR_MAGENTA);
+  DECLARE_ACCESSOR(obj, COLOR_CYAN);
+  DECLARE_ACCESSOR(obj, COLOR_WHITE);
+  DECLARE_ACCESSOR(obj, A_NORMAL);
+  DECLARE_ACCESSOR(obj, A_STANDOUT);
+  DECLARE_ACCESSOR(obj, A_UNDERLINE);
+  DECLARE_ACCESSOR(obj, A_REVERSE);
+  DECLARE_ACCESSOR(obj, A_BLINK);
+  DECLARE_ACCESSOR(obj, A_DIM);
+  DECLARE_ACCESSOR(obj, A_BOLD);
+  DECLARE_ACCESSOR(obj, A_PROTECT);
+  DECLARE_ACCESSOR(obj, A_INVIS);
+  DECLARE_ACCESSOR(obj, A_ALTCHARSET);
+  DECLARE_ACCESSOR(obj, A_CHARTEXT);
 
-  js::AddTemplateFunction(curses, "doupdate", &CursesDoupdate);
-  js::AddTemplateFunction(curses, "move", &CursesMove);
-  js::AddTemplateFunction(curses, "newwin", &CursesNewwin);
-  js::AddTemplateFunction(curses, "refresh", &CursesRefresh);
+  AddFunction(obj, "doupdate", &CursesDoupdate);
+  AddFunction(obj, "move", &CursesMove);
+  AddFunction(obj, "newwin", &CursesNewwin);
+  AddFunction(obj, "refresh", &CursesRefresh);
 
-  return scope.Close(curses->NewInstance());
+  return true;
+}
 }
 }

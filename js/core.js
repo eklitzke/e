@@ -1,3 +1,4 @@
+var curses = require("curses");
 var errno = require("errno");
 var signal = require("signal");
 var sys = require("sys");

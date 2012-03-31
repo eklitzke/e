@@ -1,15 +1,17 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include "./js.h"
 #include "./js_signal.h"
 
 #include <v8.h>
 #include <csignal>
 
+#include "./module.h"
 
 using v8::Handle;
 using v8::HandleScope;
 using v8::ObjectTemplate;
+
+#define NEW_INTEGER(obj, sig) AddInteger(obj, #sig, sig)
 
 namespace e {
 namespace js_signal {

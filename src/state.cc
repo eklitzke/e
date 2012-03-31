@@ -11,7 +11,6 @@
 #include "./embeddable.h"
 #include "./flags.h"
 #include "./js.h"
-#include "./js_curses.h"
 #include "./js_curses_window.h"
 #include "./module_decl.h"
 
@@ -128,16 +127,16 @@ void State::LoadScript(bool run,
   world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(),
              v8::ReadOnly);
   context->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
+
+  // export the script's argv array to JS (as args)
   Local<Array> args = Array::New(args_.size());
   for (auto it = args_.begin(); it != args_.end(); ++it) {
     args->Set(it - args_.begin(), String::New(it->c_str(), it->size()));
   }
   world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 
-  context->Global()->Set(String::NewSymbol("curses"), GetCursesObj(),
-                          v8::ReadOnly);
-
-  InitializeModules();
+  // initialize all of the builtin modules (e.g. curses, errno, sys)
+  InitializeBuiltinModules();
 
   bool bail = false;
   if (run) {
