@@ -50,13 +50,6 @@ template<typename T, typename A> T* Unwrap(const A &args, int field = 0) {
 #define GET_SELF(tp) GET_SELF2(args, tp)
 #define ACCESSOR_GET_SELF(tp) GET_SELF2(info, tp)
 
-class Embeddable {
- public:
-  Local<FunctionTemplate> ToCallable(InvocationCallback);
-  Local<Value> ToExternal();
-  template <typename T> static T *FromExternal(Handle<Value>);
-};
-
 Persistent<Context> InitializeContext(Handle<ObjectTemplate> global);
 Persistent<Context> GetContext();  // FIXME(eklitzke): use GetCurrent() instead?
 void DisposeContext();

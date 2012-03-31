@@ -9,14 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "./embeddable.h"
 #include "./line.h"
 
 using v8::Handle;
 using v8::Value;
 
 namespace e {
-class Buffer: public Embeddable {
+class Buffer {
  private:
   std::string filepath_;
   std::string name_;

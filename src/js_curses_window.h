@@ -12,13 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "./embeddable.h"
-
 using v8::Handle;
 using v8::Value;
 
 namespace e {
-class JSCursesWindow: public Embeddable {
+class JSCursesWindow {
  public:
   explicit JSCursesWindow(WINDOW *win);
   ~JSCursesWindow();

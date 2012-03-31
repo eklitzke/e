@@ -27,7 +27,7 @@ using v8::Persistent;
 using v8::Script;
 using v8::Value;
 
-class State: public Embeddable {
+class State {
  public:
   State() {}
   explicit State(bool load_core, const std::vector<std::string> &scripts,

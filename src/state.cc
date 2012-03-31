@@ -6,6 +6,7 @@
 #include <string>
 
 #include "./bundled_core.h"
+#include "./embeddable.h"
 #include "./js.h"
 #include "./js_curses.h"
 #include "./js_curses_window.h"

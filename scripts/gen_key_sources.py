@@ -16,16 +16,14 @@ h_template = """
 #define SRC_KEYCODE_H_
 
 #include <v8.h>
-#include <wchar.h>
 #include <string>
-#include "./embeddable.h"
 
 using v8::Arguments;
-using v8::Handle;
+using v8::Persistent;
 using v8::Value;
 
 namespace e {
-class KeyCode: public Embeddable {
+class KeyCode {
   public:
     explicit KeyCode(wint_t code);
     explicit KeyCode(wint_t code, const std::string &name);

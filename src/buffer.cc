@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "./assert.h"
+#include "./embeddable.h"
 #include "./buffer.h"
 #include "./js.h"
 #include "./mmap.h"

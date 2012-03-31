@@ -22,15 +22,15 @@
 #include <string>
 #include <vector>
 
-#include "./embeddable.h"
 #include "./zipper.h"
 
-using v8::Handle;
+using v8::Local;
+using v8::String;
 using v8::Value;
 
 namespace e {
 
-class Line: public Embeddable {
+class Line {
  public:
   Line() {}
   explicit Line(const std::string &line) { Replace(line); }

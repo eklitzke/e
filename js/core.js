@@ -68,11 +68,13 @@ core.addFunction("windowBottom", function () {
  * @param {number} bot The bottom line of the scroll region
  */
 core.addFunction("scrollRegion", function (lines, top, bot) {
+	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var maxy = core.windows.buffer.getmaxy();
 	var maxAllowed = world.buffer.length - 1;
 
 	var wt = core.windowTop();
+	log("wt = " + wt);
 	if (wt + lines <= 0) {
 		lines = -wt;
 	} else if (wt + lines > maxAllowed) {
@@ -81,6 +83,7 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 	if (lines == 0) {
 		return lines;
 	}
+	log("tesT");
 
 	var newLine, newLinePos;
 	var lineDelta = core.line - cury;
@@ -95,8 +98,9 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 		core.windows.buffer.mvaddstr(i, 0, newLine);
 		core.windows.buffer.clrtoeol();
 	}
+	core.updateAllWindows();
+	//core.move.absolute(cury, curx);
 	return lines;
-
 });
 
 // higher-level method to scroll a region
@@ -391,20 +395,21 @@ world.addEventListener("keypress", function (event) {
 				chopped = line.value().substring(core.column, line.length - core.column + 1);
 				line.chop(core.column);
 			}
+			core.scrollRegion(-1, core.windows.buffer.getcury() + 1, core.windows.buffer.getmaxy());
+			break;
 			// add the new line, with the chopped contents
 			world.buffer.addLine(core.line + 1, chopped);
 
 			//move the cursor
 			core.windows.buffer.clrtoeol();
-			core.move.absolute(cury + 1, 0);
-			core.windows.buffer.setscrreg(cury + 1, core.windows.buffer.getmaxy() - 1);
-			core.windows.buffer.scrl(-1);
+			core.move(1);
 			if (chopped) {
 				core.windows.buffer.addstr(chopped);
 				core.move.left();
 			}
-			core.line++;
+			//core.line++;
 			core.column = 0;
+			core.move(0);
 			break;
 		case 19: // Ctrl-S
 			world.buffer.persist(world.buffer.getFile())
@@ -501,6 +506,7 @@ world.addEventListener("keypress", function (e) {
 });
 
 world.addEventListener("keypress", function (e) {
+	return;
 	log("");
 	log("<<<<<< START <<<<<<");
 	var lines = world.buffer.getContents();
@@ -519,3 +525,4 @@ world.addEventListener("keypress", function (e) {
 world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
+

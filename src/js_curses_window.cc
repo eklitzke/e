@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "./assert.h"
+#include "./embeddable.h"
 #include "./js.h"
 
 using v8::AccessorInfo;
