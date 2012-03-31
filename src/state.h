@@ -1,5 +1,8 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
+//
+// This file is the main entry point for the editor (it's what loads all of the
+// JavaScript, and is run by the main loop).
 
 #ifndef SRC_STATE_H_
 #define SRC_STATE_H_
@@ -12,9 +15,7 @@
 #include <vector>
 
 #include "./buffer.h"
-#include "./embeddable.h"
 #include "./event_listener.h"
-#include "./js.h"
 #include "./keycode.h"
 
 namespace e {
@@ -37,7 +38,6 @@ class State {
 
   EventListener* GetListener(void) { return &listener_; }
 
-  Buffer* GetActiveBuffer(void);
   std::vector<Buffer*>* GetBuffers(void);
 
   // returns true if the mainloop should keep going, false otherwise
@@ -50,7 +50,6 @@ class State {
   std::vector<std::string> args_;
 
   std::vector<Buffer*> buffers_;
-  Buffer *active_buffer_;
   EventListener listener_;
 };
 }

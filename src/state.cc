@@ -11,7 +11,6 @@
 #include "./embeddable.h"
 #include "./flags.h"
 #include "./js.h"
-#include "./js_curses_window.h"
 #include "./module_decl.h"
 
 namespace e {
@@ -57,35 +56,25 @@ Handle<Value> JSStopLoop(const Arguments& args) {
   return Undefined();
 }
 
-Handle<Value>
-AddEventListener(const Arguments& args) {
-  if (args.Length() < 2) {
-    return Undefined();
-  }
+Handle<Value> AddEventListener(const Arguments& args) {
+  CHECK_ARGS(2);
+  GET_SELF(State);
 
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  State* state = reinterpret_cast<State*>(wrap->Value());
-
-  HandleScope scope;
-
-  // XXX: just cast the first argument to a string?
   Local<String> event_name = args[0]->ToString();
 
   Handle<Value> callback = args[1];
   if (!callback->IsObject()) {
     return Undefined();
   }
-  state->callback_o = Persistent<Object>::New(callback->ToObject());
-  google::FlushLogFiles(google::INFO);
+  self->callback_o = Persistent<Object>::New(callback->ToObject());
 
   bool use_capture = true;
   if (args.Length() >= 3) {
     use_capture = args[2]->BooleanValue();
   }
 
-  state->GetListener()->Add(
-      js::ValueToString(event_name), state->callback_o, use_capture);
+  self->GetListener()->Add(
+      js::ValueToString(event_name), self->callback_o, use_capture);
 
   return Undefined();
 }
@@ -93,8 +82,9 @@ AddEventListener(const Arguments& args) {
 
 State::State(const std::vector<std::string> &scripts,
              const std::vector<std::string> &args)
-    :scripts_(scripts), args_(args), active_buffer_(new Buffer("*temp*")) {
-  buffers_.push_back(active_buffer_);
+    :scripts_(scripts), args_(args) {
+  Buffer *scratch_buffer = new Buffer("*temp*");
+  buffers_.push_back(scratch_buffer);
 }
 
 State::~State() {
@@ -124,24 +114,24 @@ void State::LoadScript(bool run,
 
   Local<Object> world = world_templ->NewInstance();
   world->SetInternalField(0, External::New(this));
-  world->Set(String::NewSymbol("buffer"), active_buffer_->ToScript(),
+  world->Set(String::NewSymbol("buffer"), buffers_[0]->ToScript(),
              v8::ReadOnly);
   context->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
 
-  // export the script's argv array to JS (as args)
+  // export the editor's argv array to JS (as `args')
   Local<Array> args = Array::New(args_.size());
+  world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
   for (auto it = args_.begin(); it != args_.end(); ++it) {
     args->Set(it - args_.begin(), String::New(it->c_str(), it->size()));
   }
-  world->Set(String::NewSymbol("args"), args, v8::ReadOnly);
 
   // initialize all of the builtin modules (e.g. curses, errno, sys)
   InitializeBuiltinModules();
 
   bool bail = false;
   if (run) {
-    // load the core file; this should be known to be good and not throw
-    // exceptions
+    // Load the core script; this should be known to be good and not throw
+    // exceptions.
     if (!vm().count("skip-core")) {
       LOG(INFO) << "loading builtin core.js";
       Local<Script> core_scr = GetCoreScript();
@@ -149,9 +139,9 @@ void State::LoadScript(bool run,
       LOG(INFO) << "finished loading builtin core.js";
     }
 
-    // Load other scripts
+    // sequentially load any other scripts
     for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
-      LOG(INFO) << "loading additional script " << *it;
+      LOG(INFO) << "loading additional script \"" << *it << "\"";
       TryCatch trycatch;
       Handle<String> source = js::ReadFile(*it);
       Handle<Script> scr = Script::New(
@@ -171,28 +161,22 @@ void State::LoadScript(bool run,
         bail = true;
         break;
       }
-      LOG(INFO) << "finished loading additional script " << *it;
+      LOG(INFO) << "finished loading additional script \"" << *it << "\"";
     }
   }
 
+  // run the callback
   if (!bail && keep_going) {
     then(context);
   }
   DisposeContext();
 }
 
-Buffer *
-State::GetActiveBuffer(void) {
-  return active_buffer_;
-}
-
-std::vector<Buffer*> *
-State::GetBuffers(void) {
+std::vector<Buffer*> * State::GetBuffers(void) {
   return &buffers_;
 }
 
-bool
-State::HandleKey(KeyCode *k) {
+bool State::HandleKey(KeyCode *k) {
   HandleScope scope;
 
   std::vector<Handle<Value> > args;

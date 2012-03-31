@@ -1,5 +1,7 @@
 // -*- C++ -*-
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
+//
+// Core functionality for implementing CommonJS modules.
 
 #ifndef SRC_MODULE_H_
 #define SRC_MODULE_H_
@@ -13,6 +15,9 @@ using v8::Persistent;
 using v8::Value;
 
 namespace e {
+// This is the typedef for a valid module builder. The module builder will
+// accept a handler to an Object, and then return true if it was able to
+// successfully initialize the object (and return false otherwise).
 typedef bool (*ModuleBuilder)(Handle<Object>);
 
 // Declare a builtin module; unless you *really* know what you're doing, this
