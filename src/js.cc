@@ -13,6 +13,7 @@
 
 #include "./assert.h"
 #include "./embeddable.h"
+#include "./module.h"
 
 using v8::Arguments;
 using v8::External;
@@ -102,10 +103,7 @@ Handle<Value> JSRequire(const Arguments& args) {
   String::Utf8Value value(args[0]->ToString());
 
   std::string script_name(*value, value.length());
-  Handle<String> source = ReadFile(script_name);
-  Handle<Script> scr = Script::New(
-      source, String::New(script_name.c_str(), script_name.size()));
-  return scr->Run();
+  return GetModule(script_name);
 }
 
 // Convert a JavaScript string to a std::string (UTF-8 encoded).

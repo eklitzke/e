@@ -7,7 +7,9 @@
 #include <v8.h>
 
 namespace e {
-v8::Handle<v8::ObjectTemplate> GetSignalTemplate();
+namespace js_signal {
+bool Build(v8::Handle<v8::Object>);
+}
 }
 
 #endif  // SRC_JS_SIGNAL_H_

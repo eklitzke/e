@@ -14,6 +14,7 @@
 #include <csignal>
 
 #include "./js.h"
+#include "./module.h"
 
 using v8::Arguments;
 using v8::HandleScope;
@@ -22,7 +23,6 @@ using v8::ObjectTemplate;
 using v8::String;
 using v8::Undefined;
 
-namespace e {
 namespace {
 // @class: sys
 // @description: Various low-level system routines.
@@ -72,17 +72,15 @@ Handle<Value> JSKill(const Arguments& args) {
 }
 }
 
-Handle<ObjectTemplate> GetSysTemplate() {
+namespace e {
+namespace js_sys {
+bool Build(Handle<Object> obj) {
   HandleScope scope;
-  Handle<ObjectTemplate> sys_templ = ObjectTemplate::New();
-  sys_templ->Set(String::NewSymbol("chdir"),
-                    FunctionTemplate::New(JSChdir), v8::ReadOnly);
-  sys_templ->Set(String::NewSymbol("getcwd"),
-                    FunctionTemplate::New(JSGetcwd), v8::ReadOnly);
-  sys_templ->Set(String::NewSymbol("getpid"),
-                    FunctionTemplate::New(JSGetpid), v8::ReadOnly);
-  sys_templ->Set(String::NewSymbol("kill"),
-                    FunctionTemplate::New(JSKill), v8::ReadOnly);
-  return scope.Close(sys_templ);
+  AddFunction(obj, "chdir", JSChdir);
+  AddFunction(obj, "getcwd", JSGetcwd);
+  AddFunction(obj, "getpid", JSGetpid);
+  AddFunction(obj, "kill", JSKill);
+  return true;
+}
 }
 }

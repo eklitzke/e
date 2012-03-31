@@ -28,8 +28,15 @@ using v8::Value;
   }                                                 \
   HandleScope scope
 
-#define NEW_INTEGER(obj, sym) obj->Set(v8::String::NewSymbol(#sym),     \
-                                       v8::Integer::New(sym), v8::ReadOnly);
+#define NEW_INTEGER(obj, sym) obj->Set(\
+    v8::String::NewSymbol(#sym),                                        \
+    v8::Integer::New(sym),                                              \
+    v8::ReadOnly);
+
+#define NEW_FUNCTION(obj, sym, impl) obj->Set(                          \
+    v8::String::NewSymbol(#sym),                                        \
+    v8::FunctionTemplate::New(impl)->GetFunction(),                     \
+    v8::ReadOnly);
 
 namespace e {
 namespace js {

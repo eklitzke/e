@@ -1,3 +1,10 @@
+var errno = require("errno");
+var signal = require("signal");
+var sys = require("sys");
+
+log("errno.ENOENT = " + errno.ENOENT);
+log("pid is " + sys.getpid());
+
 var core = { column: 0, line: 0 };
 core.parser = null;
 

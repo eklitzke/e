@@ -5,7 +5,9 @@
 #define SRC_JS_ERRNO_H_
 
 namespace e {
-v8::Handle<v8::ObjectTemplate> GetErrnoTemplate();
+namespace js_errno {
+bool Build(v8::Handle<v8::Object>);
+}
 }
 
 #endif  // SRC_JS_ERRNO_H_

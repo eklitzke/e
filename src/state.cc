@@ -1,5 +1,7 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
+#include "./state.h"
+
 #include <v8.h>
 #include <glog/logging.h>
 
@@ -10,10 +12,7 @@
 #include "./js.h"
 #include "./js_curses.h"
 #include "./js_curses_window.h"
-#include "./js_errno.h"
-#include "./js_signal.h"
-#include "./js_sys.h"
-#include "./state.h"
+#include "./module_decl.h"
 
 namespace e {
 
@@ -138,12 +137,7 @@ void State::LoadScript(bool run,
   context->Global()->Set(String::NewSymbol("curses"), GetCursesObj(),
                           v8::ReadOnly);
 
-  context->Global()->Set(String::NewSymbol("errno"),
-                         GetErrnoTemplate()->NewInstance(), v8::ReadOnly);
-  context->Global()->Set(String::NewSymbol("signal"),
-                         GetSignalTemplate()->NewInstance(), v8::ReadOnly);
-  context->Global()->Set(String::NewSymbol("sys"),
-                         GetSysTemplate()->NewInstance(), v8::ReadOnly);
+  InitializeModules();
 
   bool bail = false;
   if (run) {
