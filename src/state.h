@@ -13,6 +13,7 @@
 
 #include "./buffer.h"
 #include "./embeddable.h"
+#include "./event_listener.h"
 #include "./js.h"
 #include "./keycode.h"
 
@@ -34,7 +35,7 @@ class State: public Embeddable {
   ~State();
   void LoadScript(bool, boost::function<void(Persistent<Context>)>);
 
-  js::EventListener* GetListener(void) { return &listener_; }
+  EventListener* GetListener(void) { return &listener_; }
 
   Buffer* GetActiveBuffer(void);
   std::vector<Buffer*>* GetBuffers(void);
@@ -51,7 +52,7 @@ class State: public Embeddable {
 
   std::vector<Buffer*> buffers_;
   Buffer *active_buffer_;
-  js::EventListener listener_;
+  EventListener listener_;
 };
 }
 

@@ -45,23 +45,6 @@ void AddTemplateAccessor(Handle<ObjectTemplate>,
 typedef Handle<Value>(*JSCallback)(const Arguments&);
 typedef Handle<Value>(*JSAccessor)(Local<String>, const AccessorInfo&);
 
-class EventListener {
- public:
-  bool Add(const std::string&, Handle<Object>, bool);
-  bool Remove(const std::string&, Handle<Object>, bool);
-  void Dispatch(const std::string& name);
-  void Dispatch(const std::string& name,
-                const std::vector<Handle<Value> >& args);
-  void Dispatch(const std::string& name, Handle<Object> this_object,
-                const std::vector<Handle<Value> >& args);
- private:
-  std::map<std::string, std::vector<Handle<Object> > > capture_;
-  std::map<std::string, std::vector<Handle<Object> > > bubble_;
-
-  bool CallHandler(Handle<Value> h, Handle<Object>, size_t, Handle<Value>[]);
-  std::vector<Handle<Object> >& CallbackMap(const std::string &, bool);
-};
-
 // Reads a file into a v8 string.
 Handle<v8::String> ReadFile(const std::string& name,
                             bool prefix_use_strict = false);
