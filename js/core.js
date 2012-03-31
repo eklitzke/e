@@ -1,5 +1,3 @@
-log("entered core.js");
-
 var errno = require("errno");
 var signal = require("signal");
 var sys = require("sys");
@@ -529,5 +527,3 @@ world.addEventListener("keypress", function (e) {
 world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
-
-log("finished loading core.js");

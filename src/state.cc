@@ -144,12 +144,15 @@ void State::LoadScript(bool run,
     // load the core file; this should be known to be good and not throw
     // exceptions
     if (!vm().count("skip-core")) {
+      LOG(INFO) << "loading builtin core.js";
       Local<Script> core_scr = GetCoreScript();
       core_scr->Run();
+      LOG(INFO) << "finished loading builtin core.js";
     }
 
     // Load other scripts
     for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
+      LOG(INFO) << "loading additional script " << *it;
       TryCatch trycatch;
       Handle<String> source = js::ReadFile(*it);
       Handle<Script> scr = Script::New(
@@ -169,6 +172,7 @@ void State::LoadScript(bool run,
         bail = true;
         break;
       }
+      LOG(INFO) << "finished loading additional script " << *it;
     }
   }
 
