@@ -4,8 +4,6 @@
 #include "./event_listener.h"
 
 #include <boost/scoped_array.hpp>
-//#include <glog/logging.h>
-//#include <glog/log_severity.h>
 
 #include <map>
 #include <string>
