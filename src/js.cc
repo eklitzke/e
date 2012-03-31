@@ -108,11 +108,10 @@ Handle<Value> JSRequire(const Arguments& args) {
   return scr->Run();
 }
 
-// Convert a JavaScript string to a std::string.  To not bother too
-// much with string encodings we just use ascii.
+// Convert a JavaScript string to a std::string (UTF-8 encoded).
 std::string ValueToString(Local<Value> value) {
   String::Utf8Value utf8_value(value);
-  return std::string(*utf8_value);
+  return std::string(*utf8_value, utf8_value.length());
 }
 
 void AddTemplateFunction(Handle<ObjectTemplate> templ, const std::string &name,
