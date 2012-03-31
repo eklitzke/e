@@ -10,12 +10,13 @@
 using v8::Handle;
 using v8::Object;
 using v8::Persistent;
+using v8::Value;
 
 namespace e {
 typedef bool (*ModuleBuilder)(Handle<Object>);
 
 void DeclareModule(const std::string &name, ModuleBuilder builder);
-Persistent<Object> GetModule(const std::string &name);
+Persistent<Value> GetModule(const std::string &name);
 void AddFunction(Handle<Object>, const std::string&, v8::InvocationCallback);
 }
 #endif  // SRC_MODULE_H_

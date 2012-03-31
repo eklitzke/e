@@ -15,27 +15,42 @@ using v8::Local;
 using v8::Object;
 using v8::Persistent;
 using v8::String;
+using v8::Undefined;
 
 namespace {
+std::map<std::string, e::ModuleBuilder> builders_;
 std::map<std::string, Persistent<Object> > modules_;
 }
 
 namespace e {
 
 void DeclareModule(const std::string &name, ModuleBuilder builder) {
-  auto it = modules_.find(name);
-  ASSERT(it == modules_.end());
-
-  HandleScope scope;
-  Local<Object> module_obj = Object::New();
-  ASSERT(builder(module_obj));
-  modules_[name] = Persistent<Object>::New(module_obj);
+  auto it = builders_.find(name);
+  ASSERT(it == builders_.end());
+  builders_[name] = builder;
 }
 
-Persistent<Object> GetModule(const std::string &name) {
-  auto it = modules_.find(name);
-  ASSERT(it != modules_.end());  // else look up module
-  return it->second;
+Persistent<Value> GetModule(const std::string &name) {
+  // first check the module cache
+  auto m = modules_.find(name);
+  if (m != modules_.end()) {
+    return m->second;
+  }
+
+  // now check the builders dict
+  HandleScope scope;
+  auto b = builders_.find(name);
+  if (b != builders_.end()) {
+    // we have a builder, build the module and cache it
+    Local<Object> module_obj = Object::New();
+    ASSERT(b->second(module_obj));
+    Persistent<Object> p = Persistent<Object>::New(module_obj);
+    modules_[name] = p;
+    return p;
+  }
+
+  // next check the filesystem
+  return Persistent<Value>::New(Undefined());
 }
 
 void AddFunction(Handle<Object> obj, const std::string &name,

@@ -14,6 +14,7 @@
 
 int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
+  LOG(INFO) << "main() entered";
   int return_code = e::ParseOptions(argc, argv);
   if (return_code != e::NO_EXIT) {
     return return_code;
@@ -36,6 +37,6 @@ int main(int argc, char **argv) {
     e::CursesWindow window(load_core, scripts, files);
     window.Loop();
   }
-
+  LOG(INFO) << "main() finishing with status 0";
   return 0;
 }

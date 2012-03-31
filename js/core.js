@@ -1,14 +1,11 @@
+log("entered core.js");
+
 var errno = require("errno");
 var signal = require("signal");
 var sys = require("sys");
 
-log("errno.ENOENT = " + errno.ENOENT);
-log("pid is " + sys.getpid());
-
 var core = { column: 0, line: 0 };
 core.parser = null;
-
-log("entered core.js");
 
 /**
  * Adds a function to the core object, and adds a displayName attribute.
@@ -533,3 +530,4 @@ world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
 
+log("finished loading core.js");
