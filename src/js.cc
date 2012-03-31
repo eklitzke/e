@@ -66,13 +66,20 @@ Handle<String> ReadFile(const std::string& name, bool prefix_use_strict) {
 
 // @method: log
 // @param[msg]: #string Log message
+// @param[flush]: #bool whether to flush after logging (optional, default false)
 // @description: Logs a message
 Handle<Value> JSLog(const Arguments& args) {
   CHECK_ARGS(1);
   Local<Value> arg = args[0];
+  bool flush = false;
+  if (args.Length() >= 2) {
+    flush = args[1]->BooleanValue();
+  }
   String::Utf8Value value(arg);
   LOG(INFO) << (*value);
-  google::FlushLogFiles(google::INFO);
+  if (flush) {
+    google::FlushLogFiles(google::INFO);
+  }
   return Undefined();
 }
 
