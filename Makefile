@@ -1,6 +1,6 @@
 CC := gcc
 JSMIN := third_party/jsmin
-JS_SOURCE := js/core.js js/parser.js
+JS_SOURCE := js/core.js
 SRCFILES := $(shell git ls-files src/)
 TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e

@@ -2,11 +2,14 @@
 
 #include "./module.h"
 
+#include <unistd.h>  // for access(2)
+#include <glog/logging.h>
 #include <v8.h>
 #include <map>
 #include <string>
 
 #include "./assert.h"
+#include "./js.h"
 
 using v8::Function;
 using v8::FunctionTemplate;
@@ -15,6 +18,7 @@ using v8::Integer;
 using v8::Local;
 using v8::Object;
 using v8::Persistent;
+using v8::Script;
 using v8::String;
 using v8::Undefined;
 
@@ -24,7 +28,7 @@ std::map<std::string, Persistent<Object> > modules_;
 }
 
 namespace e {
-void DeclareModule(const std::string &name, ModuleBuilder builder) {
+void DeclareBuiltinModule(const std::string &name, ModuleBuilder builder) {
   auto it = builders_.find(name);
   ASSERT(it == builders_.end());
   builders_[name] = builder;
@@ -34,6 +38,7 @@ Persistent<Value> GetModule(const std::string &name) {
   // first check the module cache
   auto m = modules_.find(name);
   if (m != modules_.end()) {
+    LOG(INFO) << "loading module \"" << name << "\" from module cache";
     return m->second;
   }
 
@@ -42,6 +47,7 @@ Persistent<Value> GetModule(const std::string &name) {
   auto b = builders_.find(name);
   if (b != builders_.end()) {
     // we have a builder, build the module and cache it
+    LOG(INFO) << "loading builtin module \"" << name << "\"";
     Local<Object> module_obj = Object::New();
     ASSERT(b->second(module_obj));
     Persistent<Object> p = Persistent<Object>::New(module_obj);
@@ -50,7 +56,37 @@ Persistent<Value> GetModule(const std::string &name) {
   }
 
   // next check the filesystem
-  return Persistent<Value>::New(Undefined());
+  if (access(name.c_str(), R_OK) == 0) {
+    LOG(INFO) << "loading module \"" << name << "\" from filesystem";
+    Persistent<Object> p;
+    String::Utf8Value src(js::ReadFile(name, false));
+    if (src.length()) {
+      std::string wrap_prefix = "(function(){\"use strict\";var exports={};\n";
+      std::string wrap_suffix = "return exports;})()";
+
+      std::string s(*src, src.length());
+
+      std::string wrapped = wrap_prefix + s + wrap_suffix;
+      Local<String> wrapped_src = String::New(wrapped.c_str(),
+                                              wrapped.length());
+
+      Local<String> script_name = String::New(name.c_str(), name.length());
+      Local<Script> scr = Script::New(wrapped_src, script_name);
+
+      Local<Value> val = scr->Run();
+      p = Persistent<Object>::New(val->ToObject());
+    } else {
+      // the source file was empty; just return an empty object
+      p = Persistent<Object>::New(Object::New());
+    }
+    modules_[name] = p;
+    return p;
+  }
+
+  // the file couldn't be found; (don't cache the result)
+  LOG(INFO) << "failed to find module \"" << name << "\", returning undefined";
+  Persistent<Value> p = Persistent<Value>::New(Undefined());
+  return p;
 }
 
 void AddAccessor(Handle<Object> obj, const std::string &name,

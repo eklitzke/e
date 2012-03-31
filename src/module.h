@@ -15,11 +15,25 @@ using v8::Value;
 namespace e {
 typedef bool (*ModuleBuilder)(Handle<Object>);
 
-void DeclareModule(const std::string &name, ModuleBuilder builder);
+// Declare a builtin module; unless you *really* know what you're doing, this
+// function should only be called from InitializeBuiltinModules() in
+// module_decl.cc.
+void DeclareBuiltinModule(const std::string &name, ModuleBuilder builder);
+
+// Load a module; this could be a builtin module or a module that should be
+// loaded from the filesystem. After the module has been loaded it will be added
+// to an internal module cache, and future accesses for that module will return
+// the module from the cache.
 Persistent<Value> GetModule(const std::string &name);
+
+// Add an accessor to a module dictionary (useful for builtin modules)
 void AddAccessor(Handle<Object>, const std::string &,
                  v8::AccessorGetter, v8::AccessorSetter = nullptr);
+
+// Add a function to a module dictionary (useful for builtin modules)
 void AddFunction(Handle<Object>, const std::string&, v8::InvocationCallback);
+
+// Add a static integer to a module dictionary (useful for builtin modules)
 void AddInteger(Handle<Object>, const std::string&, int);
 }
 #endif  // SRC_MODULE_H_

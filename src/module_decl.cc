@@ -16,9 +16,9 @@ namespace e {
 void InitializeBuiltinModules() {
   ASSERT(is_initialized == false);
   is_initialized = true;
-  DeclareModule("curses", &e::js_curses::Build);
-  DeclareModule("errno", &e::js_errno::Build);
-  DeclareModule("signal", &e::js_signal::Build);
-  DeclareModule("sys", &e::js_sys::Build);
+  DeclareBuiltinModule("curses", &e::js_curses::Build);
+  DeclareBuiltinModule("errno", &e::js_errno::Build);
+  DeclareBuiltinModule("signal", &e::js_signal::Build);
+  DeclareBuiltinModule("sys", &e::js_sys::Build);
 }
 }

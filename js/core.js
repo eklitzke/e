@@ -528,3 +528,5 @@ world.addEventListener("keypress", function (e) {
 world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
+
+core.parser = require("js/parser.js").parser;
