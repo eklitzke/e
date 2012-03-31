@@ -6,6 +6,7 @@
 build/
 docs/
 e
+opt
 src/bundled_core.cc
 src/bundled_core.h
 src/keycode.cc
