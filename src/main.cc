@@ -1,12 +1,8 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include <unistd.h>
-
-#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <glog/logging.h>
 
-#include "./assert.h"
 #include "./curses_window.h"
 #include "./flags.h"
 #include "./list_environment.h"
