@@ -11,6 +11,7 @@
 #include <glog/logging.h>
 #include <glog/log_severity.h>
 
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -66,9 +67,28 @@ void ShowBacktrace(void) {
 
 void PrintAssertThenExit(const char *exprname, const char *filename, int line) {
   EndCurses();
-  printf("Assertion failed <%s:%d>: %s\n(errno is %d)\n\n",
-         filename, line, exprname, errno);
+  fprintf(stderr, "Assertion failed <%s:%d>: %s\n(errno is %d)\n\n",
+          filename, line, exprname, errno);
   ShowBacktrace();
+  google::FlushLogFiles(google::INFO);
+  exit(EXIT_FAILURE);
+}
+
+void Panic(const char *msg, ...) {
+  EndCurses();
+
+  // print the error message
+  va_list ap;
+  va_start(ap, msg);
+  vfprintf(stderr, msg, ap);
+
+  // ensure the msg ends with a newline
+  size_t len = strlen(msg);
+  if (!len || msg[len - 1] != '\n') {
+    fputc('\n', stderr);
+  }
+
+  // flush logs and exit
   google::FlushLogFiles(google::INFO);
   exit(EXIT_FAILURE);
 }

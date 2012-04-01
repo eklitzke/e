@@ -20,6 +20,7 @@ using v8::External;
 using v8::Handle;
 using v8::HandleScope;
 using v8::Integer;
+using v8::Message;
 using v8::Object;
 using v8::Script;
 using v8::StackFrame;
@@ -28,7 +29,45 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
+namespace {
+bool fudge_errors = false;
+}
+
 namespace e {
+void SetFudgeErrorLines(bool fudge) {
+  fudge_errors = fudge;
+}
+
+void HandleError(const TryCatch &try_catch) {
+  HandleScope scope;
+  if (try_catch.HasCaught()) {
+    Local<Value> exc = try_catch.Exception();
+    Local<Message> message = try_catch.Message();
+    String::AsciiValue exception_str(exc);
+    if (!message.IsEmpty()) {
+      Handle<StackTrace> trace = message->GetStackTrace();
+      if (!trace.IsEmpty()) {
+        Local<StackFrame> top = trace->GetFrame(0);
+        String::Utf8Value script_name(top->GetScriptName());
+        int line_no = top->GetLineNumber();
+        if (fudge_errors) {
+          line_no--;
+        }
+        Panic("<%s:%d>: %s\n", *script_name, line_no, *exception_str);
+      } else {
+        int line_no = message->GetLineNumber();
+        if (fudge_errors) {
+          line_no--;
+        }
+        Panic("<unknown:%d>: %s\n", line_no, *exception_str);
+      }
+    } else {
+      Panic("<unknown>: %s\n", *exception_str);
+    }
+    assert(false);  // one of the above should have panicked
+  }
+}
+
 namespace js {
 // Reads a file into a v8 string.
 Handle<String> ReadFile(const std::string& name, bool prefix_use_strict) {

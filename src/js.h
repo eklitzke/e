@@ -21,6 +21,7 @@ using v8::Object;
 using v8::ObjectTemplate;
 using v8::Persistent;
 using v8::String;
+using v8::TryCatch;
 using v8::Value;
 
 #define CHECK_ARGS(num) if (args.Length() < num) {  \
@@ -49,9 +50,11 @@ Handle<Value> JSAssert(const Arguments& args);
 Handle<Value> JSLog(const Arguments& args);
 Handle<Value> JSRequire(const Arguments& args);
 std::string ValueToString(Local<Value>);
-
-std::map<std::string, JSCallback> GetCallbacks();  // all of the callbacks
 }
+
+// Handle caught errors
+void SetFudgeErrorLines(bool fudge);
+void HandleError(const TryCatch&);
 }
 
 #endif  // SRC_JS_H_

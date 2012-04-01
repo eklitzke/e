@@ -134,8 +134,10 @@ void State::LoadScript(bool run,
     // exceptions.
     if (!vm().count("skip-core")) {
       LOG(INFO) << "loading builtin core.js";
-      Local<Script> core_scr = GetCoreScript();
-      core_scr->Run();
+      Local<Script> script = GetCoreScript();
+      TryCatch trycatch;
+      script->Run();
+      HandleError(trycatch);
       LOG(INFO) << "finished loading builtin core.js";
     }
 
@@ -146,21 +148,9 @@ void State::LoadScript(bool run,
       Handle<String> source = js::ReadFile(*it);
       Handle<Script> scr = Script::New(
           source, String::New(it->c_str(), it->size()));
-      if (scr.IsEmpty()) {
-        Handle<Value> exception = trycatch.Exception();
-        String::AsciiValue exception_str(exception);
-        fprintf(stderr, "Exception: %s\n", *exception_str);
-        bail = true;
-        break;
-      }
-      Handle<Value> v = scr->Run();
-      if (v.IsEmpty()) {
-        Handle<Value> exception = trycatch.Exception();
-        String::AsciiValue exception_str(exception);
-        fprintf(stderr, "Exception: %s\n", *exception_str);
-        bail = true;
-        break;
-      }
+      HandleError(trycatch);
+      scr->Run();
+      HandleError(trycatch);
       LOG(INFO) << "finished loading additional script \"" << *it << "\"";
     }
   }
@@ -181,8 +171,11 @@ bool State::HandleKey(KeyCode *k) {
 
   std::vector<Handle<Value> > args;
   args.push_back(k->ToScript());
+  TryCatch trycatch;
   listener_.Dispatch("keypress", args);
+  HandleError(trycatch);
   listener_.Dispatch("after_keypress", args);
+  HandleError(trycatch);
 
   return keep_going;
 }

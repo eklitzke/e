@@ -21,6 +21,7 @@ using v8::Object;
 using v8::Persistent;
 using v8::Script;
 using v8::String;
+using v8::TryCatch;
 using v8::Undefined;
 
 namespace {
@@ -91,9 +92,14 @@ Persistent<Value> GetModule(const std::string &name) {
     std::string wrapped = wrap_prefix + s + wrap_suffix;
     Local<String> wrapped_src = String::New(wrapped.c_str(), wrapped.length());
     Local<String> script_name = String::New(name.c_str(), name.length());
+    TryCatch trycatch;
+    SetFudgeErrorLines(true);
     Local<Script> scr = Script::New(wrapped_src, script_name);
+    HandleError(trycatch);
     Local<Value> val = scr->Run();
+    HandleError(trycatch);
     Persistent<Object> p = Persistent<Object>::New(val->ToObject());
+    SetFudgeErrorLines(false);
     modules_[name] = p;
     return p;
   }
