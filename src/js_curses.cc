@@ -185,9 +185,7 @@ Handle<Value> CursesNewwin(const Arguments& args) {
   int begin_y = static_cast<int>(args[2]->Int32Value());
   int begin_x = static_cast<int>(args[3]->Int32Value());
 
-  LOG(INFO) << "calling newwin";
   WINDOW *w = newwin(nlines, ncols, begin_y, begin_x);
-  LOG(INFO) << "new window is " << w;
   e::JSCursesWindow *cw = new e::JSCursesWindow(w);
   return scope.Close(cw->ToScript());
 }

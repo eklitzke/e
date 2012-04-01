@@ -1,10 +1,19 @@
+// Copyright 2012, Evan Klitzke <evan@eklitzke.org>
+
 var curses = require("curses");
 var errno = require("errno");
 var signal = require("signal");
 var sys = require("sys");
 
-var core = { column: 0, line: 0 };
-core.parser = null;
+var EventListener = require("js/event_listener.js").EventListener;
+
+var core = {
+	column: 0,
+	line: 0,
+	curmode: "insert",
+	parser: null,
+	listeners: {},
+};
 
 /**
  * Adds a function to the core object, and adds a displayName attribute.
@@ -366,8 +375,35 @@ world.addEventListener("load", function (event) {
 	core.updateAllWindows();
 });
 
+// This method checks for Ctrl-C. We add it as its own top level handler to
+// prevent the editor from getting stuck from other JavaScript errors.
+world.addEventListener("keypress", function (event) {
+	if (event.getCode() == 3) {
+		log("Caught Ctrl-C, stopping the main loop");
+		world.stopLoop();
+	}
+});
+
 // Core routine called on each keypress
 world.addEventListener("keypress", function (event) {
+	log("curmode is " + core.curmode);
+	switch (core.curmode) {
+	case "insert":
+		core.listeners.insert = core.listeners.insert || new EventListener();
+		core.listeners.insert.dispatch("keypress", event);
+		break;
+	default:
+		assert(false, "Unknown core.curmode \"" + core.curmode + "\"");
+		break;
+	}
+});
+
+core.addKeypressListener = function (mode, handler) {
+	core.listeners[mode] = core.listeners[mode] || new EventListener();
+	core.listeners[mode].addEventListener("keypress", handler);
+};
+
+core.addKeypressListener("insert", function (_, event) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
@@ -381,8 +417,7 @@ world.addEventListener("keypress", function (event) {
 			core.move.left();
 			break;
 		case 3: // Ctrl-C
-			log("calling world.stopLoop()");
-			world.stopLoop();
+			// this should have been handled already
 			break;
 		case 5: // Ctrl-E
 			core.move.right();

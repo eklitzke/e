@@ -134,8 +134,9 @@ void State::LoadScript(bool run,
     // exceptions.
     if (!vm().count("skip-core")) {
       LOG(INFO) << "loading builtin core.js";
-      Local<Script> script = GetCoreScript();
       TryCatch trycatch;
+      Local<Script> script = GetCoreScript();
+      HandleError(trycatch);
       script->Run();
       HandleError(trycatch);
       LOG(INFO) << "finished loading builtin core.js";

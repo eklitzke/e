@@ -81,7 +81,6 @@ using v8::Value;
 namespace e {
 JSCursesWindow::JSCursesWindow(WINDOW *win)
     :window_(win) {
-  LOG(INFO) << "creating new window, *win = " << win;
   idlok(win, true);
   wnoutrefresh(win);
 }
@@ -280,9 +279,7 @@ Handle<Value> JSSubwin(const Arguments& args) {
   int begin_y = static_cast<int>(args[2]->Int32Value());
   int begin_x = static_cast<int>(args[3]->Int32Value());
 
-  LOG(INFO) << "calling subwin";
   WINDOW *w = subwin(other->window_, nlines, ncols, begin_y, begin_x);
-  LOG(INFO) << "new window is " << w;
   JSCursesWindow *cw = new JSCursesWindow(w);
   return scope.Close(cw->ToScript());
 }

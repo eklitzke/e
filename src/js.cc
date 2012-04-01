@@ -144,9 +144,10 @@ Handle<Value> JSAssert(const Arguments& args) {
       Local<Value> msg = args[1];
       String::Utf8Value value(msg);
       LOG(INFO) << "Assertion failed: " << (*value);
-      google::FlushLogFiles(google::INFO);
+      Panic("JavaScript assert() failed: %s", *value);
+    } else {
+      Panic("JavaScript assert() failed (no error message was provided)");
     }
-    exit(EXIT_FAILURE);
   }
   return Undefined();
 }
