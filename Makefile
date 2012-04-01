@@ -29,7 +29,7 @@ docs/jsdoc.html: scripts/gen_js_docs.py e docs
 $(JSMIN): $(JSMIN).c
 	$(CC) -Os $< -o $@
 
-$(BUNDLED_JS): scripts/gen_bundled_core.py $(JSMIN) $(JS_SOURCE)
+$(BUNDLED_JS): scripts/gen_bundled_core.py scripts/precompile $(JSMIN) $(JS_SOURCE)
 	python $< js/core.js
 
 $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps
@@ -58,5 +58,8 @@ opt: $(TARGET)
 
 test: $(TEST_TARGET)
 	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(TEST_TARGET) $@; echo " done!"; fi
+
+scripts/precompile: scripts/precompile.cc
+	g++ -lv8 $< -o $@
 
 .PHONY: all clean lint test

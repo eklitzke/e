@@ -6,6 +6,7 @@ build/
 docs/
 e
 opt
+scripts/precompile
 src/.bundled_core
 src/bundled_core.cc
 src/bundled_core.h
