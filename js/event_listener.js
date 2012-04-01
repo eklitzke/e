@@ -20,7 +20,6 @@ var removeListener = function (callbacks, name, callback) {
 };
 
 var dispatch = function (obj, name, args) {
-	log("dispatching", true);
 	var list = obj[name] || [];
 	for (var i = 0; i < list.length; i++) {
 		var callback = list[i];
@@ -39,10 +38,8 @@ var EventListener = function () {
 
 // add a callback to the event listener
 EventListener.prototype.addEventListener = function (name, callback, use_capture) {
-	log("adding a listener, name is \"" + name + "\"", true);
 	var list = use_capture ? this.captures : this.bubbles;
 	addListener(list, name, callback);
-	log("now the list has " + list[name].length + " listeners", true);
 };
 
 // remove a callback from the event listener

@@ -4,12 +4,15 @@ var curses = require("curses");
 var errno = require("errno");
 var signal = require("signal");
 var sys = require("sys");
+var setInterval = require("js/timers.js").setInterval;
 
 var EventListener = require("js/event_listener.js").EventListener;
 
 var core = {
 	column: 0,
 	line: 0,
+	inEscape: false, // true when part of an escape sequence
+	viMode: true,
 	logContents: false, // when true, log the file contents after each keypress
 	curmode: "insert",
 	parser: require("js/parser.js").parser,
@@ -304,20 +307,42 @@ core.addFunction("drawStatus", function () {
 		ratio = 100;
 	}
 	ratio = parseInt(ratio);
-	tabStr += "  (" + ratio + "%)  ";
+	tabStr += "  (" + ratio + "%)";
 
 	core.windows.status.addstr(tabStr);
 
+	var fmtTime = function (n) {
+		if (n < 10) {
+			return new String("0" + n);
+		} else {
+			return new String(n);
+		}
+	};
+	var statusEnd = "mode: " + core.curmode + "     ";
+	var d = new Date();
+	statusEnd += (fmtTime(d.getHours()) + ":" +
+				  fmtTime(d.getMinutes()) + ":" +
+				  fmtTime(d.getSeconds()) + " ");
+
+	var spacesNeeded = (core.windows.status.getmaxx() -
+						core.windows.status.getcurx() -
+						statusEnd.length);
 	var spaces = "";
-	var curx = core.windows.status.getcurx();
-	var maxx = core.windows.status.getmaxx();
-	while (spaces.length < maxx - curx) {
+	for (var i = 0; i < spacesNeeded; i++) {
 		spaces += " ";
 	}
 	core.windows.status.addstr(spaces);
+	core.windows.status.addstr(statusEnd);
 	core.windows.status.standend();
 	core.moveAbsolute(core.windows.buffer.getcury(), core.column);
 });
+
+// call drawStatus() once a second, and update all of the windows; this ensures
+// that the clock in the corner is refreshed
+setInterval(function () {
+	core.drawStatus();
+	core.updateAllWindows();
+}, 1000);
 
 core.addFunction("updateAllWindows", function (doupdate) {
 	if (doupdate === undefined) {
@@ -539,6 +564,21 @@ core.addKeypressListener("insert", function (event) {
 	}
 });
 
+// The main keypress listener for command mode.
+core.addKeypressListener("command", function (event) {
+	var code = event.getCode();
+	var wch = event.getChar();
+	switch (wch) {
+	case 'a':
+	case 'A':
+	case 'i':
+	case 'I':
+	case 'o':
+	case 'O':
+		core.curmode = "insert";
+	}
+});
+
 // This method checks for Ctrl-C. We add it as its own top level handler to
 // prevent the editor from getting "stuck" due other JavaScript errors (IOW, no
 // matter what else happens you'll be able to exit using Ctrl-C).
@@ -553,15 +593,30 @@ world.addEventListener("keypress", function (event) {
 // listeners registered by core.addKeypressListener (see the comments at that
 // function for the details).
 world.addEventListener("keypress", function (event) {
-	log("curmode is " + core.curmode);
-	switch (core.curmode) {
-	case "insert":
-		core.listeners.insert = core.listeners.insert || new EventListener();
-		core.listeners.insert.dispatch("keypress", event);
+	var code = event.getCode();
+
+	// Escape sequences are sent as two separate characters. For instance, if
+	// you type M-x (the "Alt" key followed by the letter 'x'), the sequence
+	// sent to the terminal is the two character sequence ^[ x.
+	//
+	// When the character ^[ is sent we set core.inEscape to true, and skip any
+	// other processing. After the next character is entered and handled
+	// core.inEscape will be reset to false.
+	var setEscape = false;
+	switch (code) {
+	case 27: // ^[ a.k.a. Ctrl-[ a.k.a. escape
+		if (core.viMode) {
+			core.curmode = "command";
+		} else {
+			core.inEscape = true;
+		}
+		setEscape = true;
 		break;
-	default:
-		assert(false, "Unknown core.curmode \"" + core.curmode + "\"");
-		break;
+	}
+	if (!setEscape) {
+		var listener = core.listeners[core.curmode] || new EventListener();
+		listener.dispatch("keypress", event);
+		core.inEscape = false;
 	}
 
 	// refresh the status bar

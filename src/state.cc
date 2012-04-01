@@ -2,6 +2,8 @@
 
 #include "./state.h"
 
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <v8.h>
 #include <glog/logging.h>
 
@@ -10,6 +12,7 @@
 #include "./bundled_core.h"
 #include "./embeddable.h"
 #include "./flags.h"
+#include "./io_service.h"
 #include "./js.h"
 #include "./module_decl.h"
 
@@ -36,6 +39,7 @@ using v8::Undefined;
 using v8::Value;
 
 namespace {
+std::set<boost::asio::deadline_timer *> timers_;
 bool keep_going = true;
 
 // @class: world
@@ -53,6 +57,48 @@ bool keep_going = true;
 // @description: Stops the event loop.
 Handle<Value> JSStopLoop(const Arguments& args) {
   keep_going = false;
+  for (auto it = timers_.begin(); it != timers_.end(); ++it) {
+    boost::asio::deadline_timer *timer = *it;
+    timer->cancel();
+    ASSERT(timers_.erase(timer) == 1);
+    delete timer;
+  }
+  GetIOService()->stop();
+  return Undefined();
+}
+
+void TimeoutHandler(boost::asio::deadline_timer *timer,
+                    Persistent<Object> func,
+                    const boost::system::error_code& error) {
+  HandleScope scope;
+  TryCatch tr;
+  Local<Object> this_argument = Object::New();
+  func->CallAsFunction(this_argument, 0, nullptr);
+  HandleError(tr);
+  func.Dispose();
+  ASSERT(timers_.erase(timer) == 1);
+  delete timer;
+  google::FlushLogFiles(google::INFO);
+}
+
+// @method: setTimeout
+// @description: run code after a timeout (setInterval is implemented in JS)
+Handle<Value> JSSetTimeout(const Arguments& args) {
+  CHECK_ARGS(2);
+  Handle<Value> val = args[0];
+  uint32_t millis = args[1]->Uint32Value();
+
+  Local<Object> obj = val->ToObject();
+  if (obj->IsCallable()) {
+    Persistent<Object> func = Persistent<Object>::New(obj);
+    auto timer = new boost::asio::deadline_timer(*GetIOService());
+    timers_.insert(timer);
+    timer->expires_from_now(boost::posix_time::milliseconds(millis));
+    timer->async_wait(boost::bind(TimeoutHandler,
+                                  timer,
+                                  func,
+                                  boost::asio::placeholders::error));
+  }
   return Undefined();
 }
 
@@ -103,6 +149,8 @@ void State::LoadScript(bool run,
               FunctionTemplate::New(js::JSLog), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(js::JSRequire), v8::ReadOnly);
+  global->Set(String::NewSymbol("setTimeout"),
+              FunctionTemplate::New(JSSetTimeout), v8::ReadOnly);
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);

@@ -17,6 +17,7 @@
 #include "./assert.h"
 #include "./curses_low_level.h"
 #include "./flags.h"
+#include "./io_service.h"
 #include "./keycode.h"
 #include "./js_curses_window.h"
 
@@ -30,7 +31,7 @@ bool UseAsio() {
 CursesWindow::CursesWindow(const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
     :state_(scripts, files), window_(nullptr), args_(files),
-     term_in_(io_service_) {
+     term_in_(*GetIOService()) {
 }
 
 void CursesWindow::Initialize() {
@@ -119,7 +120,7 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
 
   if (UseAsio()) {
     EstablishReadLoop();
-    io_service_.run();
+    GetIOService()->run();
   } else {
     while (InnerOnRead()) { }
   }

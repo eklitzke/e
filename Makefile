@@ -1,6 +1,6 @@
 CC := gcc
 JSMIN := third_party/jsmin
-JS_SOURCE := js/core.js
+JS_SOURCE := $(shell git ls-files js/)
 SRCFILES := $(shell git ls-files src/)
 TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
@@ -30,7 +30,7 @@ $(JSMIN): $(JSMIN).c
 	$(CC) -Os $< -o $@
 
 $(BUNDLED_JS): scripts/gen_bundled_core.py $(JSMIN) $(JS_SOURCE)
-	python $< $(JS_SOURCE)
+	python $< js/core.js
 
 $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps
 	python $^

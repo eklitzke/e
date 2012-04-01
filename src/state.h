@@ -18,8 +18,6 @@
 #include "./event_listener.h"
 #include "./keycode.h"
 
-namespace e {
-
 using v8::Arguments;
 using v8::Context;
 using v8::Function;
@@ -27,6 +25,8 @@ using v8::Handle;
 using v8::Persistent;
 using v8::Script;
 using v8::Value;
+
+namespace e {
 
 class State {
  public:

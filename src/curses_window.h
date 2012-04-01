@@ -26,7 +26,6 @@ class CursesWindow {
   State state_;
   WINDOW *window_;
   std::vector<std::string> args_;
-  boost::asio::io_service io_service_;
   boost::asio::posix::stream_descriptor term_in_;
 
   void InnerLoop(v8::Persistent<v8::Context>);

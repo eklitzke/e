@@ -27,6 +27,7 @@
             'src/embeddable.cc',
             'src/event_listener.cc',
             'src/flags.cc',
+            'src/io_service.cc',
             'src/js.cc',
             'src/js_curses.cc',
             'src/js_curses_window.cc',
