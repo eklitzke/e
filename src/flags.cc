@@ -5,7 +5,6 @@
 
 namespace po = boost::program_options;
 
-namespace e {
 namespace {
 po::variables_map vm_;
 
@@ -15,6 +14,7 @@ void PrintDescription(const po::options_description &desc,
 }
 }
 
+namespace e {
 int ParseOptions(int argc, char **argv) {
   po::options_description help_desc("Help options");
   help_desc.add_options()
