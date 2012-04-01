@@ -319,11 +319,10 @@ core.addFunction("drawStatus", function () {
 			return new String(n);
 		}
 	};
-	var statusEnd = "mode: " + core.curmode + "     ";
 	var d = new Date();
-	statusEnd += (fmtTime(d.getHours()) + ":" +
-				  fmtTime(d.getMinutes()) + ":" +
-				  fmtTime(d.getSeconds()) + " ");
+	var statusEnd = (fmtTime(d.getHours()) + ":" +
+					 fmtTime(d.getMinutes()) + ":" +
+					 fmtTime(d.getSeconds()) + " ");
 
 	var spacesNeeded = (core.windows.status.getmaxx() -
 						core.windows.status.getcurx() -
@@ -336,12 +335,27 @@ core.addFunction("drawStatus", function () {
 	core.windows.status.addstr(statusEnd);
 	core.windows.status.standend();
 
+	// resetCursor is true if we ultimately need to reset the cursor, or false
+	// if we don't want to reset it (i.e. to keep it in the status area)
+	var resetCursor = true;
+
 	// draw the exBuffer (: commands in vi-mode)
 	core.windows.status.move(1, 0);
 	core.windows.status.clrtoeol();
-	core.windows.status.mvaddstr(1, 0, core.exBuffer);
+	if (core.exBuffer) {
+		core.windows.status.mvaddstr(1, 0, core.exBuffer);
+		curses.move(curses.stdscr.getmaxy() - 1, core.exBuffer.length);
+		resetCursor = false;
+	} else if (core.curmode == "insert") {
+		core.windows.status.attron(curses.A_BOLD);
+		core.windows.status.mvaddstr(1, 0, "-- INSERT --");
+		core.windows.status.attroff(curses.A_BOLD);
+	}
 
-	core.moveAbsolute(core.windows.buffer.getcury(), core.column);
+	if (resetCursor) {
+		// move the cursor back to the main editing buffer
+		core.moveAbsolute(core.windows.buffer.getcury(), core.column);
+	}
 });
 
 // call drawStatus() once a second, and update all of the windows; this ensures
