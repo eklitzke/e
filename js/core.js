@@ -14,7 +14,7 @@ var core = {
 	inEscape: false, // true when part of an escape sequence
 	viMode: true,
 	logContents: false, // when true, log the file contents after each keypress
-	curmode: "insert",
+	curmode: "command",
 	parser: require("js/parser.js").parser,
 	listeners: {},
 };
@@ -568,14 +568,43 @@ core.addKeypressListener("insert", function (event) {
 core.addKeypressListener("command", function (event) {
 	var code = event.getCode();
 	var wch = event.getChar();
+
+	var enterInsert = function () {
+		core.curmode = "insert";
+	};
 	switch (wch) {
 	case 'a':
 	case 'A':
+		enterInsert();
+		break;
+	case 'c':
+	case 'C':
+		enterInsert();
+		break;
+	case 'h':
+		core.move(0, -1);
+		break;
+	case 'j':
+		core.move(1);
+		break;
+	case 'k':
+		core.move(-1);
+		break;
+	case 'l':
+		core.move(0, 1);
+		break;
 	case 'i':
 	case 'I':
+		enterInsert();
+		break;
 	case 'o':
 	case 'O':
-		core.curmode = "insert";
+		enterInsert();
+		break;
+	case 's':
+	case 'S':
+		enterInsert();
+		break;
 	}
 });
 
