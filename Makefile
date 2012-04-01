@@ -1,6 +1,7 @@
-CC := gcc
+CC := g++
 JSMIN := third_party/jsmin
 JS_SOURCE := $(shell git ls-files js/)
+PRECOMPILE := scripts/precompile
 SRCFILES := $(shell git ls-files src/)
 TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
@@ -14,7 +15,7 @@ all: docs/jsdoc.html
 
 clean:
 	rm -rf $(JSMIN) build/out/ build/src/ docs/
-	rm -rf $(BUNDLED_JS) $(REAL_BUNDLED_JS)
+	rm -rf $(BUNDLED_JS) $(REAL_BUNDLED_JS) scripts/precompile
 	rm -rf $(KEYCODE_FILES)
 	rm -rf e opt test
 
@@ -28,6 +29,11 @@ docs/jsdoc.html: scripts/gen_js_docs.py e docs
 
 $(JSMIN): $(JSMIN).c
 	$(CC) -Os $< -o $@
+	@strip -s $@
+
+$(PRECOMPILE): $(PRECOMPILE).cc
+	$(CC) -Os -lv8 $< -o $@
+	@strip -s $@
 
 $(BUNDLED_JS): scripts/gen_bundled_core.py scripts/precompile $(JSMIN) $(JS_SOURCE)
 	python $< js/core.js
@@ -58,8 +64,5 @@ opt: $(TARGET)
 
 test: $(TEST_TARGET)
 	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(TEST_TARGET) $@; echo " done!"; fi
-
-scripts/precompile: scripts/precompile.cc
-	g++ -lv8 $< -o $@
 
 .PHONY: all clean lint test
