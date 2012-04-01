@@ -53,7 +53,6 @@ std::string ValueToString(Local<Value>);
 }
 
 // Handle caught errors
-void SetFudgeErrorLines(bool fudge);
 void HandleError(const TryCatch&);
 }
 

@@ -29,15 +29,7 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
-namespace {
-bool fudge_errors = false;
-}
-
 namespace e {
-void SetFudgeErrorLines(bool fudge) {
-  fudge_errors = fudge;
-}
-
 void HandleError(const TryCatch &try_catch) {
   HandleScope scope;
   if (try_catch.HasCaught()) {
@@ -50,15 +42,9 @@ void HandleError(const TryCatch &try_catch) {
         Local<StackFrame> top = trace->GetFrame(0);
         String::Utf8Value script_name(top->GetScriptName());
         int line_no = top->GetLineNumber();
-        if (fudge_errors) {
-          line_no--;
-        }
         Panic("<%s:%d>: %s\n", *script_name, line_no, *exception_str);
       } else {
         int line_no = message->GetLineNumber();
-        if (fudge_errors) {
-          line_no--;
-        }
         Panic("<unknown:%d>: %s\n", line_no, *exception_str);
       }
     } else {

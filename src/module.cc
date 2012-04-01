@@ -32,8 +32,8 @@ std::set<std::string> module_stack_;
 // Modules are implemented by implicitly wrapping the contained code in an
 // anonymous function declaring an `exports' variable. These strings contain the
 // prefix and suffix code that's used to wrap the module code.
-std::string wrap_prefix = "(function(){\"use strict\";var exports={};\n";
-std::string wrap_suffix = "return exports;})()";
+std::string wrap_prefix = "(function(){\"use strict\";var exports={};";
+std::string wrap_suffix = ";return exports;})()";
 
 // This class ensures that circular references are dealt with while modules are
 // being loaded (currently it aborts when a circular reference is detected, but
@@ -93,13 +93,11 @@ Persistent<Value> GetModule(const std::string &name) {
     Local<String> wrapped_src = String::New(wrapped.c_str(), wrapped.length());
     Local<String> script_name = String::New(name.c_str(), name.length());
     TryCatch trycatch;
-    SetFudgeErrorLines(true);
     Local<Script> scr = Script::New(wrapped_src, script_name);
     HandleError(trycatch);
     Local<Value> val = scr->Run();
     HandleError(trycatch);
     Persistent<Object> p = Persistent<Object>::New(val->ToObject());
-    SetFudgeErrorLines(false);
     modules_[name] = p;
     return p;
   }

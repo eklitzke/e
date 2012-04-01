@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import optparse
 import pprint
+import re
 import subprocess
 import sys
 import urllib
@@ -56,6 +57,30 @@ v8::Local<v8::Script> GetCoreScript() {
   return scope.Close(script);
 }
 }"""
+
+builtin_modules = frozenset(['curses', 'errno', 'signal', 'sys'])
+require_regex = re.compile('require\\(["\'](.*?)["\']\\)', re.MULTILINE)
+
+def expand_requires(contents):
+    offset = 0
+    while True:
+        m = require_regex.search(contents, offset)
+        if not m:
+            break
+        fname = m.groups()[0]
+        if fname in builtin_modules:
+            offset = m.end()
+            continue
+
+        prefix = contents[:m.start()]
+        suffix = contents[m.end():]
+
+        with open(m.groups()[0]) as f:
+            f_contents = f.read()
+        contents = (prefix + "(function(){\"use strict\";var exports={};" +
+                    f_contents + ";return exports;})()" + suffix)
+        offset = m.start()
+    return contents
 
 def get_closure_code(code, use_advanced=False):
     request_params = [
@@ -160,6 +185,8 @@ if __name__ == '__main__':
                       'requires network access).')
     parser.add_option('--use-py-jsmin', default=False, action='store_true',
                       help='Use V8\'s jsmin instead of Douglas Crockford\'s')
+    parser.add_option('--no-expand-requires', dest='expand_requires', default=True,
+                      action='store_false', help="Don't expand requires()")
     parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings.')
     parser.add_option('-s', '--statistics', action='store_true', help='Get statistics.')
     parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit.')
@@ -173,7 +200,9 @@ if __name__ == '__main__':
     for filename in args:
         with open(filename) as f:
             code.append(f.read())
-    code = '\n'.join(code)
+    code = '\n'.join(code).strip()
+    if opts.expand_requires:
+        code = expand_requires(code)
 
     if opts.use_closure:
         code = get_closure_code(code, opts.advanced_optimizations)
