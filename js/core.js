@@ -624,7 +624,11 @@ core.addKeypressListener("command", function (event) {
 
 	switch (wch) {
 	case 'a':
+		core.move(0, 1);
+		core.curmode = "insert";
+		break;
 	case 'A':
+		core.move.right();
 		core.curmode = "insert";
 		break;
 	case 'c':
@@ -644,7 +648,10 @@ core.addKeypressListener("command", function (event) {
 		core.move(0, 1);
 		break;
 	case 'i':
+		core.curmode = "insert";
+		break;
 	case 'I':
+		core.move.left();
 		core.curmode = "insert";
 		break;
 	case 'o':
