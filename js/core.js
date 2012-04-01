@@ -636,6 +636,7 @@ world.addEventListener("keypress", function (event) {
 	case 27: // ^[ a.k.a. Ctrl-[ a.k.a. escape
 		if (core.viMode) {
 			core.curmode = "command";
+			core.move(0, -1);  // like vi
 		} else {
 			core.inEscape = true;
 		}
