@@ -5,8 +5,9 @@
 #define SRC_ASSERT_H_
 
 namespace e {
-// Halt execution and exit with an error code.
-void Panic(const char *msg, ...);
+// Halt execution and exit with an error code. Takes a format message and
+// arguments exactly identical to printf.
+void Panic(const char *format, ...);
 
 // Like Panic(), but called by the ASSERT macro to log a traceback.
 void PrintAssertThenExit(const char *, const char *, int);

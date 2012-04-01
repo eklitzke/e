@@ -14,6 +14,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -74,17 +75,17 @@ void PrintAssertThenExit(const char *exprname, const char *filename, int line) {
   exit(EXIT_FAILURE);
 }
 
-void Panic(const char *msg, ...) {
+void Panic(const char *format, ...) {
   EndCurses();
 
   // print the error message
   va_list ap;
-  va_start(ap, msg);
-  vfprintf(stderr, msg, ap);
+  va_start(ap, format);
+  vfprintf(stderr, format, ap);
 
   // ensure the msg ends with a newline
-  size_t len = strlen(msg);
-  if (!len || msg[len - 1] != '\n') {
+  size_t len = strlen(format);
+  if (!len || format[len - 1] != '\n') {
     fputc('\n', stderr);
   }
 
