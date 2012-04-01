@@ -21,6 +21,12 @@ void InitializeCurses() {
     noecho();
     nonl();  // don't turn LF into CRLF
     raw();  // read characters one at a time, and allow Ctrl-C, Ctl-Z, etc.
+
+    // reduce ESCDELAY to 25ms (like vim)
+    if (getenv("ESCDELAY") == nullptr) {
+      ESCDELAY = 25;
+    }
+
     ASSERT(atexit(EndCurses) == 0);
   }
 }
