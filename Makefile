@@ -6,7 +6,7 @@ TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
 TEST_TARGET := build/out/Default/test
 TEMPLATES := $(shell echo scripts/templates/*.html)
-BUNDLED_JS = .bundled_core
+BUNDLED_JS = src/.bundled_core
 REAL_BUNDLED_JS = src/bundled_core.cc src/bundled_core.h
 KEYCODE_FILES = src/keycode.cc src/keycode.h
 

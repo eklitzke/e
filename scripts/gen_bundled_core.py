@@ -174,7 +174,7 @@ def write_output(code, output):
     # create a fake .bundled_core file to please `make'; the reason this is
     # necessary is because Make will get confused if we don't actually end up
     # updating the .h or .cc files
-    with open('.bundled_core', 'w') as b:
+    with open('src/.bundled_core', 'w') as b:
         pass
 
 if __name__ == '__main__':
