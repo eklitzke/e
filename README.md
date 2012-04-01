@@ -196,6 +196,13 @@ invoking `make` as
 which sets verbose build output. This will help you hunt down the exact
 compiler/linker errors.
 
+Building on Ubuntu
+------------------
+
+There's no simple way to build on Oneiric (11.10) due to
+[LP #900635](https://bugs.launchpad.net/ubuntu/+source/ncurses/+bug/900635). Patches
+accepted :-)
+
 Building on Mac OS X
 --------------------
 
