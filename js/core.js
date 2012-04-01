@@ -11,6 +11,7 @@ var EventListener = require("js/event_listener.js").EventListener;
 var core = {
 	column: 0,
 	line: 0,
+	exBuffer: '', // the buffer for : commands in vi-mode
 	inEscape: false, // true when part of an escape sequence
 	viMode: true,
 	logContents: false, // when true, log the file contents after each keypress
@@ -334,6 +335,12 @@ core.addFunction("drawStatus", function () {
 	core.windows.status.addstr(spaces);
 	core.windows.status.addstr(statusEnd);
 	core.windows.status.standend();
+
+	// draw the exBuffer (: commands in vi-mode)
+	core.windows.status.move(1, 0);
+	core.windows.status.clrtoeol();
+	core.windows.status.mvaddstr(1, 0, core.exBuffer);
+
 	core.moveAbsolute(core.windows.buffer.getcury(), core.column);
 });
 
@@ -569,6 +576,26 @@ core.addKeypressListener("command", function (event) {
 	var code = event.getCode();
 	var wch = event.getChar();
 
+	// we're in ex-mode
+	if (core.exBuffer.length) {
+		log("exBuffer is \"" + core.exBuffer + "\"");
+		if (code == 13) {
+			switch (core.exBuffer) {
+			case ":q":
+			case ":qa":
+			case ":q!":
+			case ":qa!":
+				world.stopLoop();
+				break;
+			}
+			core.exBuffer = "";
+		} else {
+			core.exBuffer += wch;
+		}
+		return;
+	}
+
+
 	var enterInsert = function () {
 		core.curmode = "insert";
 	};
@@ -605,6 +632,11 @@ core.addKeypressListener("command", function (event) {
 	case 'S':
 		enterInsert();
 		break;
+	case ':':
+		core.exBuffer = ":";
+		break;
+	default:
+		log("didn't know how to handle '" + wch + "' in command mode");
 	}
 });
 
