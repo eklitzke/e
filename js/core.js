@@ -11,6 +11,7 @@ var EventListener = require("js/event_listener.js").EventListener;
 var core = {
 	column: 0,
 	line: 0,
+	clockMode: "12", // 12 or 24
 	exBuffer: '', // the buffer for : commands in vi-mode
 	inEscape: false, // true when part of an escape sequence
 	viMode: true,
@@ -320,9 +321,21 @@ core.addFunction("drawStatus", function () {
 		}
 	};
 	var d = new Date();
-	var statusEnd = (fmtTime(d.getHours()) + ":" +
-					 fmtTime(d.getMinutes()) + ":" +
-					 fmtTime(d.getSeconds()) + " ");
+	var statusEnd = "";
+	if (core.clockMode == "12") {
+		var h = d.getHours();
+		var modifier = h < 12 ? "AM" : "PM";
+		if (h === 0) {
+			h = "12";
+		} else if (h > 12) {
+			h = fmtTime(h - 12);
+		} else {
+			h = fmtTime(h);
+		}
+		statusEnd = h + ":" + fmtTime(d.getMinutes()) + " " + modifier + " ";
+	} else {
+		statusEnd = fmtTime(d.getHours()) + ":" + fmtTime(d.getMinutes()) + " ";
+	}
 
 	var spacesNeeded = (core.windows.status.getmaxx() -
 						core.windows.status.getcurx() -
@@ -609,18 +622,14 @@ core.addKeypressListener("command", function (event) {
 		return;
 	}
 
-
-	var enterInsert = function () {
-		core.curmode = "insert";
-	};
 	switch (wch) {
 	case 'a':
 	case 'A':
-		enterInsert();
+		core.curmode = "insert";
 		break;
 	case 'c':
 	case 'C':
-		enterInsert();
+		core.curmode = "insert";
 		break;
 	case 'h':
 		core.move(0, -1);
@@ -636,15 +645,15 @@ core.addKeypressListener("command", function (event) {
 		break;
 	case 'i':
 	case 'I':
-		enterInsert();
+		core.curmode = "insert";
 		break;
 	case 'o':
 	case 'O':
-		enterInsert();
+		core.curmode = "insert";
 		break;
 	case 's':
 	case 'S':
-		enterInsert();
+		core.curmode = "insert";
 		break;
 	case ':':
 		core.exBuffer = ":";
@@ -722,4 +731,3 @@ world.addEventListener("keypress", function (event) {
 world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
-

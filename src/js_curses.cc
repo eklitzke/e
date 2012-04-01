@@ -69,7 +69,14 @@ CURSES_ACCESSOR(COLS)
 // @accessor: ESCDELAY
 // @description: The number of milliseconds ncurses will wait after reading an
 //               escape character
-CURSES_ACCESSOR(ESCDELAY)
+//
+// XXX: This is a non-portable ncurses extension. The "portable" way to do this
+// is to simply read the ESCDELAY global variable. This has the advantage of
+// being threadsafe, however.
+Handle<Value> JS_ESCDELAY(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  return scope.Close(Integer::New(get_escdelay()));
+}
 
 // @accessor: LINES
 // @description: The height of the screen (i.e. the number of lines).
