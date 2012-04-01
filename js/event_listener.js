@@ -63,7 +63,11 @@ EventListener.prototype.dispatch = function (eventName) {
 	};
 	var args = Array.prototype.slice.call(arguments)
 	args = args.slice(1);
-	args.unshift(event);
+
+	// right now the event is pretty useless so we don't actually add it in
+	if (false) {
+		args.unshift(event);
+	}
 
 	dispatch(this.captures, eventName, args);
 	dispatch(this.bubbles, eventName, args);

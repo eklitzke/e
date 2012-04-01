@@ -11,7 +11,7 @@ var core = {
 	column: 0,
 	line: 0,
 	curmode: "insert",
-	parser: null,
+	parser: require("js/parser.js").parser,
 	listeners: {},
 };
 
@@ -376,7 +376,8 @@ world.addEventListener("load", function (event) {
 });
 
 // This method checks for Ctrl-C. We add it as its own top level handler to
-// prevent the editor from getting stuck from other JavaScript errors.
+// prevent the editor from getting "stuck" due other JavaScript errors (IOW, no
+// matter what else happens you'll be able to exit using Ctrl-C).
 world.addEventListener("keypress", function (event) {
 	if (event.getCode() == 3) {
 		log("Caught Ctrl-C, stopping the main loop");
@@ -396,6 +397,9 @@ world.addEventListener("keypress", function (event) {
 		assert(false, "Unknown core.curmode \"" + core.curmode + "\"");
 		break;
 	}
+
+	// refresh the status bar
+	core.drawStatus();
 });
 
 core.addKeypressListener = function (mode, handler) {
@@ -403,7 +407,7 @@ core.addKeypressListener = function (mode, handler) {
 	core.listeners[mode].addEventListener("keypress", handler);
 };
 
-core.addKeypressListener("insert", function (_, event) {
+core.addKeypressListener("insert", function (event) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var code = event.getCode();
@@ -539,12 +543,8 @@ core.addKeypressListener("insert", function (_, event) {
 	}
 });
 
+/*
 world.addEventListener("keypress", function (e) {
-	core.drawStatus();
-});
-
-world.addEventListener("keypress", function (e) {
-	return;
 	log("");
 	log("<<<<<< START <<<<<<");
 	var lines = world.buffer.getContents();
@@ -553,6 +553,7 @@ world.addEventListener("keypress", function (e) {
 	}
 	log(">>>>>>> END >>>>>>>");
 });
+*/
 
 // This is the callback that specifically causes curses to flush all of its
 // drawing operations. It *must* be called after any functions that may do
@@ -564,4 +565,3 @@ world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
 
-core.parser = require("js/parser.js").parser;
