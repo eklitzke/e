@@ -243,17 +243,21 @@ core.move.left = function (updateBuffer) {
 	}
 };
 
-core.move.right = function (pastText, updateBuffer) {
+core.move.right = function (pastText, updateBuffer, extraDelta) {
 	pastText = core.toBool(pastText, false);
 	updateBuffer = core.toBool(updateBuffer, true);
+	extraDelta = extraDelta || 0;
 	var cury = core.windows.buffer.getcury();
 	var newx;
 	var maxx = core.windows.buffer.getmaxx();
 	if (pastText) {
 		newx = maxx;
 	} else {
-		var curlen = core.currentLine().length;
-		newx = curlen < maxx ? curlen : maxx;
+		var desired = core.currentLine().length + extraDelta;
+		newx = desired < maxx ? desired : maxx;
+		if (newx < 0) {
+			newx = 0;
+		}
 	}
 	core.move.absolute(cury, newx);
 	if (updateBuffer === true) {
@@ -661,6 +665,13 @@ core.addKeypressListener("command", function (event) {
 	case 's':
 	case 'S':
 		core.curmode = "insert";
+		break;
+	case '^':
+	case '0':
+		core.move.left();
+		break;
+	case '$':
+		core.move.right(false, true, -1);
 		break;
 	case ':':
 		core.exBuffer = ":";
