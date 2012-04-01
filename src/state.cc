@@ -132,7 +132,9 @@ void State::LoadScript(bool run,
   if (run) {
     // Load the core script; this should be known to be good and not throw
     // exceptions.
-    if (!vm().count("skip-core")) {
+    if (vm().count("debug")) {
+      scripts_.insert(scripts_.begin(), "js/core.js");
+    } else if (!vm().count("skip-core")) {
       LOG(INFO) << "loading builtin core.js";
       TryCatch trycatch;
       Local<Script> script = GetCoreScript();

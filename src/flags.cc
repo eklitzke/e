@@ -18,6 +18,7 @@ void PrintDescription(const po::options_description &desc,
 int ParseOptions(int argc, char **argv) {
   po::options_description help_desc("Help options");
   help_desc.add_options()
+    ("debug,d", "run in debug mode")
     ("help,h", "produce this help message")
     ("help-module", po::value<std::string>(),
      "produce the help message for a given module")
@@ -27,8 +28,7 @@ int ParseOptions(int argc, char **argv) {
   scripting_desc.add_options()
     ("skip-core", "skip loading any bundled \"core\" JS files")
     ("script,s", po::value<std::vector<std::string> >(),
-     "script file(s) to load")
-    ("list-environment", "list the default JS environment");
+     "script file(s) to load");
 
   po::options_description backend_desc("Backend options");
   backend_desc.add_options()

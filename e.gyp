@@ -35,7 +35,6 @@
             'src/js_sys.cc',
             'src/keycode.cc',
             'src/line.cc',
-            'src/list_environment.cc',
             'src/mmap.cc',
             'src/module.cc',
             'src/module_decl.cc',

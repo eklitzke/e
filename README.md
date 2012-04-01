@@ -104,13 +104,7 @@ Javascript API
 ==============
 
 When running `make`, documentation will be generated at `docs/jsdoc.html`. This
-will happen every time the `e` binary is successfully compiled. You're also
-encouraged to try running the editor as
-
-    e --list-api
-
-to look at a subset of the available JavaScript API in the default globals
-dictionary.
+will happen every time the `e` binary is successfully compiled.
 
 Code Layout
 ===========
@@ -158,20 +152,27 @@ Bundled Javascript
 ------------------
 
 When you invoke `make`, the file contents of `js/core.js` will be minified using
-jsmin.c, and dumped into `src/bundled_core.h` and `src/bundled_core.cc` (along
-with some boilerplate). These files are used for bootstrapping the editor. The
-way it works is that when you invoke `e` without any arguments, it runs the
-script bundled into these files. This avoids hard coding the location of the
-core JavaScript files, and means that (in theory) it's possible to statically
-link the editor and distribute it as a standalone binary.
+`third_party/jsmin.c`, and dumped into `src/bundled_core.h` and
+`src/bundled_core.cc` (along with some boilerplate). These files are used for
+bootstrapping the editor. The way it works is that when you invoke `e` without
+any arguments, it runs the script bundled into these files. This avoids hard
+coding the location of the core JavaScript files, and means that (in theory)
+it's possible to statically link the editor and distribute it as a standalone
+binary.
 
 If you don't want to run the editor with the bundled JavaScript, invoke it like
 
-    e --skip-core -s path/to/something.js <args>
+    e --debug <args>
 
-If you're editing the JavaScript code in `core.js` a lot, you may find that it's
-faster for you to just keep invoking the editor as `e --skip-core -s js/core.js
-<args>` rather than constantly rebuild the editor.
+This will implicitly skip loading any bundled javascript, and force `js/core.js`
+to be the first JavaScript file loaded. If you're editing JavaScript files a
+lot, it's much faster to use `e --debug` than it is to constantly rebuild the
+binary with the bundled JavaScript (it will also make debugging a *lot* easier,
+since you'll get meaningful file names and line numbers).
+
+In the future the meaning of `--debug` will expand to give more debugging
+information, but that's unlikely to happen until the editor is out of alpha
+stage.
 
 Building on Linux
 -----------------
