@@ -15,7 +15,7 @@
 #include <cstdio>
 #include <string>
 
-const size_t buf_size = 2000;
+enum { BUF_SIZE = 2000 };
 
 int main(int argc, char **argv) {
   if (argc != 1) {
@@ -24,12 +24,12 @@ int main(int argc, char **argv) {
   }
 
   // read the file contents from stdin
-  char *buf = new char[buf_size];
+  char *buf = new char[BUF_SIZE];
   std::string contents;
   while (true) {
-    size_t bytes_read = fread(buf, 1, buf_size, stdin);
+    size_t bytes_read = fread(buf, 1, BUF_SIZE, stdin);
     if (bytes_read == 0) {
-      assert(feof(stdin) != 0);
+      assert(feof(stdin) != 0);  // ensure EOF was encountered
       assert(fclose(stdin) == 0);
       break;
     }
@@ -39,10 +39,12 @@ int main(int argc, char **argv) {
 
   // pre-compile the data
   v8::V8::Initialize();
-  v8::ScriptData *script_data = v8::ScriptData::PreCompile(contents.c_str(),
-                                                           contents.length());
+  v8::ScriptData *script_data = v8::ScriptData::PreCompile(
+      contents.c_str(), contents.length());
   assert(script_data->HasError() == false);
   std::string marshalled(script_data->Data(), script_data->Length());
+  delete script_data;
+  v8::V8::Dispose();
 
   // write the pre-compiled data to stdout
   size_t offset = 0;

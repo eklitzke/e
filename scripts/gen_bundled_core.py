@@ -33,7 +33,8 @@ h_template = """
 namespace e {
 v8::Local<v8::Script> GetCoreScript();
 }
-#endif  // SRC_BUNDLED_CORE_H_"""
+#endif  // SRC_BUNDLED_CORE_H_
+"""
 
 cc_template = """
 // -*- C++ -*-
@@ -45,31 +46,32 @@ cc_template = """
 
 #include <v8.h>
 
-namespace e {
+namespace {
 // This is the "minified" core.js code, as a C string. The reason for
 // obfuscating it like this is simply to avoid having to escape the string in a
 // way that's safe for C. Python's built in "string_escape" codec comes close
 // but doesn't quite grok C.
 //
 // In this compilation, core_src is %(src_len)d bytes long.
-static const char *core_src = (
+const char *core_src = (
 %(src)s);
 
 // Pre-compilation data, %(precompilation_len)d bytes
-static const char *precompiled_src = (
+const char *precompiled_src = (
 %(precompiled_src)s);
+}
 
+namespace e {
 v8::Local<v8::Script> GetCoreScript() {
   v8::HandleScope scope;
   v8::Local<v8::String> src = v8::String::New(core_src, %(src_len)d);
   v8::ScriptData *pre_data = v8::ScriptData::New(precompiled_src, %(precompilation_len)d);
-#if 0
-  v8::Local<v8::String> src_name = v8::String::New("core.js");
-#endif
-  v8::Local<v8::Script> script = v8::Script::New(src, nullptr, pre_data);
+  v8::Local<v8::Script> script = v8::Script::Compile(src, nullptr, pre_data);
+  delete pre_data;
   return scope.Close(script);
 }
-}"""
+}
+"""
 
 builtin_modules = frozenset(['curses', 'errno', 'signal', 'sys'])
 require_regex = re.compile('require\\(["\'](.*?)["\']\\)', re.MULTILINE)
