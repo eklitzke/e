@@ -203,6 +203,11 @@ There's no simple way to build on Oneiric (11.10) due to
 [LP #900635](https://bugs.launchpad.net/ubuntu/+source/ncurses/+bug/900635). Patches
 accepted :-)
 
+Building on Precise (12.04) ought to work, but I get a build error when trying
+to build a `.cc` file that uses `get_wch`, despite many attempts to change
+exactly which curses header I use (this is a compiler error, not a linker
+error). Any help in fixing this is appreciated.
+
 Building on Mac OS X
 --------------------
 
