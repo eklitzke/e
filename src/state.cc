@@ -72,6 +72,7 @@ void TimeoutHandler(Persistent<Object> func,
   HandleScope scope;
   TryCatch tr;
   Local<Object> this_argument = Object::New();
+  ASSERT(func->IsCallable());
   func->CallAsFunction(this_argument, 0, nullptr);
   HandleError(tr);
   func.Dispose();
@@ -84,9 +85,9 @@ void IntervalHandler(boost::asio::deadline_timer *timer,
   HandleScope scope;
   TryCatch tr;
   Local<Object> this_argument = Object::New();
+  ASSERT(func->IsCallable());
   func->CallAsFunction(this_argument, 0, nullptr);
   HandleError(tr);
-  func.Dispose();
   timer->expires_at(timer->expires_at() +
                     boost::posix_time::milliseconds(millis));
   timer->async_wait(boost::bind(IntervalHandler,
