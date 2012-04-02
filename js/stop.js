@@ -11,5 +11,10 @@
 // This will get you the complete, end-to-end time of starting the binary,
 // initializing V8, initializing curses, running all of the code in core.js, and
 // then shutting things down.
+//
+// You might find it interesting to compare to
+//    time vim --cmd :q
+// or
+//    time emacs -nw --eval '(save-buffers-kill-emacs)'
 
 world.stopLoop();
