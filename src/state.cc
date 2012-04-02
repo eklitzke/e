@@ -67,8 +67,7 @@ Handle<Value> JSStopLoop(const Arguments& args) {
   return Undefined();
 }
 
-void TimeoutHandler(boost::asio::deadline_timer *timer,
-                    Persistent<Object> func,
+void TimeoutHandler(Persistent<Object> func,
                     const boost::system::error_code& error) {
   HandleScope scope;
   TryCatch tr;
@@ -76,13 +75,27 @@ void TimeoutHandler(boost::asio::deadline_timer *timer,
   func->CallAsFunction(this_argument, 0, nullptr);
   HandleError(tr);
   func.Dispose();
-  ASSERT(timers_.erase(timer) == 1);
-  delete timer;
-  google::FlushLogFiles(google::INFO);
+}
+
+void IntervalHandler(boost::asio::deadline_timer *timer,
+                     uint32_t millis,
+                     Persistent<Object> func,
+                     const boost::system::error_code& error) {
+  HandleScope scope;
+  TryCatch tr;
+  Local<Object> this_argument = Object::New();
+  func->CallAsFunction(this_argument, 0, nullptr);
+  HandleError(tr);
+  func.Dispose();
+  timer->expires_at(timer->expires_at() +
+                    boost::posix_time::milliseconds(millis));
+  timer->async_wait(boost::bind(IntervalHandler,
+                                timer, millis, func,
+                                boost::asio::placeholders::error));
 }
 
 // @method: setTimeout
-// @description: run code after a timeout (setInterval is implemented in JS)
+// @description: run code after a timeout
 Handle<Value> JSSetTimeout(const Arguments& args) {
   CHECK_ARGS(2);
   Handle<Value> val = args[0];
@@ -91,12 +104,31 @@ Handle<Value> JSSetTimeout(const Arguments& args) {
   Local<Object> obj = val->ToObject();
   if (obj->IsCallable()) {
     Persistent<Object> func = Persistent<Object>::New(obj);
-    auto timer = new boost::asio::deadline_timer(*GetIOService());
+    boost::asio::deadline_timer timer(*GetIOService());
+    timer.expires_from_now(boost::posix_time::milliseconds(millis));
+    timer.async_wait(boost::bind(TimeoutHandler,
+                                  func,
+                                  boost::asio::placeholders::error));
+  }
+  return Undefined();
+}
+
+// @method: setInterval
+// @description: run code in an interval
+Handle<Value> JSSetInterval(const Arguments& args) {
+  CHECK_ARGS(2);
+  Handle<Value> val = args[0];
+  uint32_t millis = args[1]->Uint32Value();
+
+  Local<Object> obj = val->ToObject();
+  if (obj->IsCallable()) {
+    Persistent<Object> func = Persistent<Object>::New(obj);
+    boost::asio::deadline_timer *timer = new boost::asio::deadline_timer(
+        *GetIOService());
     timers_.insert(timer);
     timer->expires_from_now(boost::posix_time::milliseconds(millis));
-    timer->async_wait(boost::bind(TimeoutHandler,
-                                  timer,
-                                  func,
+    timer->async_wait(boost::bind(IntervalHandler,
+                                  timer, millis, func,
                                   boost::asio::placeholders::error));
   }
   return Undefined();
@@ -145,12 +177,16 @@ void State::LoadScript(bool run,
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("assert"),
               FunctionTemplate::New(js::JSAssert), v8::ReadOnly);
+  global->Set(String::NewSymbol("flushLogs"),
+              FunctionTemplate::New(js::JSFlushLogs), v8::ReadOnly);
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(js::JSLog), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(js::JSRequire), v8::ReadOnly);
   global->Set(String::NewSymbol("setTimeout"),
               FunctionTemplate::New(JSSetTimeout), v8::ReadOnly);
+  global->Set(String::NewSymbol("setInterval"),
+              FunctionTemplate::New(JSSetInterval), v8::ReadOnly);
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);

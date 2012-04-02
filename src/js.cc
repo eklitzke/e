@@ -118,6 +118,13 @@ Handle<Value> JSLog(const Arguments& args) {
   return Undefined();
 }
 
+// @method: flushLogs
+// @description: Flush all logs.
+Handle<Value> JSFlushLogs(const Arguments& args) {
+  google::FlushLogFiles(google::INFO);
+  return Undefined();
+}
+
 // @method: assert
 // @param[condition]: #bool Condition to check
 // @param[msg]: #string Log message (optional)

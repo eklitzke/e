@@ -4,7 +4,6 @@ var curses = require("curses");
 var errno = require("errno");
 var signal = require("signal");
 var sys = require("sys");
-var setInterval = require("js/timers.js").setInterval;
 
 var EventListener = require("js/event_listener.js").EventListener;
 
@@ -12,6 +11,8 @@ var core = {
 	column: 0,
 	line: 0,
 	clockMode: "12", // 12 or 24
+	clockShowSeconds: true,
+	clockRefresh: 1000,
 	exBuffer: '', // the buffer for : commands in vi-mode
 	inEscape: false, // true when part of an escape sequence
 	viMode: true,
@@ -91,8 +92,7 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 	var maxy = core.windows.buffer.getmaxy();
 	var maxAllowed = world.buffer.length - 1;
 
-	var wt = core.windowTop();
-	log("wt = " + wt);
+	var wt = core.windowTop();  // the top line displayed
 	if (wt + lines <= 0) {
 		lines = -wt;
 	} else if (wt + lines > maxAllowed) {
@@ -106,7 +106,6 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 	var newLine, newLinePos;
 	var lineDelta = core.line - cury;
 	for (var i = top; i <= bot; i++) {
-		//log("moving line at " + (i + lineDelta + lines) + " to screen position " + i);
 		newLinePos = i + lineDelta + lines;
 		if (newLinePos > maxAllowed) {
 			newLine = "~";
@@ -336,9 +335,17 @@ core.addFunction("drawStatus", function () {
 		} else {
 			h = fmtTime(h);
 		}
-		statusEnd = h + ":" + fmtTime(d.getMinutes()) + " " + modifier + " ";
+		statusEnd = h + ":" + fmtTime(d.getMinutes());
+		if (core.clockShowSeconds) {
+			statusEnd += ":" + fmtTime(d.getSeconds());
+		}
+		statusEnd += " " + modifier + " ";
 	} else {
-		statusEnd = fmtTime(d.getHours()) + ":" + fmtTime(d.getMinutes()) + " ";
+		statusEnd = fmtTime(d.getHours()) + ":" + fmtTime(d.getMinutes());
+		if (core.clockShowSeconds) {
+			statusEnd += ":" + fmtTime(d.getSeconds());
+		}
+		statusEnd += " ";
 	}
 
 	var spacesNeeded = (core.windows.status.getmaxx() -
@@ -380,7 +387,7 @@ core.addFunction("drawStatus", function () {
 setInterval(function () {
 	core.drawStatus();
 	core.updateAllWindows();
-}, 1000);
+}, core.clockRefresh);
 
 core.addFunction("updateAllWindows", function (doupdate) {
 	if (doupdate === undefined) {
@@ -626,6 +633,16 @@ core.addKeypressListener("command", function (event) {
 		return;
 	}
 
+	// for 'o' and 'O'
+	var insertLine = function (lineDelta) {
+		world.buffer.addLine(core.line + lineDelta, "");
+		core.scrollRegion(-lineDelta, core.windows.buffer.getcury(), core.windows.buffer.getmaxy());
+		core.move(lineDelta);
+		core.move.left();
+		core.windows.buffer.clrtoeol();
+		core.curmode = "insert";
+	};
+
 	switch (wch) {
 	case 'a':
 		core.move(0, 1);
@@ -659,8 +676,10 @@ core.addKeypressListener("command", function (event) {
 		core.curmode = "insert";
 		break;
 	case 'o':
+		insertLine(1);
+		break;
 	case 'O':
-		core.curmode = "insert";
+		insertLine(0);
 		break;
 	case 's':
 	case 'S':
@@ -749,3 +768,6 @@ world.addEventListener("keypress", function (event) {
 world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
+
+// Flush logs once a second.
+setInterval(flushLogs, 1000);
