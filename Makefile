@@ -1,4 +1,5 @@
 CC := g++
+CFLAGS := -Wall -pedantic -Os
 JSMIN := third_party/jsmin
 JS_SOURCE := $(shell git ls-files js/)
 PRECOMPILE := scripts/precompile
@@ -28,11 +29,11 @@ docs/jsdoc.html: scripts/gen_js_docs.py e docs
 	@echo " done!"
 
 $(JSMIN): $(JSMIN).c
-	$(CC) -Os $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 	@strip -s $@
 
 $(PRECOMPILE): $(PRECOMPILE).cc
-	$(CC) -Os -lv8 $< -o $@
+	$(CC) $(CFLAGS) -lv8 $< -o $@
 	@strip -s $@
 
 $(BUNDLED_JS): scripts/gen_bundled_core.py scripts/precompile $(JSMIN) $(JS_SOURCE)

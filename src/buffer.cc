@@ -80,6 +80,8 @@ void Buffer::OpenFile(const std::string &filepath) {
       p = n + sizeof(char);  // NOLINT
     }
   }
+  LOG(INFO) << "Buffer::OpenFile() mmap'ed " << mmlen << " bytes for file \"" <<
+      filepath << "\"";
 
   filepath_ = filepath;
   name_ = filepath;

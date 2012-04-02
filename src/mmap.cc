@@ -47,9 +47,11 @@ void MmapFile::Initialize(bool sequential) {
     proto |= PROT_WRITE;
   }
   buffer_ = mmap(nullptr, length_, proto, MAP_PRIVATE, fd_, 0);
+  int advice = MADV_WILLNEED;
   if (sequential) {
-    madvise(buffer_, length_, MADV_SEQUENTIAL | MADV_WILLNEED);
+    advice |= MADV_SEQUENTIAL;
   }
+  madvise(buffer_, length_, advice);
 }
 
 MmapFile::~MmapFile() {

@@ -2,6 +2,9 @@
 
 #include <boost/program_options.hpp>
 #include <glog/logging.h>
+#ifdef DISPOSE_v8
+#include <v8.h>
+#endif
 
 #ifdef USE_LINUX
 #include <sys/resource.h>
@@ -37,6 +40,9 @@ int main(int argc, char **argv) {
   }
   e::CursesWindow window(scripts, files);
   window.Loop();
+#ifdef DISPOSE_v8
+  v8::V8::Dispose();
+#endif
 #ifdef USE_LINUX
   rusage usage;
   ASSERT(getrusage(RUSAGE_SELF, &usage) == 0);

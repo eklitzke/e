@@ -56,34 +56,35 @@ void HandleError(const TryCatch &try_catch) {
 
 namespace js {
 // Reads a file into a v8 string.
-Handle<String> ReadFile(const std::string& name, bool prefix_use_strict) {
+Local<String> ReadFile(const std::string& name, bool prefix_use_strict) {
   HandleScope scope;
   FILE* file = fopen(name.c_str(), "rb");
   if (file == nullptr) {
-    return Handle<String>();
+    return String::New("");
   }
 
   ASSERT(fseek(file, 0, SEEK_END) == 0);
-  int size = ftell(file);
+  long size = ftell(file);  // NOLINT
   ASSERT(size > 0);
   rewind(file);
 
   boost::scoped_array<char> chars(new char[size + 1]);
   chars[size] = '\0';
-  for (int i = 0; i < size;) {
-    ssize_t read = fread(&chars[i], 1, size - i, file);
-    ASSERT(read >= 0);
-    i += read;
+  for (long i = 0; i < size;) {  // NOLINT
+    size_t bytes_read = fread(&chars[i], 1, size - i, file);
+    ASSERT(bytes_read > 0);
+    i += bytes_read;
   }
   ASSERT(fclose(file) == 0);
+  LOG(INFO) << "ReadFile() read " << size << " bytes from \"" << name << "\"";
 
   if (prefix_use_strict) {
     std::string strict = "\"use strict\";\n";
     strict += std::string(chars.get(), size);
-    Handle<String> result = String::New(strict.c_str(), strict.size());
+    Local<String> result = String::New(strict.c_str(), strict.size());
     return scope.Close(result);
   } else {
-    Handle<String> result = String::New(chars.get(), size);
+    Local<String> result = String::New(chars.get(), size);
     return scope.Close(result);
   }
 }

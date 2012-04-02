@@ -44,7 +44,7 @@ typedef Handle<Value>(*JSCallback)(const Arguments&);
 typedef Handle<Value>(*JSAccessor)(Local<String>, const AccessorInfo&);
 
 // Reads a file into a v8 string.
-Handle<v8::String> ReadFile(const std::string& name,
+Local<v8::String> ReadFile(const std::string& name,
                             bool prefix_use_strict = false);
 Handle<Value> JSAssert(const Arguments& args);
 Handle<Value> JSFlushLogs(const Arguments& args);
