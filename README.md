@@ -208,6 +208,13 @@ to build a `.cc` file that uses `get_wch`, despite many attempts to change
 exactly which curses header I use (this is a compiler error, not a linker
 error). Any help in fixing this is appreciated.
 
+Here are a few known dependencies for Ubuntu (possibly not exhaustive, since I
+haven't successfully built it yet):
+
+    sudo apt-get install binutils-gold build-essential git gyp libboost-dev \
+      libgoogle-glog-dev libicu-dev libncurses5-dev libncursesw5-dev \
+      libtcmalloc-minimal0 libv8-dev pkg-config
+
 Building on Mac OS X
 --------------------
 
