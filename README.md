@@ -12,13 +12,15 @@ logic hard coded in JavaScript. Everything is completely extensible.
 How well does it work?
 ----------------------
 
-It doesn't work very well at all. You can build it and mess around in buffers,
-but it's not very functional. The project is not yet self-hosting (I'm editing
-the code in Emacs).
+It doesn't work very well. There are a lot of rough edges. In theory you can use
+it for editing, and it's possible to save buffers. But it's missing a lot of
+features that other editors have.
 
-You might get some crashes too, even when doing basic things. If everything is
-working right (i.e. the crash was caused by an assertion failure and not by a
-segfault) you'll get a nice traceback, to assist with debugging.
+Currently work is being done to make vi mode more functional. Implementing most
+of the classic BSD vi functionality (i.e. without vim extensions) is definitely
+within sight at this point, and would make the editor a lot more usable.
+
+The project is not yet self-hosting (I'm editing the code in Emacs).
 
 Why JavaScript?
 ---------------
@@ -81,7 +83,7 @@ embedding for an editor:
 * You can still do asynchronous I/O if you want; as a matter of fact, behind the
   scenes e is using boost::asio to process keypresses asynchronously (to allow
   various timers to run in the background). Look at the implementation of
-  `TermiosWindow::Loop` if you want to learn more about this.
+  `CursesWindow::Loop` if you want to learn more about this.
 
 What does it look like?
 -----------------------
@@ -93,12 +95,34 @@ Here's a screenshot. It's not very exciting.
 Help! How do I quit?
 --------------------
 
-Uses Ctrl-C to exit the editor.
+Ctrl-C will always exit the editor.
 
 How do I save files? How do I open new buffers?
 -----------------------------------------------
 
 You can save a file with Ctrl-S. There's currently no way to open a new buffer.
+
+How can I customize/configure the editor?
+-----------------------------------------
+
+The best way to do this is to add JavaScript code to `~/.e.js`. The way the
+editor starts up is that by default it will do the following (in the order
+listed):
+
+* load all bundled javascript
+* load any scripts passed on the command line with `-s`
+* load `~/.e.js`
+
+Because you can use the `require()` method to include other scripts, you can
+structure your own customizations however you like (e.g. by splitting them out
+into multiple files).
+
+In general most of the core event loop uses the same
+[event](https://developer.mozilla.org/en/DOM/element.addEventListener)
+[listener](http://www.w3.org/TR/DOM-Level-2-Events/events.html) pattern as
+browsers, which makes it easy to extend/customize behavior in a non-intrusive
+way. The various events and listeners that you can use are not well documented,
+however.
 
 Javascript API
 ==============
@@ -109,14 +133,14 @@ will happen every time the `e` binary is successfully compiled.
 Code Layout
 ===========
 
-C++ code all lives in the `src` directory. From time to time I process the
-source files there with `third_party/cpplint.py` and ensure that they pass all
-of the checks (even when it's annoying to do so).
+C++ code all lives in the `src` directory. The C++ code all passes the checks by
+`third_party/cpplint.py` (which you should install as a git hook if you're
+hacking on the editor).
 
 JavaScript code (well, ECMAScript really) lives in the `js/` directory.
 
 Third party code, regardless of language or origin, is in the `third_party/`
-directory. This also inclused some third party "data", such as the terminfo
+directory. This also includes some third party "data", such as the terminfo
 capabilities file.
 
 Building
