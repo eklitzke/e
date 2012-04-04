@@ -51,7 +51,6 @@ cc_template = """
 
 #include "./%(h_name)s"
 
-#include <unicode/unistr.h>
 #include <v8.h>
 #include <wchar.h>
 
@@ -59,7 +58,6 @@ cc_template = """
 
 #include "./assert.h"
 #include "./embeddable.h"
-#include "./unicode.h"
 
 using v8::Arguments;
 using v8::Boolean;
@@ -86,8 +84,9 @@ Handle<Value> JSGetChar(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
 
-  UnicodeString us(static_cast<UChar32>(self->code_));
-  return scope.Close(UnicodeToString(us));
+  ASSERT(self->code_ < 0x10000);
+  uint16_t c = static_cast<uint16_t>(self->code_);
+  return scope.Close(String::New(&c, 1));
 }
 
 // @method: getCode
