@@ -26,8 +26,8 @@ int ParseOptions(int argc, char **argv) {
 
   po::options_description scripting_desc("Scripting options");
   scripting_desc.add_options()
-    ("skip-core", "skip loading any bundled \"core\" JS files")
     ("no-init-file", "do not load the init file ~/.e.js")
+    ("skip-core", "skip loading any bundled \"core\" JS files")
     ("script,s", po::value<std::vector<std::string> >(),
      "additional script file(s) to load");
 
