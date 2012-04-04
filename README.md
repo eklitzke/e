@@ -110,7 +110,7 @@ editor starts up is that by default it will do the following (in the order
 listed):
 
 * load all bundled javascript
-* load any scripts passed on the command line with `-s`
+* load any scripts passed on the command line with `-s` or `--script`
 * load `~/.e.js`
 
 Because you can use the `require()` method to include other scripts, you can
