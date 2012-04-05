@@ -2,7 +2,8 @@
 {
   'target_defaults': {
     'type': 'executable',
-    'cflags': ['-pedantic', '-Wall', '-std=c++11', '-g'],
+    # cflags should be changed to -std=c++11 when ubuntu supports it
+    'cflags': ['-pedantic', '-Wall', '-std=c++0x', '-g'],
     'conditions': [
        ['OS=="linux"', {
          'ldflags': [

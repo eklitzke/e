@@ -6,8 +6,16 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
-#include <curses.h>
 #include <v8.h>
+
+#ifdef USE_LINUX
+#ifndef _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED
+#endif
+#include <ncursesw/curses.h>
+#else
+#include <curses.h>
+#endif
 
 #include <string>
 #include <vector>

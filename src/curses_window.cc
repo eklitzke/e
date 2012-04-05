@@ -10,7 +10,6 @@
 #include <boost/bind.hpp>
 #include <v8.h>
 
-#include <curses.h>
 #include <term.h>
 #include <termios.h>
 
