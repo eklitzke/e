@@ -158,7 +158,6 @@ These are some of the known dependencies:
   [boost::program_options](http://www.boost.org/libs/program_options) components
 * [glog](http://code.google.com/p/google-glog/) (you might need an older
   version)
-* [ICU](http://site.icu-project.org/)
 * [libunwind](http://www.nongnu.org/libunwind/)
 * [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
   this; other curses implementations might work too)
@@ -228,8 +227,8 @@ both releases you need to install the following packages:
 
     sudo apt-get install binutils-gold build-essential git gyp libboost-dev \
       libboost-program-options-dev libboost-system-dev libgoogle-glog-dev \
-      libicu-dev libncurses5-dev libncursesw5-dev libtcmalloc-minimal0 \
-      libunwind7-dev libv8-dev pkg-config python-jinja2
+      libncurses5-dev libncursesw5-dev libtcmalloc-minimal0 libunwind7-dev \
+      libv8-dev pkg-config python-jinja2
 
 Then you will need to set up a `tcmalloc.so` symlink:
 
