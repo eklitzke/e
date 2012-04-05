@@ -223,21 +223,26 @@ compiler/linker errors.
 Building on Ubuntu
 ------------------
 
-There's no simple way to build on Oneiric (11.10) due to
-[LP #900635](https://bugs.launchpad.net/ubuntu/+source/ncurses/+bug/900635). Patches
-accepted :-)
-
-Building on Precise (12.04) ought to work, but I get a build error when trying
-to build a `.cc` file that uses `get_wch`, despite many attempts to change
-exactly which curses header I use (this is a compiler error, not a linker
-error). Any help in fixing this is appreciated.
-
-Here are a few known dependencies for Ubuntu (possibly not exhaustive, since I
-haven't successfully built it yet):
+Building on Ubuntu, both 11.10 (Oneiric) and 12.04 (Precise), is supported. For
+both releases you need to install the following packages:
 
     sudo apt-get install binutils-gold build-essential git gyp libboost-dev \
-      libgoogle-glog-dev libicu-dev libncurses5-dev libncursesw5-dev \
-      libtcmalloc-minimal0 libv8-dev pkg-config
+      libboost-program-options-dev libboost-system-dev libgoogle-glog-dev \
+      libicu-dev libncurses5-dev libncursesw5-dev libtcmalloc-minimal0 \
+      libunwind7-dev libv8-dev pkg-config python-jinja2
+
+Then you will need to set up a `tcmalloc.so` symlink:
+
+    sudo ln -s /usr/lib/libtcmalloc_minimal.so.0 /usr/lib/libtcmalloc.so
+
+After that you should be good to go.
+
+Building on Fedora
+------------------
+
+Pretty much the same as Ubuntu, with slightly different packages (not listed
+here; inquire if you need assistance). You will also need to manually create a
+`tcmalloc.so` symlink, as with Ubuntu.
 
 Building on Mac OS X
 --------------------
