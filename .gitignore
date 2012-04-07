@@ -10,6 +10,7 @@ scripts/precompile
 src/.bundled_core
 src/bundled_core.cc
 src/bundled_core.h
+src/js_errno.cc
 src/keycode.cc
 src/keycode.h
 test

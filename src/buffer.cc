@@ -51,12 +51,15 @@ Buffer::~Buffer() {
   }
 }
 
-void Buffer::OpenFile(const std::string &filepath) {
+bool Buffer::OpenFile(const std::string &filepath) {
   if (access(filepath.c_str(), R_OK) != 0) {
-    ASSERT(errno == ENOENT);
-    int fd = creat(filepath.c_str(), S_IRWXU);
-    ASSERT(fd != -1);
-    ASSERT(close(fd) == 0);
+    if (errno == ENOENT) {
+      int fd = creat(filepath.c_str(), S_IRWXU);
+      ASSERT(fd != -1);
+      ASSERT(close(fd) == 0);
+    } else {
+      return false;
+    }
   }
   MmapFile mapping(filepath);
 
@@ -85,6 +88,7 @@ void Buffer::OpenFile(const std::string &filepath) {
 
   filepath_ = filepath;
   name_ = filepath;
+  return true;
 }
 
 // FIXME: we definitely need more robust error handling
@@ -269,8 +273,12 @@ Handle<Value> JSOpenFile(const Arguments& args) {
 
   String::AsciiValue filename(args[0]);
   const std::string filename_s(*filename, filename.length());
-  self->OpenFile(filename_s);
-  return scope.Close(Undefined());
+  bool success = self->OpenFile(filename_s);
+  if (!success) {
+    return scope.Close(v8::ThrowException(Integer::New(errno)));
+  } else {
+    return scope.Close(Undefined());
+  }
 }
 
 // @method: persist

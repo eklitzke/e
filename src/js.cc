@@ -146,6 +146,16 @@ Handle<Value> JSAssert(const Arguments& args) {
   return Undefined();
 }
 
+// @method: panic
+// @param[message]: #string Message to print
+Handle<Value> JSPanic(const Arguments& args) {
+  CHECK_ARGS(1);
+  Local<Value> msg = args[0];
+  String::Utf8Value value(msg);
+  Panic(*value);
+  return Undefined();
+}
+
 // @method: require
 // @param[file]: #string The module to load
 // @description: Loads a new JavaScript module

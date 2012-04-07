@@ -49,6 +49,7 @@ Local<v8::String> ReadFile(const std::string& name,
 Handle<Value> JSAssert(const Arguments& args);
 Handle<Value> JSFlushLogs(const Arguments& args);
 Handle<Value> JSLog(const Arguments& args);
+Handle<Value> JSPanic(const Arguments& args);
 Handle<Value> JSRequire(const Arguments& args);
 std::string ValueToString(Local<Value>);
 }

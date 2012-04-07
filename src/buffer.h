@@ -30,7 +30,7 @@ class Buffer {
   explicit Buffer(const std::string &name, const std::string &filepath);
   ~Buffer();
 
-  void OpenFile(const std::string &filepath);
+  bool OpenFile(const std::string &filepath);
   void Persist(const std::string &filepath);  // write the buffer to disk
 
   // get the name of the buffer

@@ -1,6 +1,7 @@
 CC := g++
 CFLAGS := -Wall -pedantic -Os
 JSMIN := third_party/jsmin
+JS_ERRNO := src/js_errno.cc
 JS_SOURCE := $(shell git ls-files js/)
 PRECOMPILE := scripts/precompile
 SRCFILES := $(shell git ls-files src/)
@@ -17,9 +18,9 @@ all: docs/jsdoc.html
 
 clean:
 	rm -rf $(JSMIN) build/out/ build/src/ docs/
-	rm -rf $(BUNDLED_JS) $(REAL_BUNDLED_JS) scripts/precompile
-	rm -rf $(KEYCODE_FILES)
-	rm -rf e opt test
+	rm -f $(BUNDLED_JS) $(REAL_BUNDLED_JS) scripts/precompile
+	rm -f $(KEYCODE_FILES)
+	rm -f e opt test
 
 docs:
 	@mkdir -p docs
@@ -43,16 +44,19 @@ $(BUNDLED_JS): scripts/gen_bundled_core.py scripts/precompile $(JSMIN) $(JS_SOUR
 $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps
 	python $^
 
+$(JS_ERRNO): scripts/gen_js_errno.py
+	python $^ > $@
+
 build:
 	./configure
 
 lint:
 	python third_party/cpplint.py $(SRCFILES)
 
-$(OPT_TARGET) $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
+$(OPT_TARGET) $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) $(JS_ERRNO) build
 	make -C build $(shell echo $@ | awk -F/ '{print $$NF}')
 
-$(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
+$(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(BUNDLED_JS) $(KEYCODE_FILES) $(JS_ERRNO) build
 	make -C build test
 
 test: $(TEST_TARGET)

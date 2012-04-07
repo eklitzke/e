@@ -113,6 +113,8 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
               FunctionTemplate::New(js::JSFlushLogs), v8::ReadOnly);
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(js::JSLog), v8::ReadOnly);
+  global->Set(String::NewSymbol("panic"),
+              FunctionTemplate::New(js::JSPanic), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(js::JSRequire), v8::ReadOnly);
   AddTimersToGlobalNamespace(global);  // add setTimeout() and co.

@@ -411,7 +411,11 @@ core.addFunction("updateAllWindows", function (doupdate) {
 // command line.
 world.addEventListener("load", function (event) {
 	if (world.args.length) {
-		world.buffer.open(world.args[0]);
+		try {
+			world.buffer.open(world.args[0]);
+		} catch (e) {
+			panic("failed to open \"" + world.args[0] + "\" due to " + errno.errorcode[e]);
+		}
 	}
 });
 
