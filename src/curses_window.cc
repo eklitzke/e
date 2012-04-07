@@ -102,7 +102,7 @@ bool CursesWindow::InnerOnRead() {
 }
 
 void CursesWindow::Loop() {
-  state_.LoadScript(true, boost::bind(&CursesWindow::InnerLoop, this, _1));
+  state_.Run(boost::bind(&CursesWindow::InnerLoop, this, _1));
 }
 
 void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {

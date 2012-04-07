@@ -34,11 +34,17 @@ class State {
   explicit State(const std::vector<std::string> &scripts,
                  const std::vector<std::string> &args);
   ~State();
-  void LoadScript(bool, boost::function<void(Persistent<Context>)>);
+
+  // This is the main entry point that runs the program. It initializes all of
+  // the JavaScript stuft, and then runs the callback function. After the
+  // callback function completes, everything will be cleaned up.
+  //
+  // It's expected that callback will implement some sort of loop (i.e. the I/O
+  // loop that drives the editor), although strictly speaking this is not
+  // necessary.
+  void Run(boost::function<void(Persistent<Context>)> callback);
 
   EventListener* GetListener(void) { return &listener_; }
-
-  std::vector<Buffer*>* GetBuffers(void);
 
   // returns true if the mainloop should keep going, false otherwise
   bool HandleKey(KeyCode *k);

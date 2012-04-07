@@ -105,8 +105,7 @@ State::~State() {
   }
 }
 
-void State::LoadScript(bool run,
-                       boost::function<void(Persistent<Context>)> then) {
+void State::Run(boost::function<void(Persistent<Context>)> then) {
   HandleScope scope;
   Local<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("assert"),
@@ -144,49 +143,48 @@ void State::LoadScript(bool run,
   InitializeBuiltinModules();
 
   bool bail = false;
-  if (run) {
-    // Load the core script; this should be known to be good and not throw
-    // exceptions.
-    if (vm().count("debug")) {
-      scripts_.insert(scripts_.begin(), "js/core.js");
-    } else if (!vm().count("skip-core")) {
-      LOG(INFO) << "loading builtin core.js";
-      TryCatch trycatch;
-      Local<Script> script = GetCoreScript();
-      HandleError(trycatch);
-      script->Run();
-      HandleError(trycatch);
-      LOG(INFO) << "finished loading builtin core.js";
-    }
 
-    // add the init file
-    if (vm().count("no-init-file") == 0) {
-      uid_t user = getuid();
-      passwd *pwent = getpwuid(user);  // NOLINT
-      ASSERT(pwent != nullptr);
-      std::string rc_path(pwent->pw_dir);
-      rc_path += "/";
-      rc_path += kInitFile;
-      if (access(rc_path.c_str(), R_OK) == 0) {
-        scripts_.push_back(rc_path);
-      } else {
-        LOG(INFO) << "failed to find (or could not access) init file \"" <<
+  // Load the core script; this should be known to be good and not throw
+  // exceptions.
+  if (vm().count("debug")) {
+    scripts_.insert(scripts_.begin(), "js/core.js");
+  } else if (!vm().count("skip-core")) {
+    LOG(INFO) << "loading builtin core.js";
+    TryCatch trycatch;
+    Local<Script> script = GetCoreScript();
+    HandleError(trycatch);
+    script->Run();
+    HandleError(trycatch);
+    LOG(INFO) << "finished loading builtin core.js";
+  }
+
+  // add the init file
+  if (vm().count("no-init-file") == 0) {
+    uid_t user = getuid();
+    passwd *pwent = getpwuid(user);  // NOLINT
+    ASSERT(pwent != nullptr);
+    std::string rc_path(pwent->pw_dir);
+    rc_path += "/";
+    rc_path += kInitFile;
+    if (access(rc_path.c_str(), R_OK) == 0) {
+      scripts_.push_back(rc_path);
+    } else {
+      LOG(INFO) << "failed to find (or could not access) init file \"" <<
           rc_path << "\"";
-      }
     }
+  }
 
-    // sequentially load any other scripts
-    for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
-      LOG(INFO) << "loading additional script \"" << *it << "\"";
-      TryCatch trycatch;
-      Handle<String> source = js::ReadFile(*it);
-      Handle<Script> scr = Script::New(
-          source, String::New(it->c_str(), it->size()));
-      HandleError(trycatch);
-      scr->Run();
-      HandleError(trycatch);
-      LOG(INFO) << "finished loading additional script \"" << *it << "\"";
-    }
+  // sequentially load any other scripts
+  for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
+    LOG(INFO) << "loading additional script \"" << *it << "\"";
+    TryCatch trycatch;
+    Handle<String> source = js::ReadFile(*it);
+    Handle<Script> scr = Script::New(
+        source, String::New(it->c_str(), it->size()));
+    HandleError(trycatch);
+    scr->Run();
+    HandleError(trycatch);
+    LOG(INFO) << "finished loading additional script \"" << *it << "\"";
   }
 
   // run the callback
@@ -195,10 +193,6 @@ void State::LoadScript(bool run,
   }
   CancelAllTimers();
   DisposeContext();
-}
-
-std::vector<Buffer*> * State::GetBuffers(void) {
-  return &buffers_;
 }
 
 bool State::HandleKey(KeyCode *k) {
