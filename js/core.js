@@ -106,14 +106,14 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 
 	var newLine, newLinePos;
 	var lineDelta = core.line - cury;
+	var tildePair = colors.getColorPair(curses.COLOR_BLUE, -1);
 	for (var i = top; i <= bot; i++) {
 		newLinePos = i + lineDelta + lines;
 		if (newLinePos > maxAllowed) {
-			//var pair = colors.getColorPair(curses.CYAN, -1);
-			//core.windows.buffer.attron(pair);
+			core.windows.buffer.attron(tildePair);
 			core.windows.buffer.mvaddstr(i, 0, "~");
 			core.windows.buffer.clrtoeol();
-			//core.windows.buffer.attroff(pair);
+			core.windows.buffer.attroff(tildePair);
 		} else {
 			newLine = world.buffer.getLine(i + lineDelta + lines).value();
 			core.windows.buffer.mvaddstr(i, 0, newLine);
@@ -452,9 +452,11 @@ world.addEventListener("load", function (event) {
 		core.windows.buffer.mvaddstr(i, 0, world.buffer.getLine(i).value());
 	}
 
+	core.windows.buffer.attron(colors.getColorPair(curses.COLOR_BLUE, -1));
 	for (; i < maxy; i++) {
 		core.windows.buffer.mvaddstr(i, 0, "~");
 	}
+	core.windows.buffer.attroff(colors.getColorPair(curses.COLOR_BLUE, -1));
 });
 
 // Move the cursor and update all windows.
