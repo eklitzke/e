@@ -18,11 +18,13 @@
 #include "./io_service.h"
 #include "./js.h"
 #include "./module_decl.h"
+#include "./timer.h"
 
 namespace e {
 
 using v8::Arguments;
 using v8::Array;
+using v8::Boolean;
 using v8::Context;
 using v8::External;
 using v8::Handle;
@@ -74,34 +76,6 @@ Handle<Value> JSStopLoop(const Arguments& args) {
   return Undefined();
 }
 
-void TimeoutHandler(Persistent<Object> func,
-                    const boost::system::error_code& error) {
-  HandleScope scope;
-  TryCatch tr;
-  Local<Object> this_argument = Object::New();
-  ASSERT(func->IsCallable());
-  func->CallAsFunction(this_argument, 0, nullptr);
-  HandleError(tr);
-  func.Dispose();
-}
-
-void IntervalHandler(boost::asio::deadline_timer *timer,
-                     uint32_t millis,
-                     Persistent<Object> func,
-                     const boost::system::error_code& error) {
-  HandleScope scope;
-  TryCatch tr;
-  Local<Object> this_argument = Object::New();
-  ASSERT(func->IsCallable());
-  func->CallAsFunction(this_argument, 0, nullptr);
-  HandleError(tr);
-  timer->expires_at(timer->expires_at() +
-                    boost::posix_time::milliseconds(millis));
-  timer->async_wait(boost::bind(IntervalHandler,
-                                timer, millis, func,
-                                boost::asio::placeholders::error));
-}
-
 // @method: setTimeout
 // @description: run code after a timeout
 Handle<Value> JSSetTimeout(const Arguments& args) {
@@ -112,13 +86,12 @@ Handle<Value> JSSetTimeout(const Arguments& args) {
   Local<Object> obj = val->ToObject();
   if (obj->IsCallable()) {
     Persistent<Object> func = Persistent<Object>::New(obj);
-    boost::asio::deadline_timer timer(*GetIOService());
-    timer.expires_from_now(boost::posix_time::milliseconds(millis));
-    timer.async_wait(boost::bind(TimeoutHandler,
-                                  func,
-                                  boost::asio::placeholders::error));
+    Timer *timer = e::Timer::New(func, millis, false);
+    timer->Start();
+    return scope.Close(Integer::New(timer->GetId()));
+  } else {
+    return Undefined();
   }
-  return Undefined();
 }
 
 // @method: setInterval
@@ -131,16 +104,26 @@ Handle<Value> JSSetInterval(const Arguments& args) {
   Local<Object> obj = val->ToObject();
   if (obj->IsCallable()) {
     Persistent<Object> func = Persistent<Object>::New(obj);
-    boost::asio::deadline_timer *timer = new boost::asio::deadline_timer(
-        *GetIOService());
-    timers_.insert(timer);
-    timer->expires_from_now(boost::posix_time::milliseconds(millis));
-    timer->async_wait(boost::bind(IntervalHandler,
-                                  timer, millis, func,
-                                  boost::asio::placeholders::error));
+    Timer *timer = e::Timer::New(func, millis, true);
+    timer->Start();
+    return scope.Close(Integer::New(timer->GetId()));
+  } else {
+    return Undefined();
   }
-  return Undefined();
 }
+
+// @method: clearTimeout
+// @description: cancel a timeout created by setTimeout()
+// @method: clearInterval
+// @description: cancel a timeout created by setInterval()
+//
+// N.B. this method works for both timeouts and intervals
+Handle<Value> JSClearTimeout(const Arguments& args) {
+  CHECK_ARGS(1);
+  uint32_t id = args[0]->Uint32Value();
+  return scope.Close(Boolean::New(CancelTimerById(id)));
+}
+
 
 Handle<Value> AddEventListener(const Arguments& args) {
   CHECK_ARGS(2);
@@ -195,6 +178,10 @@ void State::LoadScript(bool run,
               FunctionTemplate::New(JSSetTimeout), v8::ReadOnly);
   global->Set(String::NewSymbol("setInterval"),
               FunctionTemplate::New(JSSetInterval), v8::ReadOnly);
+  global->Set(String::NewSymbol("clearTimeout"),
+              FunctionTemplate::New(JSClearTimeout), v8::ReadOnly);
+  global->Set(String::NewSymbol("clearInterval"),
+              FunctionTemplate::New(JSClearTimeout), v8::ReadOnly);
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);
@@ -270,6 +257,7 @@ void State::LoadScript(bool run,
   if (!bail && keep_going) {
     then(context);
   }
+  CancelAllTimers();
   DisposeContext();
 }
 

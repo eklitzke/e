@@ -40,10 +40,11 @@
             'src/module.cc',
             'src/module_decl.cc',
             'src/state.cc',
+            'src/timer.cc',
           ],
          'defines': [ 'USE_LINUX', ],
     }]],
-    'defines': [ 'DEBUG', 'USE_CURSES', 'TAB_SIZE=4', ],
+    'defines': [ 'DEBUG', 'TAB_SIZE=4', ],
   },
   'targets': [
     {
