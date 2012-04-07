@@ -8,11 +8,13 @@ var sys = require("sys");
 var EventListener = require("js/event_listener.js").EventListener;
 var colors = require("js/colors.js");
 
+// You can easily override most of these attributes in your ~/.e.js file (e.g.
+// to change the clock mode or refresh rate).
 var core = {
 	column: 0,
 	line: 0,
 	clockMode: "12", // 12 or 24
-	clockShowSeconds: true,
+	clockShowSeconds: false,
 	clockRefresh: 1000,
 	exBuffer: '', // the buffer for : commands in vi-mode
 	inEscape: false, // true when part of an escape sequence
@@ -337,9 +339,9 @@ core.addFunction("drawStatusRight", function () {
 		if (h === 0) {
 			h = "12";
 		} else if (h > 12) {
-			h = fmtTime(h - 12);
+			h = new String(h - 12);
 		} else {
-			h = fmtTime(h);
+			h = new String(h);
 		}
 		statusEnd += h + ":" + fmtTime(d.getMinutes());
 		if (core.clockShowSeconds) {
