@@ -18,9 +18,6 @@
 #include "./event_listener.h"
 #include "./keycode.h"
 
-using v8::Context;
-using v8::Handle;
-
 namespace e {
 
 class State {
@@ -37,7 +34,7 @@ class State {
   // It's expected that callback will implement some sort of loop (i.e. the I/O
   // loop that drives the editor), although strictly speaking this is not
   // necessary.
-  void Run(boost::function<void(Persistent<Context>)> callback);
+  void Run(boost::function<void(v8::Persistent<v8::Context>)> callback);
 
   EventListener* GetListener(void) { return &listener_; }
 
