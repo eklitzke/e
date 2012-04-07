@@ -6,6 +6,7 @@ var signal = require("signal");
 var sys = require("sys");
 
 var EventListener = require("js/event_listener.js").EventListener;
+var colors = require("js/colors.js");
 
 var core = {
 	column: 0,
@@ -108,12 +109,16 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 	for (var i = top; i <= bot; i++) {
 		newLinePos = i + lineDelta + lines;
 		if (newLinePos > maxAllowed) {
-			newLine = "~";
+			//var pair = colors.getColorPair(curses.CYAN, -1);
+			//core.windows.buffer.attron(pair);
+			core.windows.buffer.mvaddstr(i, 0, "~");
+			core.windows.buffer.clrtoeol();
+			//core.windows.buffer.attroff(pair);
 		} else {
 			newLine = world.buffer.getLine(i + lineDelta + lines).value();
+			core.windows.buffer.mvaddstr(i, 0, newLine);
+			core.windows.buffer.clrtoeol();
 		}
-		core.windows.buffer.mvaddstr(i, 0, newLine);
-		core.windows.buffer.clrtoeol();
 	}
 	core.updateAllWindows();
 	//core.move.absolute(cury, curx);
@@ -372,7 +377,10 @@ core.addFunction("drawStatus", function () {
 		resetCursor = false;
 	} else if (core.curmode == "insert") {
 		core.windows.status.attron(curses.A_BOLD);
+		var colorPair = colors.getColorPair(curses.COLOR_YELLOW, -1);
+		core.windows.status.attron(colorPair);
 		core.windows.status.mvaddstr(1, 0, "-- INSERT --");
+		core.windows.status.attroff(colorPair);
 		core.windows.status.attroff(curses.A_BOLD);
 	}
 
@@ -443,6 +451,7 @@ world.addEventListener("load", function (event) {
 	for (i = 0; i < buflen; i++) {
 		core.windows.buffer.mvaddstr(i, 0, world.buffer.getLine(i).value());
 	}
+
 	for (; i < maxy; i++) {
 		core.windows.buffer.mvaddstr(i, 0, "~");
 	}

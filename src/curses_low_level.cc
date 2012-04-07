@@ -15,8 +15,9 @@ bool is_initialized = false;
 void InitializeCurses() {
   if (!is_initialized) {
     is_initialized = true;
-    mousemask(ALL_MOUSE_EVENTS, nullptr);
+    ASSERT(has_colors() == TRUE);
     start_color();
+    mousemask(ALL_MOUSE_EVENTS, nullptr);
     use_default_colors();  // ncurses extension!
     noecho();
     nonl();  // don't turn LF into CRLF

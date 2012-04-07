@@ -14,6 +14,7 @@
 
 using v8::AccessorInfo;
 using v8::Arguments;
+using v8::Boolean;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
@@ -161,6 +162,34 @@ CURSES_VOID_FUNC(Doupdate, doupdate)
 // @method: refresh
 // @description: Calls the underlying ncurses `refresh()` routine.
 CURSES_VOID_FUNC(Refresh, refresh)
+
+// @method: color_pair
+// @param[pair]: #int the pair number
+Handle<Value> CursesColorPair(const Arguments& args) {
+  CHECK_ARGS(1);
+  int32_t pairnum = args[0]->Int32Value();
+  short pair = static_cast<short>(pairnum);  // NOLINT
+  return scope.Close(Integer::New(COLOR_PAIR(pair)));
+}
+
+// @method: init_pair
+// @param[pair]: #int the pair number
+// @param[foreground]: #int the foreground color
+// @param[background]: #int the background color
+Handle<Value> CursesInitPair(const Arguments& args) {
+  CHECK_ARGS(3);
+  int32_t pairnum = args[0]->Int32Value();
+  int32_t foreground = args[1]->Int32Value();
+  int32_t background = args[2]->Int32Value();
+  int ret = init_pair(static_cast<short>(pairnum),      // NOLINT
+                      static_cast<short>(foreground),   // NOLINT
+                      static_cast<short>(background));  // NOLINT
+  if (ret == OK) {
+    return scope.Close(Boolean::New(true));
+  } else {
+    return scope.Close(Boolean::New(false));
+  }
+}
 
 // @method: move
 // @param[y]: #int the row to move to
@@ -318,7 +347,9 @@ bool Build(Handle<Object> obj) {
   DECLARE_ACCESSOR(obj, A_ALTCHARSET);
   DECLARE_ACCESSOR(obj, A_CHARTEXT);
 
+  AddFunction(obj, "color_pair", &CursesColorPair);
   AddFunction(obj, "doupdate", &CursesDoupdate);
+  AddFunction(obj, "init_pair", &CursesInitPair);
   AddFunction(obj, "move", &CursesMove);
   AddFunction(obj, "newwin", &CursesNewwin);
   AddFunction(obj, "refresh", &CursesRefresh);
