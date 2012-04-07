@@ -308,19 +308,20 @@ core.addFunction("drawTabBar", function () {
 	core.windows.tab.addstr("X");
 });
 
-core.addFunction("drawStatus", function () {
-	core.windows.status.standout();
-	core.windows.status.mvaddstr(0, 0, "  ");
-	var tabStr = "" + (core.line + 1) + "," + core.column;
-	var ratio = core.windowBottom() * 100 / world.buffer.length;
-	if (ratio > 100) {
-		ratio = 100;
+core.addFunction("computeStatusSplits", function (index) {
+	var maxx = core.windows.tab.getmaxx();
+	var third = parseInt(maxx / 3);
+	if (index === 0) {
+		return {'left': 0, 'right': third};
+	} else if (index === 1) {
+		return {'left': third, 'right': 2 * third};
+	} else {
+		return {'left': 2 * third, 'right': maxx};
 	}
-	ratio = parseInt(ratio);
-	tabStr += "  (" + ratio + "%)";
+});
 
-	core.windows.status.addstr(tabStr);
-
+core.addFunction("drawStatusRight", function () {
+	var split = core.computeStatusSplits(2);
 	var fmtTime = function (n) {
 		if (n < 10) {
 			return new String("0" + n);
@@ -340,28 +341,53 @@ core.addFunction("drawStatus", function () {
 		} else {
 			h = fmtTime(h);
 		}
-		statusEnd = h + ":" + fmtTime(d.getMinutes());
+		statusEnd += h + ":" + fmtTime(d.getMinutes());
 		if (core.clockShowSeconds) {
 			statusEnd += ":" + fmtTime(d.getSeconds());
 		}
 		statusEnd += " " + modifier + " ";
 	} else {
-		statusEnd = fmtTime(d.getHours()) + ":" + fmtTime(d.getMinutes());
+		statusEnd += fmtTime(d.getHours()) + ":" + fmtTime(d.getMinutes());
 		if (core.clockShowSeconds) {
 			statusEnd += ":" + fmtTime(d.getSeconds());
 		}
 		statusEnd += " ";
 	}
 
-	var spacesNeeded = (core.windows.status.getmaxx() -
-						core.windows.status.getcurx() -
-						statusEnd.length);
+	while (statusEnd.length < split.right - split.left) {
+		statusEnd = " " + statusEnd;
+	}
+	core.windows.status.standout();
+	core.windows.status.mvaddstr(0, split.left, statusEnd);
+	core.windows.status.standend();
+	core.moveAbsolute(core.windows.buffer.getcury(), core.column);
+});
+
+core.addFunction("switchMode", function (newMode) {
+	core.curmode = newMode;
+	core.drawStatus();
+});
+
+core.addFunction("drawStatus", function () {
+	core.windows.status.standout();
+	core.windows.status.mvaddstr(0, 0, "  ");
+	var split = core.computeStatusSplits(0);
+	var tabStr = "" + (core.line + 1) + "," + core.column;
+	var ratio = core.windowBottom() * 100 / world.buffer.length;
+	if (ratio > 100) {
+		ratio = 100;
+	}
+	ratio = parseInt(ratio);
+	tabStr += "  (" + ratio + "%)";
+
+	core.windows.status.addstr(tabStr);
+
+	var spacesNeeded = split.right - split.left - tabStr.length;
 	var spaces = "";
 	for (var i = 0; i < spacesNeeded; i++) {
 		spaces += " ";
 	}
 	core.windows.status.addstr(spaces);
-	core.windows.status.addstr(statusEnd);
 	core.windows.status.standend();
 
 	// resetCursor is true if we ultimately need to reset the cursor, or false
@@ -393,7 +419,7 @@ core.addFunction("drawStatus", function () {
 // call drawStatus() once a second, and update all of the windows; this ensures
 // that the clock in the corner is refreshed
 setInterval(function () {
-	core.drawStatus();
+	core.drawStatusRight();
 	core.updateAllWindows();
 }, core.clockRefresh);
 
@@ -437,7 +463,16 @@ world.addEventListener("load", function (event) {
 	core.windows.buffer.scrollok(true);
 
 	core.windows.status = curses.stdscr.subwin(2, curses.stdscr.getmaxx(), curses.stdscr.getmaxy() - 2, 0);
+	// blank out the status line
+	var blanks = "";
+	for (var i = 0; i < curses.stdscr.getmaxx(); i++) {
+		blanks += " ";
+	}
+	core.windows.status.standout();
+	core.windows.status.mvaddstr(0, 0, blanks);
+	core.windows.status.standend();
 	core.drawStatus();
+	core.drawStatusRight();
 });
 
 // Draw the buffer contents to the main window.
@@ -655,21 +690,21 @@ core.addKeypressListener("command", function (event) {
 		core.move(lineDelta);
 		core.move.left();
 		core.windows.buffer.clrtoeol();
-		core.curmode = "insert";
+		core.switchMode("insert");
 	};
 
 	switch (wch) {
 	case 'a':
 		core.move(0, 1);
-		core.curmode = "insert";
+		core.switchMode("insert");
 		break;
 	case 'A':
 		core.move.right();
-		core.curmode = "insert";
+		core.switchMode("insert");
 		break;
 	case 'c':
 	case 'C':
-		core.curmode = "insert";
+		core.switchMode("insert");
 		break;
 	case 'h':
 		core.move(0, -1);
@@ -684,11 +719,11 @@ core.addKeypressListener("command", function (event) {
 		core.move(0, 1);
 		break;
 	case 'i':
-		core.curmode = "insert";
+		core.switchMode("insert");
 		break;
 	case 'I':
 		core.move.left();
-		core.curmode = "insert";
+		core.switchMode("insert");
 		break;
 	case 'o':
 		insertLine(1);
@@ -698,7 +733,7 @@ core.addKeypressListener("command", function (event) {
 		break;
 	case 's':
 	case 'S':
-		core.curmode = "insert";
+		core.switchMode("insert");
 		break;
 	case '^':
 	case '0':
@@ -742,7 +777,7 @@ world.addEventListener("keypress", function (event) {
 	switch (code) {
 	case 27: // ^[ a.k.a. Ctrl-[ a.k.a. escape
 		if (core.viMode) {
-			core.curmode = "command";
+			core.switchMode("command");
 			core.move(0, -1);  // like vi
 		} else {
 			core.inEscape = true;
