@@ -17,6 +17,7 @@ using v8::External;
 using v8::Handle;
 using v8::HandleScope;
 using v8::Integer;
+using v8::Local;
 using v8::Object;
 using v8::Script;
 using v8::String;
@@ -24,7 +25,7 @@ using v8::Undefined;
 using v8::Value;
 
 namespace e {
-std::vector<Handle<Object> >& EventListener::CallbackMap(
+std::vector<Persistent<Object> >& EventListener::CallbackMap(
     const std::string &callback_name,
     bool use_capture) {
   if (use_capture)
@@ -34,28 +35,30 @@ std::vector<Handle<Object> >& EventListener::CallbackMap(
 }
 
 bool EventListener::Add(const std::string& callback_name,
-                        Handle<Object> callback,
+                        Local<Object> callback,
                         bool use_capture) {
-  std::vector<Handle<Object> > &callback_list = CallbackMap(callback_name,
-                                                            use_capture);
-  std::vector<Handle<Object> >::iterator it;
+  std::vector<Persistent<Object> > &callback_list = CallbackMap(callback_name,
+                                                                use_capture);
+  std::vector<Persistent<Object> >::iterator it;
   for (it = callback_list.begin(); it != callback_list.end(); ++it) {
     if ((*it) == callback) {
       return false;
     }
   }
-  callback_list.push_back(callback);
+  Persistent<Object> callback_obj = Persistent<Object>::New(callback);
+  callback_list.push_back(callback_obj);
   return true;
 }
 
 bool EventListener::Remove(const std::string &callback_name,
-                           Handle<Object>  callback,
+                           Local<Object> callback,
                            bool use_capture) {
-  std::vector<Handle<Object> > &callback_list = CallbackMap(callback_name,
-                                                            use_capture);
-  std::vector<Handle<Object> >::iterator it;
+  std::vector<Persistent<Object> > &callback_list = CallbackMap(callback_name,
+                                                                use_capture);
+  std::vector<Persistent<Object> >::iterator it;
   for (it = callback_list.begin(); it != callback_list.end(); ++it) {
     if (*it == callback) {
+      it->Dispose();
       callback_list.erase(it);
       return true;
     }
@@ -103,8 +106,8 @@ void EventListener::Dispatch(const std::string& name,
 void EventListener::Dispatch(const std::string &name,
                              Handle<Object> this_argument,
                              const std::vector<Handle<Value> > &arguments) {
-  std::vector<Handle<Object> > &captures = capture_[name];
-  std::vector<Handle<Object> > &bubbles = bubble_[name];
+  std::vector<Persistent<Object> > &captures = capture_[name];
+  std::vector<Persistent<Object> > &bubbles = bubble_[name];
 
   // build up argc and argv
   const size_t argc = arguments.size();

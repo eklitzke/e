@@ -52,14 +52,6 @@ bool keep_going = true;
 // @class: world
 // @description: The representation of the world's state.
 
-// @method: addEventListener
-// @param[type]: #string the type of event to listen for
-// @param[listener]: #function the callback function to invoke
-// @param[useCapture]: #bool run the listener in capture mode (optional,
-//                     defaults to `false`)
-// @description: Adds an event listener to the world. This follows the usual
-//               browser-based `addEventListener` interface.
-
 // @method: stopLoop
 // @description: Stops the event loop.
 Handle<Value> JSStopLoop(const Arguments& args) {
@@ -68,25 +60,32 @@ Handle<Value> JSStopLoop(const Arguments& args) {
   return Undefined();
 }
 
-Handle<Value> AddEventListener(const Arguments& args) {
+// @method: addEventListener
+// @param[type]: #string the type of event to listen for
+// @param[listener]: #function the callback function to invoke
+// @param[useCapture]: #bool run the listener in capture mode (optional,
+//                     defaults to `false`)
+// @description: Adds an event listener to the world. This follows the usual
+//               browser-based `addEventListener` interface.
+Handle<Value> JSAddEventListener(const Arguments& args) {
   CHECK_ARGS(2);
   GET_SELF(State);
 
   Local<String> event_name = args[0]->ToString();
 
-  Handle<Value> callback = args[1];
+  Local<Value> callback = args[1];
   if (!callback->IsObject()) {
     return Undefined();
   }
-  self->callback_o = Persistent<Object>::New(callback->ToObject());
 
   bool use_capture = true;
   if (args.Length() >= 3) {
     use_capture = args[2]->BooleanValue();
   }
 
+  Local<Object> obj = callback->ToObject();
   self->GetListener()->Add(
-      js::ValueToString(event_name), self->callback_o, use_capture);
+      js::ValueToString(event_name), obj, use_capture);
 
   return Undefined();
 }
@@ -120,7 +119,7 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);
-  js::AddTemplateFunction(world_templ, "addEventListener", AddEventListener);
+  js::AddTemplateFunction(world_templ, "addEventListener", JSAddEventListener);
   js::AddTemplateFunction(world_templ, "stopLoop", JSStopLoop);
 
   Persistent<Context> context = InitializeContext(global);

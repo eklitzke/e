@@ -18,13 +18,8 @@
 #include "./event_listener.h"
 #include "./keycode.h"
 
-using v8::Arguments;
 using v8::Context;
-using v8::Function;
 using v8::Handle;
-using v8::Persistent;
-using v8::Script;
-using v8::Value;
 
 namespace e {
 
@@ -48,8 +43,6 @@ class State {
 
   // returns true if the mainloop should keep going, false otherwise
   bool HandleKey(KeyCode *k);
-
-  v8::Persistent<v8::Object> callback_o;
 
  private:
   std::vector<std::string> scripts_;
