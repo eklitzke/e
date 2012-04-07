@@ -10,11 +10,14 @@
 #include "./io_service.h"
 #include "./js.h"
 
+using v8::Boolean;
 using v8::HandleScope;
+using v8::Integer;
 using v8::Local;
 using v8::Object;
 using v8::Persistent;
 using v8::TryCatch;
+using v8::Undefined;
 
 namespace {
 uint32_t next_id = 0;
@@ -23,6 +26,62 @@ std::map<uint32_t, e::Timer*> timers_;
 void TimeoutHandler(e::Timer *timer, const boost::system::error_code& error) {
   if (!error && timer->Fire()) {
     delete timer;
+  }
+}
+
+// @class: timers (not really)
+//
+// @method: setTimeout
+// @description: run code after a timeout
+Handle<Value> JSSetTimeout(const Arguments& args) {
+  CHECK_ARGS(2);
+  Handle<Value> val = args[0];
+  uint32_t millis = args[1]->Uint32Value();
+
+  Local<Object> obj = val->ToObject();
+  if (obj->IsCallable()) {
+    Persistent<Object> func = Persistent<Object>::New(obj);
+    e::Timer *timer = e::Timer::New(func, millis, false);
+    timer->Start();
+    return scope.Close(Integer::New(timer->GetId()));
+  } else {
+    return Undefined();
+  }
+}
+
+// @method: setInterval
+// @description: run code in an interval
+Handle<Value> JSSetInterval(const Arguments& args) {
+  CHECK_ARGS(2);
+  Handle<Value> val = args[0];
+  uint32_t millis = args[1]->Uint32Value();
+
+  Local<Object> obj = val->ToObject();
+  if (obj->IsCallable()) {
+    Persistent<Object> func = Persistent<Object>::New(obj);
+    e::Timer *timer = e::Timer::New(func, millis, true);
+    timer->Start();
+    return scope.Close(Integer::New(timer->GetId()));
+  } else {
+    return Undefined();
+  }
+}
+
+// @method: clearTimeout
+// @description: cancel a timeout created by setTimeout()
+// @method: clearInterval
+// @description: cancel a timeout created by setInterval()
+//
+// N.B. this method works for both timeouts and intervals
+Handle<Value> JSClearTimeout(const Arguments& args) {
+  CHECK_ARGS(1);
+  uint32_t id = args[0]->Uint32Value();
+  auto it = timers_.find(id);
+  if (it != timers_.end()) {
+    delete it->second;
+    return scope.Close(Boolean::New(true));
+  } else {
+    return scope.Close(Boolean::New(false));
   }
 }
 }
@@ -78,14 +137,14 @@ size_t CancelAllTimers() {
   return deleted;
 }
 
-bool CancelTimerById(uint32_t id) {
-  // cancel and delete a timer with some id
-  auto it = timers_.find(id);
-  if (it != timers_.end()) {
-    delete it->second;
-    return true;
-  } else {
-    return false;
-  }
+void AddTimersToGlobalNamespace(Local<ObjectTemplate> global) {
+  global->Set(String::NewSymbol("setTimeout"),
+              FunctionTemplate::New(JSSetTimeout), v8::ReadOnly);
+  global->Set(String::NewSymbol("setInterval"),
+              FunctionTemplate::New(JSSetInterval), v8::ReadOnly);
+  global->Set(String::NewSymbol("clearTimeout"),
+              FunctionTemplate::New(JSClearTimeout), v8::ReadOnly);
+  global->Set(String::NewSymbol("clearInterval"),
+              FunctionTemplate::New(JSClearTimeout), v8::ReadOnly);
 }
 }

@@ -24,7 +24,6 @@ namespace e {
 
 using v8::Arguments;
 using v8::Array;
-using v8::Boolean;
 using v8::Context;
 using v8::External;
 using v8::Handle;
@@ -48,7 +47,6 @@ using v8::Value;
 const char *kInitFile = ".e.js";
 
 namespace {
-std::set<boost::asio::deadline_timer *> timers_;
 bool keep_going = true;
 
 // @class: world
@@ -66,64 +64,9 @@ bool keep_going = true;
 // @description: Stops the event loop.
 Handle<Value> JSStopLoop(const Arguments& args) {
   keep_going = false;
-  for (auto it = timers_.begin(); it != timers_.end(); ++it) {
-    boost::asio::deadline_timer *timer = *it;
-    timer->cancel();
-    ASSERT(timers_.erase(timer) == 1);
-    delete timer;
-  }
   GetIOService()->stop();
   return Undefined();
 }
-
-// @method: setTimeout
-// @description: run code after a timeout
-Handle<Value> JSSetTimeout(const Arguments& args) {
-  CHECK_ARGS(2);
-  Handle<Value> val = args[0];
-  uint32_t millis = args[1]->Uint32Value();
-
-  Local<Object> obj = val->ToObject();
-  if (obj->IsCallable()) {
-    Persistent<Object> func = Persistent<Object>::New(obj);
-    Timer *timer = e::Timer::New(func, millis, false);
-    timer->Start();
-    return scope.Close(Integer::New(timer->GetId()));
-  } else {
-    return Undefined();
-  }
-}
-
-// @method: setInterval
-// @description: run code in an interval
-Handle<Value> JSSetInterval(const Arguments& args) {
-  CHECK_ARGS(2);
-  Handle<Value> val = args[0];
-  uint32_t millis = args[1]->Uint32Value();
-
-  Local<Object> obj = val->ToObject();
-  if (obj->IsCallable()) {
-    Persistent<Object> func = Persistent<Object>::New(obj);
-    Timer *timer = e::Timer::New(func, millis, true);
-    timer->Start();
-    return scope.Close(Integer::New(timer->GetId()));
-  } else {
-    return Undefined();
-  }
-}
-
-// @method: clearTimeout
-// @description: cancel a timeout created by setTimeout()
-// @method: clearInterval
-// @description: cancel a timeout created by setInterval()
-//
-// N.B. this method works for both timeouts and intervals
-Handle<Value> JSClearTimeout(const Arguments& args) {
-  CHECK_ARGS(1);
-  uint32_t id = args[0]->Uint32Value();
-  return scope.Close(Boolean::New(CancelTimerById(id)));
-}
-
 
 Handle<Value> AddEventListener(const Arguments& args) {
   CHECK_ARGS(2);
@@ -165,7 +108,7 @@ State::~State() {
 void State::LoadScript(bool run,
                        boost::function<void(Persistent<Context>)> then) {
   HandleScope scope;
-  Handle<ObjectTemplate> global = ObjectTemplate::New();
+  Local<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("assert"),
               FunctionTemplate::New(js::JSAssert), v8::ReadOnly);
   global->Set(String::NewSymbol("flushLogs"),
@@ -174,14 +117,7 @@ void State::LoadScript(bool run,
               FunctionTemplate::New(js::JSLog), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(js::JSRequire), v8::ReadOnly);
-  global->Set(String::NewSymbol("setTimeout"),
-              FunctionTemplate::New(JSSetTimeout), v8::ReadOnly);
-  global->Set(String::NewSymbol("setInterval"),
-              FunctionTemplate::New(JSSetInterval), v8::ReadOnly);
-  global->Set(String::NewSymbol("clearTimeout"),
-              FunctionTemplate::New(JSClearTimeout), v8::ReadOnly);
-  global->Set(String::NewSymbol("clearInterval"),
-              FunctionTemplate::New(JSClearTimeout), v8::ReadOnly);
+  AddTimersToGlobalNamespace(global);  // add setTimeout() and co.
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();
   world_templ->SetInternalFieldCount(1);
