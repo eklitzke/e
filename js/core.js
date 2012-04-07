@@ -7,6 +7,7 @@ var sys = require("sys");
 
 var EventListener = require("js/event_listener.js").EventListener;
 var colors = require("js/colors.js");
+require("js/onload.js");  // just for side-effects
 
 // You can easily override most of these attributes in your ~/.e.js file (e.g.
 // to change the clock mode or refresh rate).
@@ -15,7 +16,7 @@ var core = {
 	line: 0,
 	clockMode: "12", // 12 or 24
 	clockShowSeconds: false,
-	clockRefresh: 1000,
+	clockRefresh: null, // delay loading this until after ~/.e.js has been parsed
 	exBuffer: '', // the buffer for : commands in vi-mode
 	inEscape: false, // true when part of an escape sequence
 	viMode: true,
@@ -418,13 +419,6 @@ core.addFunction("drawStatus", function () {
 	}
 });
 
-// call drawStatus() once a second, and update all of the windows; this ensures
-// that the clock in the corner is refreshed
-setInterval(function () {
-	core.drawStatusRight();
-	core.updateAllWindows();
-}, core.clockRefresh);
-
 core.addFunction("updateAllWindows", function (doupdate) {
 	if (doupdate === undefined) {
 		doupdate = true;
@@ -441,65 +435,6 @@ core.addFunction("updateAllWindows", function (doupdate) {
 
 	// do the update
 	curses.doupdate();
-});
-
-// Called when the editor is first loaded; this loads any files specified on the
-// command line.
-world.addEventListener("load", function (event) {
-	if (world.args.length) {
-		try {
-			world.buffer.open(world.args[0]);
-		} catch (e) {
-			panic("failed to open \"" + world.args[0] + "\" due to " + errno.errorcode[e]);
-		}
-	}
-});
-
-// Draw and create the initial windows.
-world.addEventListener("load", function (event) {
-	core.windows = {};
-	core.windows.tab = curses.stdscr.subwin(1, curses.stdscr.getmaxx(), 0, 0);
-	core.drawTabBar();
-
-	core.windows.buffer = curses.stdscr.subwin(curses.stdscr.getmaxy() - 3, curses.stdscr.getmaxx(), 1, 0);
-	core.windows.buffer.scrollok(true);
-
-	core.windows.status = curses.stdscr.subwin(2, curses.stdscr.getmaxx(), curses.stdscr.getmaxy() - 2, 0);
-	// blank out the status line
-	var blanks = "";
-	for (var i = 0; i < curses.stdscr.getmaxx(); i++) {
-		blanks += " ";
-	}
-	core.windows.status.standout();
-	core.windows.status.mvaddstr(0, 0, blanks);
-	core.windows.status.standend();
-	core.drawStatus();
-	core.drawStatusRight();
-});
-
-// Draw the buffer contents to the main window.
-world.addEventListener("load", function (event) {
-	var i = 0;
-	var maxy = core.windows.buffer.getmaxy();
-	var buflen = world.buffer.length;
-	if (buflen > maxy) {
-		buflen = maxy;
-	}
-	for (i = 0; i < buflen; i++) {
-		core.windows.buffer.mvaddstr(i, 0, world.buffer.getLine(i).value());
-	}
-
-	core.windows.buffer.attron(colors.getColorPair(curses.COLOR_BLUE, -1));
-	for (; i < maxy; i++) {
-		core.windows.buffer.mvaddstr(i, 0, "~");
-	}
-	core.windows.buffer.attroff(colors.getColorPair(curses.COLOR_BLUE, -1));
-});
-
-// Move the cursor and update all windows.
-world.addEventListener("load", function (event) {
-	core.moveAbsolute(0, 0);
-	core.updateAllWindows();
 });
 
 // The absolute lowest level interface to keypresses is callbacks registered by
@@ -820,6 +755,3 @@ world.addEventListener("keypress", function (event) {
 world.addEventListener("after_keypress", function (e) {
 	core.updateAllWindows();
 });
-
-// Flush logs once a second.
-setInterval(flushLogs, 1000);
