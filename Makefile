@@ -6,6 +6,7 @@ PRECOMPILE := scripts/precompile
 SRCFILES := $(shell git ls-files src/)
 TESTFILES := $(shell git ls-files tests/)
 TARGET := build/out/Default/e
+OPT_TARGET := build/out/Default/opt
 TEST_TARGET := build/out/Default/test
 TEMPLATES := $(shell echo scripts/templates/*.html)
 BUNDLED_JS = src/.bundled_core
@@ -48,8 +49,8 @@ build:
 lint:
 	python third_party/cpplint.py $(SRCFILES)
 
-$(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
-	make -C build e
+$(OPT_TARGET) $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
+	make -C build $(shell echo $@ | awk -F/ '{print $$NF}')
 
 $(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(BUNDLED_JS) $(KEYCODE_FILES) build
 	make -C build test
@@ -59,9 +60,9 @@ test: $(TEST_TARGET)
 e: $(TARGET)
 	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(TARGET) $@; echo " done!"; fi
 
-opt: $(TARGET)
-	cp $(TARGET) ./$@
-	strip -s ./$@
+opt: $(OPT_TARGET)
+	@strip -s $(OPT_TARGET)
+	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(OPT_TARGET) $@; echo " done!"; fi
 
 test: $(TEST_TARGET)
 	@if [ ! -e "$@" ]; then echo -n "Creating ./$@ symlink..."; ln -sf $(TEST_TARGET) $@; echo " done!"; fi
