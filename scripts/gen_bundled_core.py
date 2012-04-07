@@ -51,10 +51,8 @@ cc_template = """
 #include "./assert.h"
 
 namespace {
-// This is the "minified" core.js code, as a C string. The reason for
-// obfuscating it like this is simply to avoid having to escape the string in a
-// way that's safe for C. Python's built in "string_escape" codec comes close
-// but doesn't quite grok C.
+// This is the LZMA compressed core.js code, as a byte array. Its uncompressed
+// length is %(uncompressed_len)d bytes.
 const uint8_t core_src[%(compressed_len)d] = {
 %(src)s
 };
@@ -73,7 +71,7 @@ v8::Local<v8::Script> GetCoreScript() {
   uint8_t bufout[8096];
   lzma_stream lstr = LZMA_STREAM_INIT;
   if (lzma_auto_decoder(&lstr, UINT64_MAX, 0) != LZMA_OK) {
-    e::Panic("failed to open LZMA decoder");
+    Panic("failed to open LZMA decoder");
   }
   lstr.next_in = core_src;
   lstr.avail_in = sizeof(core_src);
@@ -82,7 +80,8 @@ v8::Local<v8::Script> GetCoreScript() {
   int ret = lzma_code(&lstr, LZMA_RUN);
   if (ret != LZMA_STREAM_END) {
     if (ret != LZMA_OK) {
-      e::Panic("failed to lzma_code at LZMA_RUN, code %%d", ret);
+      lzma_end(&lstr);
+      Panic("failed to lzma_code at LZMA_RUN, code %%d", ret);
     }
     size_t written = %(uncompressed_len)d - lstr.avail_out;
     while (true) {
@@ -91,19 +90,21 @@ v8::Local<v8::Script> GetCoreScript() {
       ret = lzma_code(&lstr, LZMA_FINISH);
       if (ret != LZMA_OK && ret != LZMA_STREAM_END) {
         lzma_end(&lstr);
-        e::Panic("Failed to lzma_code at LZMA_FINISH");
+        Panic("Failed to lzma_code at LZMA_FINISH");
       }
       size_t encoded = sizeof(bufout) - lstr.avail_out;
       memcpy(buf + written, bufout, encoded);
       written += encoded;
       if (ret == LZMA_STREAM_END) {
         if (written != %(uncompressed_len)d) {
+          lzma_end(&lstr);
           Panic("wrote %%zd bytes but wanted to write %%zd", written, %(uncompressed_len)d);
         }
         break;
       }
     }
   }
+  lzma_end(&lstr);
 
   v8::Local<v8::String> src = v8::String::New(
     reinterpret_cast<const char *>(buf), %(uncompressed_len)d);
