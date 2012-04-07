@@ -17,7 +17,7 @@ bool Build(v8::Handle<v8::Object> obj) {
   v8::HandleScope scope;
 %(values)s
 
-  v8::Local<v8::Array> arr = v8::Array::New();
+  v8::Local<v8::Array> arr = v8::Array::New(%(max_errno)d);
 %(array)s
 
   v8::Local<v8::String> key = v8::String::New("errorcode");
@@ -41,5 +41,6 @@ if __name__ == '__main__':
     array = '\n'.join(array)
 
     print template.strip() % {'array': array,
+                              'max_errno': max(errno.errorcode.iterkeys()) + 1,
                               'values': values,
                               'year': datetime.datetime.today().year}
