@@ -13,6 +13,7 @@
             '-lboost_system',
             '-lboost_program_options',
             '<!@(pkg-config --libs-only-l libglog)',
+            '<!@(pkg-config --libs-only-l liblzma)',
             '<!@(pkg-config --libs-only-l ncursesw)',
             '-ltcmalloc',
             '-lunwind',

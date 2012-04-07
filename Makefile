@@ -1,6 +1,5 @@
 CC := g++
 CFLAGS := -Wall -pedantic -Os
-JSMIN := third_party/jsmin
 JS_ERRNO := src/js_errno.cc
 JS_SOURCE := $(shell git ls-files js/)
 PRECOMPILE := scripts/precompile
@@ -17,7 +16,7 @@ KEYCODE_FILES = src/keycode.cc src/keycode.h
 all: docs/jsdoc.html
 
 clean:
-	rm -rf $(JSMIN) build/out/ build/src/ docs/
+	rm -rf build/out/ build/src/ docs/
 	rm -f $(BUNDLED_JS) $(REAL_BUNDLED_JS) scripts/precompile
 	rm -f $(KEYCODE_FILES)
 	rm -f e opt test
@@ -30,15 +29,11 @@ docs/jsdoc.html: scripts/gen_js_docs.py e docs
 	@python scripts/gen_js_docs.py -o $@ $(SRCFILES) $(KEYCODE_FILES)
 	@echo " done!"
 
-$(JSMIN): $(JSMIN).c
-	$(CC) $(CFLAGS) $< -o $@
-	@strip -s $@
-
 $(PRECOMPILE): $(PRECOMPILE).cc
 	$(CC) $(CFLAGS) -lv8 $< -o $@
 	@strip -s $@
 
-$(BUNDLED_JS): scripts/gen_bundled_core.py scripts/precompile $(JSMIN) $(JS_SOURCE)
+$(BUNDLED_JS): scripts/gen_bundled_core.py scripts/precompile $(JS_SOURCE)
 	python $< js/core.js
 
 $(KEYCODE_FILES): scripts/gen_key_sources.py third_party/Caps

@@ -1,13 +1,11 @@
 import datetime
 import hashlib
+import lzma
 import optparse
 import pprint
 import re
 import subprocess
 import sys
-import urllib
-import urllib2
-import json
 try:
     import jsmin
 except ImportError:
@@ -44,30 +42,76 @@ cc_template = """
 //
 // Contents generated %(gentime)s.
 
+#include "./bundled_core.h"
+
+#include <lzma.h>
 #include <v8.h>
+#include <cstring>
+
+#include "./assert.h"
 
 namespace {
 // This is the "minified" core.js code, as a C string. The reason for
 // obfuscating it like this is simply to avoid having to escape the string in a
 // way that's safe for C. Python's built in "string_escape" codec comes close
 // but doesn't quite grok C.
-//
-// In this compilation, core_src is %(src_len)d bytes long.
-const char *core_src = (
-%(src)s);
+const uint8_t core_src[%(compressed_len)d] = {
+%(src)s
+};
 
-// Pre-compilation data, %(precompilation_len)d bytes
-const char *precompiled_src = (
-%(precompiled_src)s);
+// Pre-compilation data
+const uint8_t precompiled_src[%(precompilation_len)d] = {
+%(precompiled_src)s
+};
 }
 
 namespace e {
 v8::Local<v8::Script> GetCoreScript() {
   v8::HandleScope scope;
-  v8::Local<v8::String> src = v8::String::New(core_src, %(src_len)d);
-  v8::ScriptData *pre_data = v8::ScriptData::New(precompiled_src, %(precompilation_len)d);
+
+  uint8_t *buf = new uint8_t[%(uncompressed_len)d];
+  uint8_t bufout[8096];
+  lzma_stream lstr = LZMA_STREAM_INIT;
+  if (lzma_auto_decoder(&lstr, UINT64_MAX, 0) != LZMA_OK) {
+    e::Panic("failed to open LZMA decoder");
+  }
+  lstr.next_in = core_src;
+  lstr.avail_in = sizeof(core_src);
+  lstr.next_out = buf;
+  lstr.avail_out = %(uncompressed_len)d;
+  int ret = lzma_code(&lstr, LZMA_RUN);
+  if (ret != LZMA_STREAM_END) {
+    if (ret != LZMA_OK) {
+      e::Panic("failed to lzma_code at LZMA_RUN, code %%d", ret);
+    }
+    size_t written = %(uncompressed_len)d - lstr.avail_out;
+    while (true) {
+      lstr.next_out = bufout;
+      lstr.avail_out = sizeof(bufout);
+      ret = lzma_code(&lstr, LZMA_FINISH);
+      if (ret != LZMA_OK && ret != LZMA_STREAM_END) {
+        lzma_end(&lstr);
+        e::Panic("Failed to lzma_code at LZMA_FINISH");
+      }
+      size_t encoded = sizeof(bufout) - lstr.avail_out;
+      memcpy(buf + written, bufout, encoded);
+      written += encoded;
+      if (ret == LZMA_STREAM_END) {
+        if (written != %(uncompressed_len)d) {
+          Panic("wrote %%zd bytes but wanted to write %%zd", written, %(uncompressed_len)d);
+        }
+        break;
+      }
+    }
+  }
+
+  v8::Local<v8::String> src = v8::String::New(
+    reinterpret_cast<const char *>(buf), %(uncompressed_len)d);
+  v8::ScriptData *pre_data = v8::ScriptData::New(
+    reinterpret_cast<const char *>(precompiled_src), sizeof(precompiled_src));
   v8::Local<v8::Script> script = v8::Script::Compile(src, nullptr, pre_data);
   delete pre_data;
+  delete[] buf;
   return scope.Close(script);
 }
 }
@@ -97,51 +141,6 @@ def expand_requires(contents):
         offset = m.start()
     return contents
 
-def get_closure_code(code, use_advanced=False):
-    request_params = [
-        ('js_code', code),
-        ('compilation_level', 'ADVANCED_OPTIMIZATIONS' if use_advanced else 'SIMPLE_OPTIMIZATIONS'),
-        ('output_format', 'json'),
-        ('output_info', 'compiled_code'),
-        ('output_info', 'errors'),
-        ('exclude_default_externs', 'true')
-        ]
-    if opts.warnings:
-        request_params.append(('output_info', 'warnings'))
-    if opts.statistics:
-        request_params.append(('output_info', 'statistics'))
-
-    r = urllib.urlopen('https://closure-compiler.appspot.com/compile', urllib.urlencode(request_params))
-    response = json.load(r)
-    if 'warnings' in response:
-        print 'WARNINGS'
-        print '=============='
-        print pprint.pprint(response['warnings'])
-        sys.exit(1)
-    if 'errors' in response:
-        print 'ERRORS'
-        print '=============='
-        print pprint.pprint(response['errors'])
-        sys.exit(1)
-    if 'statistics' in response:
-        print 'STATISTICS'
-        print '=============='
-        print pprint.pprint(response['statistics'])
-
-    return response['compiledCode']
-
-def get_py_jsmin_code(code):
-    minifier = jsmin.JavaScriptMinifier()
-    return minifier.JSMinify(code)
-
-def get_jsmin_code(code):
-    p = subprocess.Popen(['third_party/jsmin'], stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE)
-    p.stdin.write(code)
-    out, err = p.communicate()
-    assert not err, er
-    return out
-
 def maybe_replace_file(name, contents):
     # to avoid rebuilding too much (specifically rebuiding state.cc) when
     # bundled_core.{h,cc} are re-generated, we only re-write the contents of
@@ -159,35 +158,31 @@ def maybe_replace_file(name, contents):
             wf.write(contents)
 
 def c_escape_binary_data(data):
-    line_size = 18
+    line_size = 13
     splitsrc = []
     while data:
         splitsrc.append(data[:line_size])
         data = data[line_size:]
 
     escaped_output = []
-    for line in splitsrc:
-        l = '"%s"' % ''.join('\\x%02x' % ord(c) for c in line)
-        escaped_output.append(l)
+    for line in splitsrc[:-1]:
+        l = ', '.join('0x%02x' % ord(c) for c in line) + ','
+        escaped_output.append('  ' + l)
+    escaped_output.append('  ' + ', '.join('0x%02x' % ord(c) for c in splitsrc[-1]))
+    return '\n'.join(escaped_output)
 
-    return '  ' + '\n  '.join(escaped_output)
-
-def write_output(code, precompilation, output):
-    current_year = datetime.date.today().year
-
-    # add a copyright header to the minified JS
-    hdr = '// Copyright %d, Evan Klitzke <evan@eklitzke.org>' % current_year
-    code = hdr + '\n' + code
-
+def write_output(code, uncompressed_len, precompilation, output):
     src = c_escape_binary_data(code)
     precompiled_src = c_escape_binary_data(precompilation)
 
+    current_year = datetime.datetime.today().year
     gentime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cc_src = cc_template.strip() % {
         'current_year': current_year,
         'gentime': gentime,
         'src': src,
-        'src_len': len(code),
+        'compressed_len': len(code),
+        'uncompressed_len': uncompressed_len,
         'precompiled_src': precompiled_src,
         'precompilation_len': len(precompilation)
         }
@@ -207,37 +202,28 @@ def write_output(code, precompilation, output):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('--use-closure', default=False, action='store_true',
-                      help='Use closure instead of jsmin (this generates '
-                      'significantly more compact JS, but is slower and '
-                      'requires network access).')
-    parser.add_option('--use-py-jsmin', default=False, action='store_true',
-                      help='Use V8\'s jsmin instead of Douglas Crockford\'s')
     parser.add_option('--no-expand-requires', dest='expand_requires', default=True,
                       action='store_false', help="Don't expand requires()")
-    parser.add_option('--no-warnings', dest='warnings', default=True, action='store_false', help='Get warnings.')
-    parser.add_option('-s', '--statistics', action='store_true', help='Get statistics.')
     parser.add_option('-o', '--outfile', default='src/bundled_core', help='Output file to emit.')
-    parser.add_option('-a', '--advanced-optimizations', action='store_true', help='Use ADVANCED_OPTIMIZATIONS with closure.')
     opts, args = parser.parse_args()
     if not opts.outfile:
         parser.error('must have an outfile')
         sys.exit(1)
 
     code = ['"use strict";']  # enforce strict mode for bundled JS, gh-15
+
     for filename in args:
         with open(filename) as f:
             code.append(f.read())
+
     code = '\n'.join(code).strip()
     if opts.expand_requires:
         code = expand_requires(code)
 
-    if opts.use_closure:
-        code = get_closure_code(code, opts.advanced_optimizations)
-    elif opts.use_py_jsmin:
-        code = get_py_jsmin_code(code)
-    else:
-        code = get_jsmin_code(code)
+    uncompressed_len = len(code)
+    compressor = lzma.LZMACompressor()
+    compressed_output = compressor.compress(code);
+    compressed_output += compressor.flush()
 
     p = subprocess.Popen(['scripts/precompile'],
                          stdin=subprocess.PIPE,
@@ -246,4 +232,4 @@ if __name__ == '__main__':
     p.stdin.write(code)
     out, err = p.communicate()
     assert not err, err
-    write_output(code, out, opts.outfile)
+    write_output(compressed_output, uncompressed_len, out, opts.outfile)

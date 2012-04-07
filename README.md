@@ -159,6 +159,7 @@ These are some of the known dependencies:
 * [glog](http://code.google.com/p/google-glog/) (you might need an older
   version)
 * [libunwind](http://www.nongnu.org/libunwind/)
+* [libxz](http://tukaani.org/xz/) (i.e. you need `lzma.h` on your system)
 * [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
   this; other curses implementations might work too)
 * [tcmalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
