@@ -6,7 +6,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
-#include <v8.h>
 
 #ifdef USE_LINUX
 #ifndef _XOPEN_SOURCE_EXTENDED
@@ -36,7 +35,7 @@ class CursesWindow {
   std::vector<std::string> args_;
   boost::asio::posix::stream_descriptor term_in_;
 
-  void InnerLoop(v8::Persistent<v8::Context>);
+  void InnerLoop();
 
   void OnRead(const boost::system::error_code&, std::size_t);
   bool InnerOnRead();

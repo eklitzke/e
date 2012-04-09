@@ -6,10 +6,11 @@
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
 #include <boost/bind.hpp>
-#include <v8.h>
-
 #include <term.h>
 #include <termios.h>
+#include <v8.h>
+
+#include <functional>
 
 #include "./assert.h"
 #include "./curses_low_level.h"
@@ -18,6 +19,11 @@
 #include "./js_curses_window.h"
 #include "./keycode.h"
 #include "./logging.h"
+
+using v8::Context;
+using v8::Local;
+using v8::String;
+using v8::Object;
 
 namespace e {
 namespace {
@@ -101,15 +107,16 @@ bool CursesWindow::InnerOnRead() {
 }
 
 void CursesWindow::Loop() {
-  state_.Run(boost::bind(&CursesWindow::InnerLoop, this, _1));
+  state_.Run(std::bind(&CursesWindow::InnerLoop, this));
 }
 
-void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
+void CursesWindow::InnerLoop() {
   Initialize();
 
   // Once initscr() has been called, we can create an object to hold the stdscr
   // pointer.
   JSCursesWindow jcw(stdscr);
+  Local<Context> c = Context::GetCurrent();
   Local<Object> curses = c->Global()->Get(
       String::NewSymbol("curses"))->ToObject();
   curses->Set(String::NewSymbol("stdscr"), jcw.ToScript());

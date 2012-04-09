@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <v8.h>
 
+#include <functional>
 #include <string>
 
 #include "./bundled_core.h"
@@ -103,7 +104,7 @@ State::~State() {
   }
 }
 
-void State::Run(boost::function<void(Persistent<Context>)> then) {
+void State::Run(std::function<void()> then) {
   HandleScope scope;
   Local<ObjectTemplate> global = ObjectTemplate::New();
   AddJsToGlobalNamespace(global);  // add log(), require(), etc.
@@ -180,7 +181,7 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
 
   // run the callback
   if (!bail && keep_going) {
-    then(context);
+    then();
   }
   CancelAllTimers();
   DisposeContext();

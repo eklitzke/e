@@ -9,8 +9,7 @@
 
 #include <v8.h>
 
-#include <boost/function.hpp>
-
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -34,7 +33,7 @@ class State {
   // It's expected that callback will implement some sort of loop (i.e. the I/O
   // loop that drives the editor), although strictly speaking this is not
   // necessary.
-  void Run(boost::function<void(v8::Persistent<v8::Context>)> callback);
+  void Run(std::function<void()> callback);
 
   EventListener* GetListener(void) { return &listener_; }
 
