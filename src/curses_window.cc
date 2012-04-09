@@ -116,6 +116,7 @@ void CursesWindow::InnerLoop(v8::Persistent<v8::Context> c) {
 
   state_.GetListener()->Dispatch("load");
 
+  LOG(INFO, "waiting for keypresses...");
   if (UseAsio()) {
     EstablishReadLoop();
     GetIOService()->run();

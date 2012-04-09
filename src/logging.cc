@@ -63,7 +63,12 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
     // remove log statements for low log levels (e.g. debug) at compile time,
     // which would be possible with a macro based logging implementation. In
     // that cast, the cost of a logging call is two function calls (to LOG and
-    // VLog) and the cost of calling va_start() and va_end().
+    // VLog) and the cost of calling va_start() and va_end(); the va_* methods
+    // may be be simple or complex depending on the host compiler.
+    //
+    // The flip side to this, of course, is that logging this way allows for
+    // dynamically set log levels (this could be useful to expose a more
+    // fully-featured logging environment to JavaScript).
     return;
   }
   std::string format;
