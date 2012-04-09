@@ -37,7 +37,7 @@ Logger::Logger(const std::string &name, int level)
     :level_(level) {
   file_ = fopen(name.c_str(), "w");
   ASSERT(file_ != nullptr);
-  Log(INFO, "logging intialized, opened log file \"%s\" for logging",
+  Log(INFO, "opened log file \"%s\" for logging",
       name.c_str());
 }
 
@@ -68,28 +68,6 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
     return;
   }
   std::string format;
-  std::string level_name;
-  switch (level) {
-    case DEBUG_:
-      level_name = "DEBUG";
-      break;
-    case INFO:
-      level_name = "INFO";
-      break;
-    case WARNING:
-      level_name = "WARNING";
-      break;
-    case ERROR:
-      level_name = "ERROR";
-      break;
-    case FATAL:
-      level_name = "FATAL";
-      break;
-    default:
-      level_name = "???";
-      break;
-  }
-
   timeval tv;
   gettimeofday(&tv, NULL);
 
@@ -104,9 +82,28 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
   int millis = tv.tv_usec / 1000;
   snprintf(outstr, sizeof(outstr), ".%03d %5d", millis, p);
   format += outstr;
-  format += " [";
-  format += level_name;
-  format += "] ";
+
+  switch (level) {
+    case DBG:
+      format += "  DEBUG   ";
+      break;
+    case INFO:
+      format += "  INFO    ";
+      break;
+    case WARNING:
+      format += "  WARNING ";
+      break;
+    case ERROR:
+      format += "  ERROR   ";
+      break;
+    case FATAL:
+      format += "  FATAL   ";
+      break;
+    default:
+      format += "  ???     ";
+      break;
+  }
+
   format += fmt;
   format += "\n";
 
@@ -115,6 +112,13 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
 
 void Logger::Sync() const {
   fflush(file_);
+}
+
+
+void SetDefaultLogLevel(int level) {
+  if (default_logger != nullptr) {
+    default_logger->SetLevel(level);
+  }
 }
 
 void FlushDefaultLog() {

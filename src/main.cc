@@ -24,6 +24,10 @@ int main(int argc, char **argv) {
     return return_code;
   }
   const boost::program_options::variables_map &vm = e::vm();
+  if (vm.count("debug")) {
+    e::SetDefaultLogLevel(e::DBG);
+    e::LOG(e::DBG, "debug logging turned on");
+  }
   std::vector<std::string> files;
   if (vm.count("file")) {
     files = vm["file"].as< std::vector<std::string> >();

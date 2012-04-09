@@ -75,7 +75,7 @@ Local<String> ReadFile(const std::string& name, bool prefix_use_strict) {
     i += bytes_read;
   }
   ASSERT(fclose(file) == 0);
-  LOG(INFO, "ReadFile() read %zd bytes from \"%s\"", size, name.c_str());
+  LOG(DBG, "ReadFile() read %zd bytes from \"%s\"", size, name.c_str());
 
   if (prefix_use_strict) {
     std::string strict = "\"use strict\";\n";

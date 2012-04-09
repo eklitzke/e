@@ -9,7 +9,7 @@
 
 namespace e {
 enum LogLevel {
-  DEBUG_  = 10,
+  DBG     = 10,
   INFO    = 20,
   WARNING = 30,
   ERROR   = 40,
@@ -30,6 +30,7 @@ class Logger {
 };
 
 void InitLogging(const std::string &log_name);
+void SetDefaultLogLevel(int level);
 void FlushDefaultLog();
 void LOG(int level, const std::string &fmt, ...);
 }

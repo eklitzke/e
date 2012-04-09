@@ -81,12 +81,13 @@ using v8::Value;
 namespace e {
 JSCursesWindow::JSCursesWindow(WINDOW *win)
     :window_(win) {
+  LOG(DBG, "created window %p", window_);
   idlok(win, true);
   wnoutrefresh(win);
 }
 
 JSCursesWindow::~JSCursesWindow() {
-  LOG(INFO, "deleting window %p", window_);
+  LOG(DBG, "deleting window %p", window_);
   if (window_ != nullptr)
     delwin(window_);
 }

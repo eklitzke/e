@@ -169,7 +169,7 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
     if (access(rc_path.c_str(), R_OK) == 0) {
       scripts_.push_back(rc_path);
     } else {
-      LOG(INFO, "failed to find (or could not access) init file \"%s\"",
+      LOG(DBG, "failed to find (or could not access) init file \"%s\"",
           rc_path.c_str());
     }
   }
@@ -184,7 +184,7 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
     HandleError(trycatch);
     scr->Run();
     HandleError(trycatch);
-    LOG(INFO, "finished loading additional script \"%s\"", it->c_str());
+    LOG(DBG, "finished loading additional script \"%s\"", it->c_str());
   }
 
   // run the callback

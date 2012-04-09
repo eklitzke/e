@@ -67,7 +67,7 @@ Persistent<Value> GetModule(const std::string &name) {
   // check the module cache
   auto m = modules_.find(name);
   if (m != modules_.end()) {
-    LOG(INFO, "loading module \"%s\" from module cache", name.c_str());
+    LOG(DBG, "loading module \"%s\" from module cache", name.c_str());
     return m->second;
   }
 
