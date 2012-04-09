@@ -108,7 +108,9 @@ v8::Local<v8::Script> GetCoreScript() {
     reinterpret_cast<const char *>(buf), %(uncompressed_len)d);
   v8::ScriptData *pre_data = v8::ScriptData::New(
     reinterpret_cast<const char *>(precompiled_src), sizeof(precompiled_src));
-  v8::Local<v8::Script> script = v8::Script::Compile(src, nullptr, pre_data);
+  v8::Local<v8::String> script_name = v8::String::New("bundle.js");
+  v8::ScriptOrigin origin(script_name);
+  v8::Local<v8::Script> script = v8::Script::Compile(src, &origin, pre_data);
   delete pre_data;
   delete[] buf;
   return scope.Close(script);
