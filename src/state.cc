@@ -106,14 +106,7 @@ State::~State() {
 void State::Run(boost::function<void(Persistent<Context>)> then) {
   HandleScope scope;
   Local<ObjectTemplate> global = ObjectTemplate::New();
-  global->Set(String::NewSymbol("assert"),
-              FunctionTemplate::New(js::JSAssert), v8::ReadOnly);
-  global->Set(String::NewSymbol("log"),
-              FunctionTemplate::New(js::JSLog), v8::ReadOnly);
-  global->Set(String::NewSymbol("panic"),
-              FunctionTemplate::New(js::JSPanic), v8::ReadOnly);
-  global->Set(String::NewSymbol("require"),
-              FunctionTemplate::New(js::JSRequire), v8::ReadOnly);
+  AddJsToGlobalNamespace(global);  // add log(), require(), etc.
   AddTimersToGlobalNamespace(global);  // add setTimeout() and co.
 
   Handle<ObjectTemplate> world_templ = ObjectTemplate::New();

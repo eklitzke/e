@@ -28,6 +28,71 @@ using v8::String;
 using v8::Undefined;
 using v8::Value;
 
+namespace {
+// @class: Global
+// @description: The globals object
+
+// @method: log
+// @param[msg]: #string Log message
+// @description: Logs a message (with the file name and line number)
+Handle<Value> JSLog(const Arguments& args) {
+  CHECK_ARGS(1);
+  Local<Value> arg = args[0];
+  String::Utf8Value msg(arg);
+  std::string std_msg(*msg, msg.length());
+
+  // Extract a stack trace
+  Local<StackTrace> trace = StackTrace::CurrentStackTrace(1);
+  Local<StackFrame> top = trace->GetFrame(0);
+  String::Utf8Value script_name(top->GetScriptName());
+  std::string std_name(*script_name, script_name.length());
+  int line_no = top->GetLineNumber();
+  e::LOG(e::INFO, "JAVASCRIPT <%s:%d> %s",
+      std_name.c_str(), line_no, std_msg.c_str());
+  return Undefined();
+}
+
+// @method: assert
+// @param[condition]: #bool Condition to check
+// @param[msg]: #string Log message (optional)
+// @description: Asserts truth
+Handle<Value> JSAssert(const Arguments& args) {
+  CHECK_ARGS(1);
+  Local<Value> cond = args[0];
+  if (cond->ToBoolean()->Value() == false) {
+    if (args.Length() >= 2) {
+      Local<Value> msg = args[1];
+      String::Utf8Value value(msg);
+      e::LOG(e::INFO, "Assertion failed: %s", *value);
+      e::Panic("JavaScript assert() failed: %s", *value);
+    } else {
+      e::Panic("JavaScript assert() failed (no error message was provided)");
+    }
+  }
+  return Undefined();
+}
+
+// @method: panic
+// @param[message]: #string Message to print
+Handle<Value> JSPanic(const Arguments& args) {
+  CHECK_ARGS(1);
+  Local<Value> msg = args[0];
+  String::Utf8Value value(msg);
+  e::Panic(*value);
+  return Undefined();
+}
+
+// @method: require
+// @param[file]: #string The module to load
+// @description: Loads a new JavaScript module
+Handle<Value> JSRequire(const Arguments& args) {
+  CHECK_ARGS(1);
+  String::Utf8Value value(args[0]->ToString());
+  std::string script_name(*value, value.length());
+  return e::GetModule(script_name);
+}
+}
+
 namespace e {
 void HandleError(const TryCatch &try_catch) {
   HandleScope scope;
@@ -41,15 +106,15 @@ void HandleError(const TryCatch &try_catch) {
         Local<StackFrame> top = trace->GetFrame(0);
         String::Utf8Value script_name(top->GetScriptName());
         int line_no = top->GetLineNumber();
-        Panic("<%s:%d>: %s\n", *script_name, line_no, *exception_str);
+        e::Panic("<%s:%d>: %s\n", *script_name, line_no, *exception_str);
       } else {
         int line_no = message->GetLineNumber();
-        Panic("<unknown:%d>: %s\n", line_no, *exception_str);
+        e::Panic("<unknown:%d>: %s\n", line_no, *exception_str);
       }
     } else {
-      Panic("<unknown>: %s\n", *exception_str);
+      e::Panic("<unknown>: %s\n", *exception_str);
     }
-    assert(false);  // one of the above should have panicked
+    ASSERT(false);  // one of the above should have panicked
   }
 }
 
@@ -88,70 +153,6 @@ Local<String> ReadFile(const std::string& name, bool prefix_use_strict) {
   }
 }
 
-// @class: Global
-// @description: The globals object
-
-// @method: log
-// @param[msg]: #string Log message
-// @description: Logs a message (with the file name and line number)
-Handle<Value> JSLog(const Arguments& args) {
-  CHECK_ARGS(1);
-  Local<Value> arg = args[0];
-  String::Utf8Value msg(arg);
-  std::string std_msg(*msg, msg.length());
-
-  // Extract a stack trace
-  Local<StackTrace> trace = StackTrace::CurrentStackTrace(1);
-  Local<StackFrame> top = trace->GetFrame(0);
-  String::Utf8Value script_name(top->GetScriptName());
-  std::string std_name(*script_name, script_name.length());
-  int line_no = top->GetLineNumber();
-  LOG(INFO, "JAVASCRIPT <%s:%d> %s",
-      std_name.c_str(), line_no, std_msg.c_str());
-  return Undefined();
-}
-
-// @method: assert
-// @param[condition]: #bool Condition to check
-// @param[msg]: #string Log message (optional)
-// @description: Asserts truth
-Handle<Value> JSAssert(const Arguments& args) {
-  CHECK_ARGS(1);
-  Local<Value> cond = args[0];
-  if (cond->ToBoolean()->Value() == false) {
-    if (args.Length() >= 2) {
-      Local<Value> msg = args[1];
-      String::Utf8Value value(msg);
-      LOG(INFO, "Assertion failed: %s", *value);
-      Panic("JavaScript assert() failed: %s", *value);
-    } else {
-      Panic("JavaScript assert() failed (no error message was provided)");
-    }
-  }
-  return Undefined();
-}
-
-// @method: panic
-// @param[message]: #string Message to print
-Handle<Value> JSPanic(const Arguments& args) {
-  CHECK_ARGS(1);
-  Local<Value> msg = args[0];
-  String::Utf8Value value(msg);
-  Panic(*value);
-  return Undefined();
-}
-
-// @method: require
-// @param[file]: #string The module to load
-// @description: Loads a new JavaScript module
-Handle<Value> JSRequire(const Arguments& args) {
-  CHECK_ARGS(1);
-  String::Utf8Value value(args[0]->ToString());
-
-  std::string script_name(*value, value.length());
-  return GetModule(script_name);
-}
-
 // Convert a JavaScript string to a std::string (UTF-8 encoded).
 std::string ValueToString(Local<Value> value) {
   String::Utf8Value utf8_value(value);
@@ -169,5 +170,16 @@ void AddTemplateAccessor(Handle<ObjectTemplate> templ, const std::string &name,
   templ->SetAccessor(String::NewSymbol(name.c_str(), name.size()), getter,
                      setter);
 }
+}
+
+void AddJsToGlobalNamespace(Local<ObjectTemplate> global) {
+  global->Set(String::NewSymbol("assert"),
+              FunctionTemplate::New(JSAssert), v8::ReadOnly);
+  global->Set(String::NewSymbol("log"),
+              FunctionTemplate::New(JSLog), v8::ReadOnly);
+  global->Set(String::NewSymbol("panic"),
+              FunctionTemplate::New(JSPanic), v8::ReadOnly);
+  global->Set(String::NewSymbol("require"),
+              FunctionTemplate::New(JSRequire), v8::ReadOnly);
 }
 }

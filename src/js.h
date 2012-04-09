@@ -46,15 +46,14 @@ typedef Handle<Value>(*JSAccessor)(Local<String>, const AccessorInfo&);
 // Reads a file into a v8 string.
 Local<v8::String> ReadFile(const std::string& name,
                             bool prefix_use_strict = false);
-Handle<Value> JSAssert(const Arguments& args);
-Handle<Value> JSLog(const Arguments& args);
-Handle<Value> JSPanic(const Arguments& args);
-Handle<Value> JSRequire(const Arguments& args);
 std::string ValueToString(Local<Value>);
 }
 
 // Handle caught errors
 void HandleError(const TryCatch&);
+
+// mutate the globals dictionary
+void AddJsToGlobalNamespace(Local<ObjectTemplate> global);
 }
 
 #endif  // SRC_JS_H_

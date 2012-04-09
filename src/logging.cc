@@ -3,12 +3,13 @@
 
 #include "./logging.h"
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <cstdio>
+#include <cstdarg>
 
 #include <string>
 
