@@ -244,7 +244,13 @@ core.addKeypressListener("command", function (event) {
 		core.exBuffer = ":";
 		break;
 	default:
-		log("didn't know how to handle '" + wch + "' in command mode");
+		var wchName;
+		if (event.isPrintable()) {
+			wchName = "'" + wch + "'";
+		} else {
+			wchName = "keycode " + event.getCode();
+		}
+		log("didn't know how to handle " + wchName + " in command mode");
 	}
 });
 

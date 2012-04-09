@@ -16,6 +16,7 @@ h_template = """
 #define SRC_KEYCODE_H_
 
 #include <v8.h>
+
 #include <string>
 
 using v8::Arguments;
@@ -24,19 +25,22 @@ using v8::Value;
 
 namespace e {
 class KeyCode {
-  public:
-    explicit KeyCode(wint_t code);
-    explicit KeyCode(wint_t code, const std::string &name);
-    ~KeyCode();
-    Persistent<Value> ToScript();
-  public:
-    wint_t code_;
-    bool is_keypad_;
-    std::string name_;
+ public:
+  explicit KeyCode(wint_t code);
+  explicit KeyCode(wint_t code, const std::string &name);
+  ~KeyCode();
+  Persistent<Value> ToScript();
+  wint_t Code() const { return code_; }
+  bool IsKeypad() const { return is_keypad_; }
+  const std::string& Name() const { return name_; }
+ private:
+  wint_t code_;
+  bool is_keypad_;
+  std::string name_;
 };
 
 namespace keycode {
-KeyCode* curses_to_keycode(const wint_t &wch, bool is_keypad);
+KeyCode* CursesToKeycode(const wint_t &wch, bool is_keypad);
 }
 }
 
@@ -51,6 +55,7 @@ cc_template = """
 
 #include "./%(h_name)s"
 
+#include <ctype.h>
 #include <v8.h>
 #include <wchar.h>
 
@@ -84,8 +89,8 @@ Handle<Value> JSGetChar(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
 
-  ASSERT(self->code_ < 0x10000);
-  uint16_t c = static_cast<uint16_t>(self->code_);
+  ASSERT(self->Code() < 0x10000);
+  uint16_t c = static_cast<uint16_t>(self->Code());
   return scope.Close(String::New(&c, 1));
 }
 
@@ -95,7 +100,7 @@ Handle<Value> JSGetChar(const Arguments& args) {
 Handle<Value> JSGetCode(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
-  Local<Integer> code = Integer::New(self->code_);
+  Local<Integer> code = Integer::New(self->Code());
   return scope.Close(code);
 }
 
@@ -105,8 +110,8 @@ Handle<Value> JSGetCode(const Arguments& args) {
 Handle<Value> JSGetName(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
-  if (self->is_keypad_) {
-    const std::string &s = self->name_;
+  if (self->IsKeypad()) {
+    const std::string &s = self->Name();
     Local<String> name = String::NewSymbol(s.c_str(), s.length());
     return scope.Close(name);
   } else {
@@ -119,7 +124,17 @@ Handle<Value> JSGetName(const Arguments& args) {
 Handle<Value> JSIsKeypad(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
-  Handle<Boolean> b = Boolean::New(self->is_keypad_);
+  Handle<Boolean> b = Boolean::New(self->IsKeypad());
+  return scope.Close(b);
+}
+
+// @method: isPrintable
+// @description: Returns true if this char is printable, false otherwise.
+Handle<Value> JSIsPrintable(const Arguments& args) {
+  HandleScope scope;
+  KeyCode *self = Unwrap<KeyCode>(args);
+  bool printable = static_cast<bool>(isprint(static_cast<int>(self->Code())));
+  Handle<Boolean> b = Boolean::New(printable);
   return scope.Close(b);
 }
 
@@ -135,6 +150,8 @@ Handle<ObjectTemplate> MakeKeyCodeTemplate() {
   result->Set(String::New("getCode"), FunctionTemplate::New(JSGetCode),
     v8::ReadOnly);
   result->Set(String::New("getName"), FunctionTemplate::New(JSGetName),
+    v8::ReadOnly);
+  result->Set(String::New("isPrintable"), FunctionTemplate::New(JSIsPrintable),
     v8::ReadOnly);
   result->Set(String::New("isKeypad"), FunctionTemplate::New(JSIsKeypad),
     v8::ReadOnly);
@@ -189,7 +206,7 @@ namespace keycode {
 %(codes)s
   };
 
-  KeyCode* curses_to_keycode(const wint_t &wch, bool is_keypad) {
+  KeyCode* CursesToKeycode(const wint_t &wch, bool is_keypad) {
     // The returned pointers are "owned" by V8; the way they'll get deleted
     // later on is by CleanupKeycode, which will be invoked when the containing
     // V8 object is garbage collected.

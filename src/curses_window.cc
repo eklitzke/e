@@ -88,7 +88,7 @@ bool CursesWindow::InnerOnRead() {
     if (ret == ERR)
       break;
 
-    KeyCode *keycode = e::keycode::curses_to_keycode(wch, ret == KEY_CODE_YES);
+    KeyCode *keycode = e::keycode::CursesToKeycode(wch, ret == KEY_CODE_YES);
     keep_going = HandleKey(keycode);
     if (!keep_going)
       break;
