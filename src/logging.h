@@ -5,6 +5,7 @@
 #define SRC_LOGGING_H_
 
 #include <cstdio>
+#include <cstdarg>
 #include <string>
 
 namespace e {
@@ -21,7 +22,8 @@ class Logger {
  public:
   explicit Logger(const std::string &log_name, int level = INFO);
   ~Logger();
-  void SetLevel(int level);
+  inline int GetLevel() { return level_; }
+  inline void SetLevel(int level) { level_ = level; }
   void Log(int level, const std::string &fmt, ...) const;
   void VLog(int level, const std::string &fmt, va_list ap) const;
  private:
@@ -29,8 +31,12 @@ class Logger {
   int level_;
 };
 
+
 void InitLogging(const std::string &log_name);
 void SetDefaultLogLevel(int level);
+
+// Log a message to the default logger at some log level. This method takes a
+// printf style format string and arguments.
 void LOG(int level, const std::string &fmt, ...);
 }
 

@@ -26,8 +26,6 @@ void FinishLogging() {
 }
 
 namespace e {
-
-
 void InitLogging(const std::string &name) {
   ASSERT(default_logger == nullptr);
   default_logger = new Logger(name);
@@ -44,10 +42,6 @@ Logger::Logger(const std::string &name, int level)
 
 Logger::~Logger() {
   fclose(file_);
-}
-
-void Logger::SetLevel(int level) {
-  level_ = level;
 }
 
 void Logger::Log(int level, const std::string &fmt, ...) const {
@@ -132,7 +126,11 @@ void SetDefaultLogLevel(int level) {
 }
 
 void LOG(int level, const std::string &fmt, ...) {
-  if (default_logger != nullptr) {
+  // N.B. we actually check the log level twice in this code path -- once here,
+  // and then again in VLog(). This is to minimize the overhead of logging debug
+  // messages.
+  ASSERT(default_logger != nullptr);
+  if (level >= default_logger->GetLevel()) {
     va_list ap;
     va_start(ap, fmt);
     default_logger->VLog(level, fmt, ap);
