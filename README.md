@@ -225,9 +225,9 @@ Building on Ubuntu, both 11.10 (Oneiric) and 12.04 (Precise), is supported. For
 both releases you need to install the following packages:
 
     sudo apt-get install binutils-gold build-essential git gyp libboost-dev \
-      libboost-program-options-dev libboost-system-dev libncurses5-dev \
-      libncursesw5-dev libtcmalloc-minimal0 libunwind7-dev \
-      libv8-dev pkg-config python-jinja2
+      libboost-program-options-dev libboost-system-dev liblzma-dev \
+      libncurses5-dev libncursesw5-dev libtcmalloc-minimal0 libunwind7-dev \
+      libv8-dev pkg-config python-lzma python-jinja2
 
 Then you will need to set up a `tcmalloc.so` symlink:
 
@@ -240,7 +240,9 @@ Building on Fedora
 
 Pretty much the same as Ubuntu, with slightly different packages (not listed
 here; inquire if you need assistance). You will also need to manually create a
-`tcmalloc.so` symlink, as with Ubuntu.
+`tcmalloc.so` symlink, as with Ubuntu. Unfortunately, Ubuntu and Fedora version
+the tcmalloc .so files differently, so there's not a straightforward way to
+handle this setup automatically.
 
 Building on Mac OS X
 --------------------
