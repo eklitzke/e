@@ -27,7 +27,6 @@
       'src/bundled_core.cc',
       'src/curses_window.cc',
       'src/curses_low_level.cc',
-      'src/embeddable.cc',
       'src/event_listener.cc',
       'src/flags.cc',
       'src/io_service.cc',

@@ -115,7 +115,7 @@ void State::Run(std::function<void()> then) {
   js::AddTemplateFunction(world_templ, "addEventListener", JSAddEventListener);
   js::AddTemplateFunction(world_templ, "stopLoop", JSStopLoop);
 
-  Persistent<Context> context = InitializeContext(global);
+  Persistent<Context> context = Context::New(nullptr, global);
   Context::Scope context_scope(context);
 
   Local<Object> world = world_templ->NewInstance();
@@ -184,7 +184,7 @@ void State::Run(std::function<void()> then) {
     then();
   }
   CancelAllTimers();
-  DisposeContext();
+  context.Dispose();
 }
 
 bool State::HandleKey(KeyCode *k) {

@@ -13,6 +13,7 @@
 #include "./js.h"
 
 using v8::Arguments;
+using v8::Context;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
@@ -92,14 +93,14 @@ bool EventListener::CallHandler(Handle<Value> h,
 }
 
 void EventListener::Dispatch(const std::string& name) {
-  Handle<Object> globals = GetContext()->Global();
+  Local<Object> globals = Context::GetCurrent()->Global();
   std::vector<Handle<Value> > arguments;
   Dispatch(name, globals, arguments);
 }
 
 void EventListener::Dispatch(const std::string& name,
                              const std::vector<Handle<Value> >& args) {
-  Handle<Object> globals = GetContext()->Global();
+  Local<Object> globals = Context::GetCurrent()->Global();
   Dispatch(name, globals, args);
 }
 
