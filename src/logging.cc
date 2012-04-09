@@ -89,6 +89,9 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
     case INFO:
       format += "  INFO    ";
       break;
+    case SCRIPT:
+      format += "  SCRIPT  ";
+      break;
     case WARNING:
       format += "  WARNING ";
       break;

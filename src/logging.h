@@ -11,6 +11,7 @@ namespace e {
 enum LogLevel {
   DBG     = 10,
   INFO    = 20,
+  SCRIPT  = 25,
   WARNING = 30,
   ERROR   = 40,
   FATAL   = 50

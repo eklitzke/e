@@ -47,8 +47,7 @@ Handle<Value> JSLog(const Arguments& args) {
   String::Utf8Value script_name(top->GetScriptName());
   std::string std_name(*script_name, script_name.length());
   int line_no = top->GetLineNumber();
-  e::LOG(e::INFO, "JAVASCRIPT <%s:%d> %s",
-      std_name.c_str(), line_no, std_msg.c_str());
+  e::LOG(e::SCRIPT, "<%s:%d> %s", std_name.c_str(), line_no, std_msg.c_str());
   return Undefined();
 }
 
