@@ -23,6 +23,7 @@ var core = {
 	curmode: "command",
 	parser: require("js/parser.js").parser,
 	listeners: {},
+	windows: {},
 };
 
 /**
@@ -121,6 +122,8 @@ core.addFunction("updateAllWindows", function (doupdate) {
 
 require("js/keypress.js");  // for side-effects
 require("js/movement.js");  // for side-effects
+require("js/statusbar.js"); // for side-effects
+require("js/tabbar.js"); // for side-effects
+
+// has to be last
 require("js/onload.js");    // for side-effects
-require("js/statusbar.js"); // for side-effects
-require("js/statusbar.js"); // for side-effects

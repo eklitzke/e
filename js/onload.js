@@ -1,3 +1,5 @@
+var curses = require("curses");
+
 // This are various methods we want to run when the editor is loaded. This file
 // is loaded by core.js just for its side effects.
 
@@ -15,7 +17,6 @@ world.addEventListener("load", function (event) {
 
 // Draw and create the initial windows.
 world.addEventListener("load", function (event) {
-	core.windows = {};
 	core.windows.tab = curses.stdscr.subwin(1, curses.stdscr.getmaxx(), 0, 0);
 	core.drawTabBar();
 

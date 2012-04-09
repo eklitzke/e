@@ -1,3 +1,5 @@
+var curses = require("curses");
+
 core.addFunction("drawTabBar", function () {
 	core.windows.tab.standend();
 	core.windows.tab.attron(curses.A_BOLD);
