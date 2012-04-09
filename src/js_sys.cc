@@ -13,6 +13,7 @@
 
 #include <csignal>
 
+#include "./assert.h"
 #include "./js.h"
 #include "./module.h"
 
@@ -45,7 +46,7 @@ Handle<Value> JSChdir(const Arguments& args) {
 Handle<Value> JSGetcwd(const Arguments& args) {
   HandleScope scope;
   static char buf[PATH_MAX];
-  getcwd(buf, sizeof(buf));
+  ASSERT(getcwd(buf, sizeof(buf)) != nullptr);
   return scope.Close(String::New(buf));
 }
 
