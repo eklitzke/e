@@ -78,6 +78,7 @@ void Panic(const char *format, ...) {
   va_list ap;
   va_start(ap, format);
   vfprintf(stderr, format, ap);
+  va_end(ap);
 
   // ensure the msg ends with a newline
   size_t len = strlen(format);

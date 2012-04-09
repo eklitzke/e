@@ -33,8 +33,8 @@ void InitLogging(const std::string &name) {
   ASSERT(atexit(FinishLogging) == 0);
 }
 
-Logger::Logger(const std::string &name)
-    :level_(INFO) {
+Logger::Logger(const std::string &name, int level)
+    :level_(level) {
   file_ = fopen(name.c_str(), "w");
   ASSERT(file_ != nullptr);
   Log(INFO, "logging intialized, opened log file \"%s\" for logging",
@@ -55,9 +55,18 @@ void Logger::Log(int level, const std::string &fmt, ...) const {
   va_list ap;
   va_start(ap, fmt);
   VLog(level, fmt, ap);
+  va_end(ap);
 }
 
 void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
+  if (level < level_) {
+    // N.B. the way that we do logging here means that it's not possible to
+    // remove log statements for low log levels (e.g. debug) at compile time,
+    // which would be possible with a macro based logging implementation. In
+    // that cast, the cost of a logging call is two function calls (to LOG and
+    // VLog) and the cost of calling va_start() and va_end().
+    return;
+  }
   std::string format;
   std::string level_name;
   switch (level) {
@@ -119,6 +128,7 @@ void LOG(int level, const std::string &fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     default_logger->VLog(level, fmt, ap);
+    va_end(ap);
   }
 }
 }

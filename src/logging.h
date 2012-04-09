@@ -18,7 +18,7 @@ enum LogLevel {
 
 class Logger {
  public:
-  explicit Logger(const std::string &log_name);
+  explicit Logger(const std::string &log_name, int level = INFO);
   ~Logger();
   void SetLevel(int level);
   void Log(int level, const std::string &fmt, ...) const;
