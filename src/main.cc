@@ -1,10 +1,7 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
 #include <boost/program_options.hpp>
-
-#ifdef DISPOSE_v8
 #include <v8.h>
-#endif
 
 #ifdef USE_LINUX
 #include <sys/resource.h>
@@ -37,9 +34,7 @@ int main(int argc, char **argv) {
   }
   e::CursesWindow window(scripts, files);
   window.Loop();
-#ifdef DISPOSE_v8
-  v8::V8::Dispose();
-#endif
+  v8::V8::Dispose();  // to assist heap checking
 #ifdef USE_LINUX
   rusage usage;
   ASSERT(getrusage(RUSAGE_SELF, &usage) == 0);
