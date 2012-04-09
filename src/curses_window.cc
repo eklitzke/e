@@ -3,8 +3,6 @@
 
 #include "./curses_window.h"
 
-#include <glog/logging.h>
-
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
 #include <boost/bind.hpp>
@@ -17,8 +15,9 @@
 #include "./curses_low_level.h"
 #include "./flags.h"
 #include "./io_service.h"
-#include "./keycode.h"
 #include "./js_curses_window.h"
+#include "./keycode.h"
+#include "./logging.h"
 
 namespace e {
 namespace {
@@ -73,7 +72,7 @@ bool CursesWindow::HandleKey(KeyCode *keycode) {
 void CursesWindow::OnRead(const boost::system::error_code& error,
                            std::size_t bytes_transferred) {
   if (error) {
-    LOG(FATAL) << "boot::asio error " << error.message();
+    LOG(FATAL, "boot::asio error ", error.message().c_str());
   } else {
     InnerOnRead();
   }

@@ -156,8 +156,6 @@ These are some of the known dependencies:
 * [boost](http://www.boost.org/), including the
   [boost::asio](http://www.boost.org/libs/asio) and
   [boost::program_options](http://www.boost.org/libs/program_options) components
-* [glog](http://code.google.com/p/google-glog/) (you might need an older
-  version)
 * [libunwind](http://www.nongnu.org/libunwind/)
 * [libxz](http://tukaani.org/xz/) (i.e. you need `lzma.h` on your system)
 * [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
@@ -227,8 +225,8 @@ Building on Ubuntu, both 11.10 (Oneiric) and 12.04 (Precise), is supported. For
 both releases you need to install the following packages:
 
     sudo apt-get install binutils-gold build-essential git gyp libboost-dev \
-      libboost-program-options-dev libboost-system-dev libgoogle-glog-dev \
-      libncurses5-dev libncursesw5-dev libtcmalloc-minimal0 libunwind7-dev \
+      libboost-program-options-dev libboost-system-dev libncurses5-dev \
+      libncursesw5-dev libtcmalloc-minimal0 libunwind7-dev \
       libv8-dev pkg-config python-jinja2
 
 Then you will need to set up a `tcmalloc.so` symlink:

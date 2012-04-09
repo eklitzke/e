@@ -3,7 +3,6 @@
 #include "./state.h"
 
 #include <boost/asio.hpp>
-#include <glog/logging.h>
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -16,6 +15,7 @@
 #include "./flags.h"
 #include "./io_service.h"
 #include "./js.h"
+#include "./logging.h"
 #include "./module_decl.h"
 #include "./timer.h"
 
@@ -149,13 +149,13 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
   if (vm().count("debug")) {
     scripts_.insert(scripts_.begin(), "js/core.js");
   } else if (!vm().count("skip-core")) {
-    LOG(INFO) << "loading builtin core.js";
+    LOG(INFO, "loading builtin core.js");
     TryCatch trycatch;
     Local<Script> script = GetCoreScript();
     HandleError(trycatch);
     script->Run();
     HandleError(trycatch);
-    LOG(INFO) << "finished loading builtin core.js";
+    LOG(INFO, "finished loading builtin core.js");
   }
 
   // add the init file
@@ -169,14 +169,14 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
     if (access(rc_path.c_str(), R_OK) == 0) {
       scripts_.push_back(rc_path);
     } else {
-      LOG(INFO) << "failed to find (or could not access) init file \"" <<
-          rc_path << "\"";
+      LOG(INFO, "failed to find (or could not access) init file \"%s\"",
+          rc_path.c_str());
     }
   }
 
   // sequentially load any other scripts
   for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
-    LOG(INFO) << "loading additional script \"" << *it << "\"";
+    LOG(INFO, "loading additional script \"%s\"", it->c_str());
     TryCatch trycatch;
     Handle<String> source = js::ReadFile(*it);
     Handle<Script> scr = Script::New(
@@ -184,7 +184,7 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
     HandleError(trycatch);
     scr->Run();
     HandleError(trycatch);
-    LOG(INFO) << "finished loading additional script \"" << *it << "\"";
+    LOG(INFO, "finished loading additional script \"%s\"", it->c_str());
   }
 
   // run the callback

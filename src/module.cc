@@ -3,7 +3,6 @@
 #include "./module.h"
 
 #include <unistd.h>  // for access(2)
-#include <glog/logging.h>
 #include <v8.h>
 #include <map>
 #include <set>
@@ -11,6 +10,7 @@
 
 #include "./assert.h"
 #include "./js.h"
+#include "./logging.h"
 
 using v8::Function;
 using v8::FunctionTemplate;
@@ -67,7 +67,7 @@ Persistent<Value> GetModule(const std::string &name) {
   // check the module cache
   auto m = modules_.find(name);
   if (m != modules_.end()) {
-    LOG(INFO) << "loading module \"" << name << "\" from module cache";
+    LOG(INFO, "loading module \"%s\" from module cache", name.c_str());
     return m->second;
   }
 
@@ -76,7 +76,7 @@ Persistent<Value> GetModule(const std::string &name) {
   auto b = builders_.find(name);
   if (b != builders_.end()) {
     // we have a builder, build the module and cache it
-    LOG(INFO) << "loading builtin module \"" << name << "\"";
+    LOG(INFO, "loading builtin module \"%s\"", name.c_str());
     Local<Object> module_obj = Object::New();
     ASSERT(b->second(module_obj));
     Persistent<Object> p = Persistent<Object>::New(module_obj);
@@ -86,7 +86,7 @@ Persistent<Value> GetModule(const std::string &name) {
 
   // next check the filesystem
   if (access(name.c_str(), R_OK) == 0) {
-    LOG(INFO) << "loading module \"" << name << "\" from filesystem";
+    LOG(INFO, "loading module \"%s\" from filesystem", name.c_str());
     String::Utf8Value src(js::ReadFile(name, false));
     std::string s(*src, src.length());
     std::string wrapped = wrap_prefix + s + wrap_suffix;
@@ -103,7 +103,7 @@ Persistent<Value> GetModule(const std::string &name) {
   }
 
   // the file couldn't be found; (don't cache the result)
-  LOG(INFO) << "failed to find module \"" << name << "\", returning undefined";
+  LOG(INFO, "failed to find module \"%s\", returning undefined", name.c_str());
   Persistent<Value> p = Persistent<Value>::New(Undefined());
   return p;
 }

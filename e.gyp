@@ -12,7 +12,6 @@
           'libraries': [
             '-lboost_system',
             '-lboost_program_options',
-            '<!@(pkg-config --libs-only-l libglog)',
             '<!@(pkg-config --libs-only-l liblzma)',
             '<!@(pkg-config --libs-only-l ncursesw)',
             '-ltcmalloc',
@@ -40,6 +39,7 @@
       'src/js_sys.cc',
       'src/keycode.cc',
       'src/line.cc',
+      'src/logging.cc',
       'src/mmap.cc',
       'src/module.cc',
       'src/module_decl.cc',

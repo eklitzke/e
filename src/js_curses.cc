@@ -3,13 +3,12 @@
 
 #include <curses.h>
 #include <v8.h>
-#include <glog/logging.h>
-#include <glog/log_severity.h>
 
 #include <string>
 
 #include "./js.h"
 #include "./js_curses_window.h"
+#include "./logging.h"
 #include "./module.h"
 
 using v8::AccessorInfo;

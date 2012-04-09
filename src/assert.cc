@@ -8,9 +8,6 @@
 #include <boost/lexical_cast.hpp>
 #include <cxxabi.h>
 
-#include <glog/logging.h>
-#include <glog/log_severity.h>
-
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -71,7 +68,6 @@ void PrintAssertThenExit(const char *exprname, const char *filename, int line) {
   fprintf(stderr, "Assertion failed <%s:%d>: %s\n(errno is %d)\n\n",
           filename, line, exprname, errno);
   ShowBacktrace();
-  google::FlushLogFiles(google::INFO);
   exit(EXIT_FAILURE);
 }
 
@@ -90,7 +86,6 @@ void Panic(const char *format, ...) {
   }
 
   // flush logs and exit
-  google::FlushLogFiles(google::INFO);
   exit(EXIT_FAILURE);
 }
 }

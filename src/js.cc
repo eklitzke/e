@@ -4,8 +4,6 @@
 #include "./js.h"
 
 #include <boost/scoped_array.hpp>
-#include <glog/logging.h>
-#include <glog/log_severity.h>
 
 #include <map>
 #include <string>
@@ -13,6 +11,7 @@
 
 #include "./assert.h"
 #include "./embeddable.h"
+#include "./logging.h"
 #include "./module.h"
 
 using v8::Arguments;
@@ -76,7 +75,7 @@ Local<String> ReadFile(const std::string& name, bool prefix_use_strict) {
     i += bytes_read;
   }
   ASSERT(fclose(file) == 0);
-  LOG(INFO) << "ReadFile() read " << size << " bytes from \"" << name << "\"";
+  LOG(INFO, "ReadFile() read %zd bytes from \"%s\"", size, name.c_str());
 
   if (prefix_use_strict) {
     std::string strict = "\"use strict\";\n";
@@ -112,9 +111,10 @@ Handle<Value> JSLog(const Arguments& args) {
   String::Utf8Value script_name(top->GetScriptName());
   std::string std_name(*script_name, script_name.length());
   int line_no = top->GetLineNumber();
-  LOG(INFO) << "<" << std_name << ":" << line_no << "> " << std_msg;
+  LOG(INFO, "JAVASCRIPT <%s:%d> %s",
+      std_name.c_str(), line_no, std_msg.c_str());
   if (flush) {
-    google::FlushLogFiles(google::INFO);
+    FlushDefaultLog();
   }
   return Undefined();
 }
@@ -122,7 +122,7 @@ Handle<Value> JSLog(const Arguments& args) {
 // @method: flushLogs
 // @description: Flush all logs.
 Handle<Value> JSFlushLogs(const Arguments& args) {
-  google::FlushLogFiles(google::INFO);
+  FlushDefaultLog();
   return Undefined();
 }
 
@@ -137,7 +137,7 @@ Handle<Value> JSAssert(const Arguments& args) {
     if (args.Length() >= 2) {
       Local<Value> msg = args[1];
       String::Utf8Value value(msg);
-      LOG(INFO) << "Assertion failed: " << (*value);
+      LOG(INFO, "Assertion failed: %s", *value);
       Panic("JavaScript assert() failed: %s", *value);
     } else {
       Panic("JavaScript assert() failed (no error message was provided)");

@@ -4,7 +4,6 @@
 
 #include "./js_curses_window.h"
 
-#include <glog/logging.h>
 #include <v8.h>
 
 #include <string>
@@ -12,6 +11,7 @@
 
 #include "./assert.h"
 #include "./embeddable.h"
+#include "./logging.h"
 #include "./js.h"
 
 using v8::AccessorInfo;
@@ -86,7 +86,7 @@ JSCursesWindow::JSCursesWindow(WINDOW *win)
 }
 
 JSCursesWindow::~JSCursesWindow() {
-  LOG(INFO) << "deleting window " << window_;
+  LOG(INFO, "deleting window %p", window_);
   if (window_ != nullptr)
     delwin(window_);
 }

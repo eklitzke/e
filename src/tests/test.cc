@@ -4,12 +4,12 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#include <glog/logging.h>
 #include "../line.h"
+#include "../logging.h"
 
 class GlobalConfig {
  public:
-  GlobalConfig() { google::InitGoogleLogging("main"); }
+  GlobalConfig() { e::InitLogging("test.log"); }
 };
 
 BOOST_GLOBAL_FIXTURE(GlobalConfig)

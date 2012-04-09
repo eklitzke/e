@@ -1,7 +1,6 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
 #include <boost/program_options.hpp>
-#include <glog/logging.h>
 
 #ifdef DISPOSE_v8
 #include <v8.h>
@@ -14,11 +13,12 @@
 #include "./assert.h"
 #include "./curses_window.h"
 #include "./flags.h"
+#include "./logging.h"
 #include "./state.h"
 
 int main(int argc, char **argv) {
-  google::InitGoogleLogging(argv[0]);
-  LOG(INFO) << "main() entered";
+  e::InitLogging("editor.log");
+  e::LOG(e::INFO, "main() entered");
   int return_code = e::ParseOptions(argc, argv);
   if (return_code != e::NO_EXIT) {
     return return_code;
@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
 #ifdef USE_LINUX
   rusage usage;
   ASSERT(getrusage(RUSAGE_SELF, &usage) == 0);
-  LOG(INFO) << "max rss size: " << (usage.ru_maxrss / 1024) << " MB";
+  e::LOG(e::INFO, "max rss size: %d MB", usage.ru_maxrss / 1024);
 #endif  // USE_LINUX
-  LOG(INFO) << "main() finishing with status 0";
+  e::LOG(e::INFO, "main() finishing with status 0");
   return 0;
 }

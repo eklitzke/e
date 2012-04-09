@@ -4,7 +4,6 @@
 
 #include "./line.h"
 
-#include <glog/logging.h>
 #include <v8.h>
 
 #include <algorithm>
@@ -14,6 +13,7 @@
 
 #include "./assert.h"
 #include "./embeddable.h"
+#include "./logging.h"
 #include "./js.h"
 
 using v8::AccessorInfo;

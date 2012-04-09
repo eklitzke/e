@@ -1,7 +1,5 @@
 // Copyright 2012, Evan Klitzke <evan@eklitzke.org>
 
-#include <glog/logging.h>
-
 #include <fcntl.h>
 #include <unistd.h>
 #include <v8.h>
@@ -17,6 +15,7 @@
 #include "./embeddable.h"
 #include "./buffer.h"
 #include "./js.h"
+#include "./logging.h"
 #include "./mmap.h"
 
 using v8::AccessorInfo;
@@ -83,8 +82,8 @@ bool Buffer::OpenFile(const std::string &filepath) {
       p = n + sizeof(char);  // NOLINT
     }
   }
-  LOG(INFO) << "Buffer::OpenFile() mmap'ed " << mmlen << " bytes for file \"" <<
-      filepath << "\"";
+  LOG(INFO, "Buffer::OpenFile() mmap'ed %zd bytes for file \"%s\"",
+      mmlen, filepath.c_str());
 
   filepath_ = filepath;
   name_ = filepath;

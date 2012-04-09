@@ -70,12 +70,6 @@ world.addEventListener("load", function (event) {
 	}, core.clockRefresh);
 });
 
-
-world.addEventListener("load", function () {
-	// Flush logs once a second.
-	setInterval(flushLogs, 1000);
-});
-
 // Move the cursor and update all windows.
 world.addEventListener("load", function (event) {
 	core.moveAbsolute(0, 0);
