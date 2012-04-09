@@ -8,7 +8,10 @@ template = """
 // scripts/gen_js_errno.py.
 
 #include "./js_errno.h"
+
+#include <errno.h>
 #include <v8.h>
+
 #include "./module.h"
 
 namespace e {
