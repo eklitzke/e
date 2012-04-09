@@ -42,9 +42,7 @@ Logger::Logger(const std::string &name, int level)
 }
 
 Logger::~Logger() {
-  if (file_ != nullptr) {
-    fclose(file_);
-  }
+  fclose(file_);
 }
 
 void Logger::SetLevel(int level) {
@@ -107,23 +105,20 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
   format += fmt;
   format += "\n";
 
-  vfprintf(file_, format.c_str(), ap);
-}
+  ASSERT(vfprintf(file_, format.c_str(), ap) > 0);
 
-void Logger::Sync() const {
+  // Flush the log. This really just ensures that all pending writes have
+  // happened, and it's good enough to ensure that if our processes crashes at
+  // any future point (e.g. a SEGFAULT immediately following the log statement)
+  // that the data logged will have made it to disk. This is a cheap operation
+  // because it doesn't actually call fsync(2) or fdatasync(2), which are way
+  // overkill for what we're trying to do.
   fflush(file_);
 }
-
 
 void SetDefaultLogLevel(int level) {
   if (default_logger != nullptr) {
     default_logger->SetLevel(level);
-  }
-}
-
-void FlushDefaultLog() {
-  if (default_logger != nullptr) {
-    default_logger->Sync();
   }
 }
 

@@ -93,15 +93,10 @@ Local<String> ReadFile(const std::string& name, bool prefix_use_strict) {
 
 // @method: log
 // @param[msg]: #string Log message
-// @param[flush]: #bool whether to flush after logging (optional, default false)
 // @description: Logs a message (with the file name and line number)
 Handle<Value> JSLog(const Arguments& args) {
   CHECK_ARGS(1);
   Local<Value> arg = args[0];
-  bool flush = false;
-  if (args.Length() >= 2) {
-    flush = args[1]->BooleanValue();
-  }
   String::Utf8Value msg(arg);
   std::string std_msg(*msg, msg.length());
 
@@ -113,16 +108,6 @@ Handle<Value> JSLog(const Arguments& args) {
   int line_no = top->GetLineNumber();
   LOG(INFO, "JAVASCRIPT <%s:%d> %s",
       std_name.c_str(), line_no, std_msg.c_str());
-  if (flush) {
-    FlushDefaultLog();
-  }
-  return Undefined();
-}
-
-// @method: flushLogs
-// @description: Flush all logs.
-Handle<Value> JSFlushLogs(const Arguments& args) {
-  FlushDefaultLog();
   return Undefined();
 }
 

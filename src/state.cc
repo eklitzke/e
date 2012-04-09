@@ -108,8 +108,6 @@ void State::Run(boost::function<void(Persistent<Context>)> then) {
   Local<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(String::NewSymbol("assert"),
               FunctionTemplate::New(js::JSAssert), v8::ReadOnly);
-  global->Set(String::NewSymbol("flushLogs"),
-              FunctionTemplate::New(js::JSFlushLogs), v8::ReadOnly);
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(js::JSLog), v8::ReadOnly);
   global->Set(String::NewSymbol("panic"),

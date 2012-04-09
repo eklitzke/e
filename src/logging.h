@@ -23,7 +23,6 @@ class Logger {
   void SetLevel(int level);
   void Log(int level, const std::string &fmt, ...) const;
   void VLog(int level, const std::string &fmt, va_list ap) const;
-  void Sync() const;
  private:
   FILE *file_;
   int level_;
@@ -31,7 +30,6 @@ class Logger {
 
 void InitLogging(const std::string &log_name);
 void SetDefaultLogLevel(int level);
-void FlushDefaultLog();
 void LOG(int level, const std::string &fmt, ...);
 }
 

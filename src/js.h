@@ -47,7 +47,6 @@ typedef Handle<Value>(*JSAccessor)(Local<String>, const AccessorInfo&);
 Local<v8::String> ReadFile(const std::string& name,
                             bool prefix_use_strict = false);
 Handle<Value> JSAssert(const Arguments& args);
-Handle<Value> JSFlushLogs(const Arguments& args);
 Handle<Value> JSLog(const Arguments& args);
 Handle<Value> JSPanic(const Arguments& args);
 Handle<Value> JSRequire(const Arguments& args);
