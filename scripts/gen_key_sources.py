@@ -30,9 +30,9 @@ class KeyCode {
   explicit KeyCode(wint_t code, const std::string &name);
   ~KeyCode();
   Persistent<Value> ToScript();
-  wint_t Code() const { return code_; }
-  bool IsKeypad() const { return is_keypad_; }
-  const std::string& Name() const { return name_; }
+  inline wint_t Code() const { return code_; }
+  inline bool IsKeypad() const { return is_keypad_; }
+  inline const std::string& Name() const { return name_; }
  private:
   wint_t code_;
   bool is_keypad_;
@@ -133,7 +133,8 @@ Handle<Value> JSIsKeypad(const Arguments& args) {
 Handle<Value> JSIsPrintable(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
-  bool printable = static_cast<bool>(isprint(static_cast<int>(self->Code())));
+  bool printable = !self->IsKeypad() && \
+    static_cast<bool>(isprint(static_cast<int>(self->Code())));
   Handle<Boolean> b = Boolean::New(printable);
   return scope.Close(b);
 }
