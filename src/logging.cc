@@ -76,7 +76,7 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
   gettimeofday(&tv, NULL);
 
   tm lt;
-  localtime_r(&tv.tv_sec, &lt);
+  ASSERT(localtime_r(&tv.tv_sec, &lt) != nullptr);
 
   char outstr[30];
   ASSERT(strftime(outstr, sizeof(outstr), "%H:%M:%S", &lt) != 0);
