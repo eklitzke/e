@@ -34,7 +34,7 @@ bool UseAsio() {
 CursesWindow::CursesWindow(const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
     :state_(scripts, files), window_(nullptr), args_(files),
-     term_in_(*GetIOService()) {
+     term_in_(io_service) {
 }
 
 void CursesWindow::Initialize() {
@@ -125,7 +125,7 @@ void CursesWindow::InnerLoop() {
   LOG(INFO, "waiting for keypresses...");
   if (UseAsio()) {
     EstablishReadLoop();
-    GetIOService()->run();
+    io_service.run();
   } else {
     while (InnerOnRead()) { }
   }

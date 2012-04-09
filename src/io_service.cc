@@ -4,12 +4,6 @@
 
 #include <boost/asio.hpp>
 
-namespace {
-boost::asio::io_service io_service_;
-}
-
 namespace e {
-boost::asio::io_service* GetIOService() {
-  return &io_service_;
-}
+boost::asio::io_service io_service;
 }

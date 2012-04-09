@@ -56,7 +56,7 @@ bool keep_going = true;
 // @description: Stops the event loop.
 Handle<Value> JSStopLoop(const Arguments& args) {
   keep_going = false;
-  GetIOService()->stop();
+  io_service.stop();
   return Undefined();
 }
 

@@ -7,7 +7,7 @@
 #include <boost/asio.hpp>
 
 namespace e {
-boost::asio::io_service* GetIOService();
+extern boost::asio::io_service io_service;
 }
 
 #endif  // SRC_IO_SERVICE_H_

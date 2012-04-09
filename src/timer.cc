@@ -90,7 +90,7 @@ Handle<Value> JSClearTimeout(const Arguments& args) {
 namespace e {
 Timer::Timer(Persistent<Object> callback, uint32_t millis, bool repeat)
     :func_(callback), id_(next_id++), millis_(millis), repeat_(repeat),
-     timer_(*GetIOService()) {
+     timer_(io_service) {
   ASSERT(func_->IsCallable());
   timers_.insert(timers_.end(), std::pair<uint32_t, Timer*>(id_, this));
 }
