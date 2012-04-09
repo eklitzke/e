@@ -3,8 +3,9 @@
 #include "./timer.h"
 
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <v8.h>
+
+#include <functional>
 
 #include "./assert.h"
 #include "./io_service.h"
@@ -108,8 +109,8 @@ Timer::~Timer() {
 
 void Timer::Start() {
   timer_.expires_from_now(boost::posix_time::milliseconds(millis_));
-  timer_.async_wait(boost::bind(TimeoutHandler, this,
-                                boost::asio::placeholders::error));
+  timer_.async_wait(std::bind(TimeoutHandler, this,
+                              std::placeholders::_1));
 }
 
 bool Timer::Fire() {
@@ -121,8 +122,8 @@ bool Timer::Fire() {
   if (repeat_) {
     timer_.expires_at(timer_.expires_at() +
                       boost::posix_time::milliseconds(millis_));
-    timer_.async_wait(boost::bind(TimeoutHandler, this,
-                                  boost::asio::placeholders::error));
+    timer_.async_wait(std::bind(TimeoutHandler, this,
+                                std::placeholders::_1));
     return false;
   } else {
     return true;

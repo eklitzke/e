@@ -5,7 +5,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
-#include <boost/bind.hpp>
 #include <term.h>
 #include <termios.h>
 #include <v8.h>
@@ -66,9 +65,9 @@ void CursesWindow::Initialize() {
 void CursesWindow::EstablishReadLoop() {
   term_in_.async_read_some(
       boost::asio::null_buffers(),
-      boost::bind(&CursesWindow::OnRead, this,
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred));
+      std::bind(&CursesWindow::OnRead, this,
+                  std::placeholders::_1,
+                  std::placeholders::_2));
 }
 
 bool CursesWindow::HandleKey(KeyCode *keycode) {
