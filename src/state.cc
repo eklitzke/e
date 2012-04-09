@@ -3,7 +3,6 @@
 #include "./state.h"
 
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <glog/logging.h>
 #include <pwd.h>
 #include <sys/types.h>
