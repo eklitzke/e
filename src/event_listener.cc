@@ -3,9 +3,8 @@
 
 #include "./event_listener.h"
 
-#include <boost/scoped_array.hpp>
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -112,7 +111,7 @@ void EventListener::Dispatch(const std::string &name,
 
   // build up argc and argv
   const size_t argc = arguments.size();
-  boost::scoped_array<Handle<Value> > argv(new Handle<Value>[argc]);
+  std::unique_ptr<Handle<Value>[]> argv(new Handle<Value>[argc]);
   int i = 0;
   for (auto cit = arguments.begin(); cit != arguments.end(); ++cit) {
     argv[i++] = Handle<Value>(*cit);

@@ -108,7 +108,7 @@ void Buffer::Persist(const std::string &filepath) {
   std::string tmp_template = "./.e-XXXXXX~";
 #endif
 
-  std::unique_ptr<char> filename(new char[tmp_template.length()]);
+  std::unique_ptr<char[]> filename(new char[tmp_template.length()]);
   memcpy(filename.get(), tmp_template.c_str(), tmp_template.length());
   filename.get()[tmp_template.length()] = '\0';
   int fd = mkstemps(filename.get(), 1);

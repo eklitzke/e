@@ -45,7 +45,7 @@ void Line::Replace(const std::string& newline) {
 
 Local<String> Line::ToV8String(bool refocus) const {
   HandleScope scope;
-  std::unique_ptr<uint16_t> buf(new uint16_t[Size()]);
+  std::unique_ptr<uint16_t[]> buf(new uint16_t[Size()]);
   zipper_.ToBuffer(buf.get(), refocus);
   return scope.Close(String::New(buf.get(),
                                  static_cast<int>(Size())));
@@ -56,7 +56,7 @@ std::string Line::ToString(bool refocus) const {
   HandleScope scope;
   Local<String> jstr = ToV8String(refocus);
   if (jstr->Utf8Length()) {
-    std::unique_ptr<char> buf(new char[jstr->Utf8Length() + 1]);
+    std::unique_ptr<char[]> buf(new char[jstr->Utf8Length() + 1]);
     jstr->WriteUtf8(buf.get(), jstr->Utf8Length());
     buf.get()[jstr->Utf8Length()] = '\0';
     str = buf.get();

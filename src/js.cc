@@ -3,9 +3,8 @@
 
 #include "./js.h"
 
-#include <boost/scoped_array.hpp>
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -131,7 +130,7 @@ Local<String> ReadFile(const std::string& name, bool prefix_use_strict) {
   ASSERT(size > 0);
   rewind(file);
 
-  boost::scoped_array<char> chars(new char[size + 1]);
+  std::unique_ptr<char[]> chars(new char[size + 1]);
   chars[size] = '\0';
   for (long i = 0; i < size;) {  // NOLINT
     size_t bytes_read = fread(&chars[i], 1, size - i, file);
