@@ -153,9 +153,14 @@ void State::Run(std::function<void()> then) {
   // add the init file
   if (vm().count("no-init-file") == 0) {
     uid_t user = getuid();
-    passwd *pwent = getpwuid(user);  // NOLINT
-    ASSERT(pwent != nullptr);
-    std::string rc_path(pwent->pw_dir);
+    passwd pwent;
+    passwd *temp_pwent;
+    long pwbuf_len = sysconf(_SC_GETPW_R_SIZE_MAX);  // NOLINT
+    std::unique_ptr<char[]> pwbuf(new char[static_cast<size_t>(pwbuf_len)]);
+    ASSERT(getpwuid_r(user, &pwent, pwbuf.get(), pwbuf_len, &temp_pwent) == 0);
+    ASSERT(temp_pwent != nullptr);
+    ASSERT(&pwent == temp_pwent);
+    std::string rc_path(pwent.pw_dir);
     rc_path += "/";
     rc_path += kInitFile;
     if (access(rc_path.c_str(), R_OK) == 0) {
