@@ -109,7 +109,9 @@ The best way to do this is to add JavaScript code to `~/.e.js`. The way the
 editor starts up is that by default it will do the following (in the order
 listed):
 
-* load all bundled javascript
+* load `js/core.js` for an unoptimized build, or the equivalent "bundled"
+  JavaScript in an optimized build (see the "Bundled Javascript" section below
+  for details).
 * load any scripts passed on the command line with `-s` or `--script`
 * load `~/.e.js`
 
@@ -174,26 +176,37 @@ amount of work, if one were so inclined.
 Bundled Javascript
 ------------------
 
-When you invoke `make`, the file contents of `js/core.js` will be minified using
-`third_party/jsmin.c`, and dumped into `src/bundled_core.h` and
-`src/bundled_core.cc` (along with some boilerplate). These files are used for
-bootstrapping the editor. The way it works is that when you invoke `e` without
-any arguments, it runs the script bundled into these files. This avoids hard
-coding the location of the core JavaScript files, and means that (in theory)
-it's possible to statically link the editor and distribute it as a standalone
-binary.
+For a normal editor build, there will be no "bundled" JavaScript. Instead what
+happens is the editor will look for a file named `js/core.js` and load that as
+the first script.
 
-If you don't want to run the editor with the bundled JavaScript, invoke it like
+For an optimized editor build (i.e. the `opt` binary), the core JavaScript code
+will be bundled into the binary. This is done by the script
+`scripts/gen_bundled_core.py`. This script will attempt to recursively expand
+any `requires()` statements seen in the file `js/core.js`, until it has a single
+string representing all of the JavaScript code that might be needed while
+running the editor. This JavaScript is then "pre-compiled" by
+`scripts/precompile.cc` which uses the public V8 pre-compilation methods, and
+additionally compressed using LZMA.
+
+The pre-compilation data and the LZMA compressed core scripts are written out to
+`src/bundled_core.h` and `src/bundled_core.cc` and end up included in the final
+executable. When the executable starts up, it will decompress the LZMA data and
+load the core script.
+
+If you're running an optimized build, and don't want to run the editor with the
+bundled JavaScript, invoke it as
 
     e --debug <args>
 
 This will implicitly skip loading any bundled javascript, and force `js/core.js`
-to be the first JavaScript file loaded. If you're editing JavaScript files a
-lot, it's much faster to use `e --debug` than it is to constantly rebuild the
-binary with the bundled JavaScript (it will also make debugging a *lot* easier,
-since you'll get meaningful file names and line numbers).
+to be the first JavaScript file loaded, just like in the unoptimized build. The
+`--debug` flag is actually a shortcut for, and identical to, running the editor
+as
 
-In the future the meaning of `--debug` will expand to give more debugging
+    e --skip-core -s js/core.js
+
+In the future the meaning of `--debug` may expand to give more debugging
 information, but that's unlikely to happen until the editor is out of alpha
 stage.
 
