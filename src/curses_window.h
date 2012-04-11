@@ -7,14 +7,14 @@
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
 
-#ifdef USE_LINUX
+#ifdef PLATFORM_LINUX
 #ifndef _XOPEN_SOURCE_EXTENDED
 #define _XOPEN_SOURCE_EXTENDED
 #endif
 #include <ncursesw/curses.h>
 #else
 #include <curses.h>
-#endif
+#endif  // PLATFORM_LINUX
 
 #include <string>
 #include <vector>

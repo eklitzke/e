@@ -179,5 +179,9 @@ void AddJsToGlobalNamespace(Local<ObjectTemplate> global) {
               FunctionTemplate::New(JSPanic), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(JSRequire), v8::ReadOnly);
+
+  // Expose the platform to the editor (Linux, FreeBSD, Mac, etc.)
+  global->Set(String::NewSymbol("platform"),
+              String::New(PLATFORM), v8::ReadOnly);
 }
 }

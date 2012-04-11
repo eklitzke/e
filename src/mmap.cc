@@ -8,11 +8,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#ifdef USE_LINUX
+#ifdef PLATFORM_LINUX
 #define GET_OPEN_FLAGS(f)  (f | O_CLOEXEC)
 #else
 #define GET_OPEN_FLAGS(f)  (f)
-#endif
+#endif  // PLATFORM_LINUX
 
 namespace e {
 

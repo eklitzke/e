@@ -3,7 +3,7 @@
 #include <boost/program_options.hpp>
 #include <v8.h>
 
-#ifdef USE_LINUX
+#ifdef PLATFORM_LINUX
 #include <sys/resource.h>
 #endif
 
@@ -35,11 +35,11 @@ int main(int argc, char **argv) {
   e::CursesWindow window(scripts, files);
   window.Loop();
   v8::V8::Dispose();  // to assist heap checking
-#ifdef USE_LINUX
+#ifdef PLATFORM_LINUX
   rusage usage;
   ASSERT(getrusage(RUSAGE_SELF, &usage) == 0);
   e::LOG(e::INFO, "max rss size: %d MB", usage.ru_maxrss / 1024);
-#endif  // USE_LINUX
+#endif  // PLATFORM_LINUX
   e::LOG(e::INFO, "main() finishing with status 0");
   return 0;
 }

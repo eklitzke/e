@@ -4,7 +4,11 @@
     'type': 'executable',
     # cflags should be changed to -std=c++11 when ubuntu supports it
     'cflags': ['-pedantic', '-Wall', '-std=c++0x'],
-    'defines': ['DEBUG', 'TAB_SIZE=4',],
+    'defines': [
+      'DEBUG',
+      'PLATFORM="<(OS)"',
+      'TAB_SIZE=4',
+    ],
     'libraries': [
       '-lboost_system',
       '-lboost_program_options',
@@ -35,13 +39,25 @@
       'src/timer.cc',
     ],
     'conditions': [
-       ['OS=="linux"', {
+      ['OS=="freebsd"', {
+        'defines': [
+          'PLATFORM_FREEBSD'
+       ]}],
+      ['OS=="linux"', {
          'ldflags': [
            '-pthread',
           ],
          'libraries': ['-ltcmalloc', '-lunwind'],
-         'defines': ['USE_LIBUNWIND', 'USE_LINUX'],
-    }]],
+         'defines': [
+           'PLATFORM_LINUX',
+           'USE_LIBUNWIND',
+         ],
+        },],
+      ['OS=="mac"', {
+         'defines': [
+           'PLATFORM_OSX'
+         ],
+       }]],
   },
   'targets': [
     {

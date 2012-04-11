@@ -5,7 +5,7 @@
 #include <v8.h>
 #include <unistd.h>
 
-#ifdef USE_LINUX
+#ifdef PLATFORM_LINUX
 #include <linux/limits.h>
 #else
 #define PATH_MAX 4096
