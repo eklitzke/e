@@ -4,20 +4,11 @@
     'type': 'executable',
     # cflags should be changed to -std=c++11 when ubuntu supports it
     'cflags': ['-pedantic', '-Wall', '-std=c++0x'],
-    'conditions': [
-       ['OS=="linux"', {
-         'ldflags': [
-           '-pthread',
-          ],
-         'libraries': ['-lunwind'],
-         'defines': ['USE_LIBUNWIND', 'USE_LINUX'],
-    }]],
     'defines': ['DEBUG', 'TAB_SIZE=4',],
     'libraries': [
       '-lboost_system',
       '-lboost_program_options',
       '<!@(pkg-config --libs-only-l ncursesw)',
-      '-ltcmalloc',
       '-lv8',
     ],
     'sources': [
@@ -43,6 +34,14 @@
       'src/state.cc',
       'src/timer.cc',
     ],
+    'conditions': [
+       ['OS=="linux"', {
+         'ldflags': [
+           '-pthread',
+          ],
+         'libraries': ['-ltcmalloc', '-lunwind'],
+         'defines': ['USE_LIBUNWIND', 'USE_LINUX'],
+    }]],
   },
   'targets': [
     {
