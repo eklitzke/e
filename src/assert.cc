@@ -5,10 +5,10 @@
 #ifdef USE_LIBUNWIND
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
-#endif
 
 #include <boost/lexical_cast.hpp>
 #include <cxxabi.h>
+#endif  // USE_LIBUNWIND
 
 #include <cstdarg>
 #include <cstdio>
