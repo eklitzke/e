@@ -48,10 +48,13 @@ build:
 lint:
 	python third_party/cpplint.py $(SRCFILES)
 
-$(OPT_TARGET) $(TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) $(JS_ERRNO) build
-	make -C build $(shell echo $@ | awk -F/ '{print $$NF}')
+$(TARGET): $(SRCFILES) $(KEYCODE_FILES) $(JS_ERRNO) build
+	make -C build e
 
-$(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(BUNDLED_JS) $(KEYCODE_FILES) $(JS_ERRNO) build
+$(OPT_TARGET): $(SRCFILES) $(BUNDLED_JS) $(KEYCODE_FILES) $(JS_ERRNO) build
+	make -C build opt
+
+$(TEST_TARGET): $(SRCFILES) $(TESTFILES) $(KEYCODE_FILES) $(JS_ERRNO) build
 	make -C build test
 
 test: $(TEST_TARGET)

@@ -11,7 +11,9 @@
 #include <functional>
 #include <string>
 
+#if OPTIMIZED_BUILD
 #include "./bundled_core.h"
+#endif
 #include "./embeddable.h"
 #include "./flags.h"
 #include "./io_service.h"
@@ -138,8 +140,9 @@ void State::Run(std::function<void()> then) {
 
   // Load the core script; this should be known to be good and not throw
   // exceptions.
+#if OPTIMIZED_BUILD
   if (vm().count("debug")) {
-    scripts_.insert(scripts_.begin(), "js/core.js");
+    EnsureCoreScript();
   } else if (!vm().count("skip-core")) {
     LOG(INFO, "loading builtin core.js");
     TryCatch trycatch;
@@ -149,6 +152,9 @@ void State::Run(std::function<void()> then) {
     HandleError(trycatch);
     LOG(INFO, "finished loading builtin core.js");
   }
+#else
+  EnsureCoreScript();
+#endif
 
   // add the init file
   if (vm().count("no-init-file") == 0) {
@@ -172,7 +178,7 @@ void State::Run(std::function<void()> then) {
   }
 
   // sequentially load any other scripts
-  for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
+  for (auto it = scripts_.cbegin(); it != scripts_.cend(); ++it) {
     LOG(INFO, "loading additional script \"%s\"", it->c_str());
     TryCatch trycatch;
     Handle<String> source = js::ReadFile(*it);
@@ -190,6 +196,19 @@ void State::Run(std::function<void()> then) {
   }
   CancelAllTimers();
   context.Dispose();
+}
+
+void State::EnsureCoreScript() {
+  bool seen_core = false;
+  for (auto it = scripts_.cbegin(); it != scripts_.cend(); ++it) {
+    if (*it == "js/core.js") {
+      seen_core = true;
+      break;
+    }
+  }
+  if (!seen_core) {
+    scripts_.insert(scripts_.begin(), "js/core.js");
+  }
 }
 
 bool State::HandleKey(KeyCode *k) {

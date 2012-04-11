@@ -12,7 +12,6 @@
           'libraries': [
             '-lboost_system',
             '-lboost_program_options',
-            '<!@(pkg-config --libs-only-l liblzma)',
             '<!@(pkg-config --libs-only-l ncursesw)',
             '-ltcmalloc',
             '-lunwind',
@@ -24,7 +23,6 @@
     'sources': [
       'src/assert.cc',
       'src/buffer.cc',
-      'src/bundled_core.cc',
       'src/curses_window.cc',
       'src/curses_low_level.cc',
       'src/event_listener.cc',
@@ -57,7 +55,10 @@
     {
       'target_name': 'opt',
       'cflags': ['-Os'],
+      'defines': ['OPTIMIZED_BUILD'],
+      'libraries': ['<!@(pkg-config --libs-only-l liblzma)'],
       'sources': [
+        'src/bundled_core.cc',
         'src/main.cc',
       ],
     },

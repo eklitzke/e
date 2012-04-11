@@ -46,6 +46,10 @@ class State {
 
   std::vector<Buffer*> buffers_;
   EventListener listener_;
+
+  // Ensure that the js/core.js script is in the list of loaded scripts; if it's
+  // not, insert it at the front of the scripts_ list.
+  void EnsureCoreScript();
 };
 }
 

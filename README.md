@@ -157,7 +157,8 @@ These are some of the known dependencies:
   [boost::asio](http://www.boost.org/libs/asio) and
   [boost::program_options](http://www.boost.org/libs/program_options) components
 * [libunwind](http://www.nongnu.org/libunwind/)
-* [liblzma](http://tukaani.org/xz/) (i.e. you need `lzma.h` on your system)
+* [liblzma](http://tukaani.org/xz/) (only needed if you want to build the
+  optimized `opt` binary)
 * [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
   this; other curses implementations might work too)
 * [tcmalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
