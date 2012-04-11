@@ -2,8 +2,10 @@
 
 #include "./assert.h"
 
+#ifdef USE_LIBUNWIND
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#endif
 
 #include <boost/lexical_cast.hpp>
 #include <cxxabi.h>
@@ -18,6 +20,7 @@
 #include "./curses_low_level.h"
 
 namespace e {
+#if USE_LIBUNWIND
 namespace {
 void ShowBacktrace(void) {
   unw_context_t uc;
@@ -28,9 +31,6 @@ void ShowBacktrace(void) {
 
   unw_getcontext(&uc);
   unw_init_local(&cursor, &uc);
-#if 0
-  printf("Traceback (last function at bottom):\n");
-#endif
   std::vector<std::string> functions;
   while (unw_step(&cursor) > 0) {
     if (unw_get_proc_name(&cursor, funcname, sizeof(funcname), &off) == 0) {
@@ -62,12 +62,15 @@ void ShowBacktrace(void) {
   }
 }
 }
+#endif
 
 void PrintAssertThenExit(const char *exprname, const char *filename, int line) {
   EndCurses();
   fprintf(stderr, "Assertion failed <%s:%d>: %s\n(errno is %d)\n\n",
           filename, line, exprname, errno);
+#if USE_LIBUNWIND
   ShowBacktrace();
+#endif
   exit(EXIT_FAILURE);
 }
 

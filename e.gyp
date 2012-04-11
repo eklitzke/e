@@ -9,17 +9,17 @@
          'ldflags': [
            '-pthread',
           ],
-          'libraries': [
-            '-lboost_system',
-            '-lboost_program_options',
-            '<!@(pkg-config --libs-only-l ncursesw)',
-            '-ltcmalloc',
-            '-lunwind',
-            '-lv8',
-          ],
-         'defines': [ 'USE_LINUX', ],
+         'libraries': ['-lunwind'],
+         'defines': ['USE_LIBUNWIND', 'USE_LINUX'],
     }]],
-    'defines': [ 'DEBUG', 'TAB_SIZE=4', ],
+    'defines': ['DEBUG', 'TAB_SIZE=4',],
+    'libraries': [
+      '-lboost_system',
+      '-lboost_program_options',
+      '<!@(pkg-config --libs-only-l ncursesw)',
+      '-ltcmalloc',
+      '-lv8',
+    ],
     'sources': [
       'src/assert.cc',
       'src/buffer.cc',
