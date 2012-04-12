@@ -100,7 +100,7 @@ Handle<Value> JSRequire(const Arguments& args) {
 Handle<Value> JSBuildInfo(const Arguments& args) {
   CHECK_ARGS(0);
 
-  Local<Object> build_options;
+  Local<Object> build_options = Object::New();
   // Expose the platform to the editor (Linux, FreeBSD, Mac, etc.)
   build_options->Set(String::NewSymbol("platform"),
                      String::New(PLATFORM), v8::ReadOnly);
@@ -222,10 +222,8 @@ void AddTemplateAccessor(Handle<ObjectTemplate> templ, const std::string &name,
 void AddJsToGlobalNamespace(Local<ObjectTemplate> global) {
   global->Set(String::NewSymbol("assert"),
               FunctionTemplate::New(JSAssert), v8::ReadOnly);
-#if 0
   global->Set(String::NewSymbol("buildInfo"),
               FunctionTemplate::New(JSBuildInfo), v8::ReadOnly);
-#endif
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(JSLog), v8::ReadOnly);
   global->Set(String::NewSymbol("panic"),
