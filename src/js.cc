@@ -3,6 +3,8 @@
 
 #include "./js.h"
 
+#include <errno.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -29,6 +31,8 @@ using v8::Undefined;
 using v8::Value;
 
 namespace {
+int errno_val;
+
 // @class: Global
 // @description: The globals object
 
@@ -228,5 +232,16 @@ void AddJsToGlobalNamespace(Local<ObjectTemplate> global) {
               FunctionTemplate::New(JSPanic), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(JSRequire), v8::ReadOnly);
+}
+
+void SaveErrno() {
+  errno_val = errno;
+}
+
+Local<Integer> GetErrno() {
+  HandleScope scope;
+  Local<Integer> ret = Integer::New(errno_val);
+  errno_val = -1;
+  return scope.Close(ret);
 }
 }

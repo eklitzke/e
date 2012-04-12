@@ -10,7 +10,7 @@ world.addEventListener("load", function (event) {
 		try {
 			world.buffer.open(world.args[0]);
 		} catch (e) {
-			panic("failed to open \"" + world.args[0] + "\" due to " + errno.errorcode[e]);
+			core.setError("failed to open \"" + world.args[0] + "\" due to " + errno.errorcode[e]);
 		}
 	}
 });

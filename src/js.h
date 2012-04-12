@@ -15,6 +15,7 @@ using v8::Context;
 using v8::External;
 using v8::FunctionTemplate;
 using v8::Handle;
+using v8::Integer;
 using v8::InvocationCallback;
 using v8::Local;
 using v8::Object;
@@ -54,6 +55,15 @@ void HandleError(const TryCatch&);
 
 // mutate the globals dictionary
 void AddJsToGlobalNamespace(Local<ObjectTemplate> global);
+
+// Get the errno saved by SaveErrno().
+Local<Integer> GetErrno();
+
+// Save the value of errno. In general this is needed because when interacting
+// with V8, there's no guarantee that V8 won't do anything that could set
+// errno. Therefore, when passing the errno value between different parts of the
+// program, it may be necessary to set and restore the errno.
+void SaveErrno();
 }
 
 #endif  // SRC_JS_H_

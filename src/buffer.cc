@@ -57,6 +57,7 @@ bool Buffer::OpenFile(const std::string &filepath) {
       ASSERT(fd != -1);
       ASSERT(close(fd) == 0);
     } else {
+      SaveErrno();
       return false;
     }
   }
@@ -270,7 +271,7 @@ Handle<Value> JSOpenFile(const Arguments& args) {
   const std::string filename_s(*filename, filename.length());
   bool success = self->OpenFile(filename_s);
   if (!success) {
-    return scope.Close(v8::ThrowException(Integer::New(errno)));
+    return scope.Close(v8::ThrowException(GetErrno()));
   } else {
     return scope.Close(Undefined());
   }
