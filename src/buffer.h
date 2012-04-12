@@ -16,17 +16,9 @@ using v8::Value;
 
 namespace e {
 class Buffer {
- private:
-  std::string filepath_;
-  std::string name_;
-
-  bool dirty_;
-
-  Zipper<Line *> lines_;
-
  public:
   // constructors
-  explicit Buffer(const std::string &name);
+  explicit Buffer(const std::string &name, bool scratch = true);
   explicit Buffer(const std::string &name, const std::string &filepath);
   ~Buffer();
 
@@ -59,10 +51,16 @@ class Buffer {
   // erase a line at some offset
   void Erase(size_t);
 
-  // is the buffer dirty?
-  bool IsDirty(void) const;
+  // is this a scratch buffer?
+  bool IsScratch() { return scratch_; }
 
   Handle<Value> ToScript();
+
+ private:
+  std::string filepath_;
+  std::string name_;
+  bool scratch_;
+  Zipper<Line *> lines_;
 };
 }
 

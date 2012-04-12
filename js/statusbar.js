@@ -1,3 +1,13 @@
+var errorText = "";
+
+core.addFunction("clearError", function () {
+	errorText = "";
+});
+
+core.addFunction("setError", function (text) {
+	errorText = text;
+});
+
 core.addFunction("computeStatusSplits", function (index) {
 	var maxx = core.windows.tab.getmaxx();
 	var third = parseInt(maxx / 3);
@@ -43,6 +53,14 @@ core.addFunction("drawStatus", function () {
 		core.windows.status.mvaddstr(1, 0, core.exBuffer);
 		curses.move(curses.stdscr.getmaxy() - 1, core.exBuffer.length);
 		resetCursor = false;
+	}
+	if (errorText) {
+		core.windows.status.attron(curses.A_BOLD);
+		var colorPair = colors.getColorPair(curses.COLOR_WHITE, curses.COLOR_RED);
+		core.windows.status.attron(colorPair);
+		core.windows.status.mvaddstr(1, 0, "ERROR: " + errorText);
+		core.windows.status.attroff(colorPair);
+		core.windows.status.attroff(curses.A_BOLD);
 	} else if (core.curmode == "insert") {
 		core.windows.status.attron(curses.A_BOLD);
 		var colorPair = colors.getColorPair(curses.COLOR_YELLOW, -1);

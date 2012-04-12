@@ -68,7 +68,9 @@ core.addKeypressListener("insert", function (event) {
 			core.move(0);
 			break;
 		case 19: // Ctrl-S
-			world.buffer.persist(world.buffer.getFile())
+			if (!world.buffer.persist(world.buffer.getFile())) {
+				core.setError("failed to save file!");
+			}
 		case 26: // Ctrl-Z
 			sys.kill(sys.getpid(), sys.SIGTSTP);
 			break;
@@ -269,6 +271,7 @@ world.addEventListener("keypress", function (event) {
 // function for the details).
 world.addEventListener("keypress", function (event) {
 	var code = event.getCode();
+	core.clearError();
 
 	// Escape sequences are sent as two separate characters. For instance, if
 	// you type M-x (the "Alt" key followed by the letter 'x'), the sequence

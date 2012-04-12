@@ -33,13 +33,13 @@ using v8::Undefined;
 using v8::Value;
 
 namespace e {
-Buffer::Buffer(const std::string &name)
-    :name_(name), dirty_(false) {
+Buffer::Buffer(const std::string &name, bool scratch)
+    :name_(name), scratch_(scratch) {
   AppendLine("");
 }
 
 Buffer::Buffer(const std::string &name, const std::string &filepath)
-    :filepath_(filepath), name_(name), dirty_(false) {
+    :filepath_(filepath), name_(name), scratch_(false) {
   OpenFile(filepath);
 }
 
@@ -136,10 +136,6 @@ const std::string & Buffer::GetBufferName() const {
 
 const std::string & Buffer::GetFilePath() const {
   return filepath_;
-}
-
-bool Buffer::IsDirty(void) const {
-  return dirty_;
 }
 
 Line* Buffer::Insert(size_t offset, const std::string &s) {
@@ -287,10 +283,14 @@ Handle<Value> JSPersist(const Arguments& args) {
   CHECK_ARGS(1);
   GET_SELF(Buffer);
 
+  if (self->IsScratch()) {
+    return scope.Close(Boolean::New(false));
+  }
+
   String::AsciiValue filename(args[0]);
   const std::string filename_s(*filename, filename.length());
   self->Persist(filename_s);
-  return scope.Close(Undefined());
+  return scope.Close(Boolean::New(true));
 }
 
 Persistent<ObjectTemplate> buffer_template;
