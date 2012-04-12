@@ -14,6 +14,7 @@
 #include "./module.h"
 
 using v8::Arguments;
+using v8::Boolean;
 using v8::External;
 using v8::Handle;
 using v8::HandleScope;
@@ -88,6 +89,50 @@ Handle<Value> JSRequire(const Arguments& args) {
   String::Utf8Value value(args[0]->ToString());
   std::string script_name(*value, value.length());
   return e::GetModule(script_name);
+}
+
+// @method: buildInfo
+// @description: Get build options
+Handle<Value> JSBuildInfo(const Arguments& args) {
+  CHECK_ARGS(0);
+
+  Local<Object> build_options;
+  // Expose the platform to the editor (Linux, FreeBSD, Mac, etc.)
+  build_options->Set(String::NewSymbol("platform"),
+                     String::New(PLATFORM), v8::ReadOnly);
+
+  // The build date and time
+  build_options->Set(String::New("buildTime"),
+                     String::New(__DATE__ " " __TIME__), v8::ReadOnly);
+
+  // Do we handle unicode character input?
+  build_options->Set(String::New("unicodeInput"),
+#ifdef USE_NCURSESW
+                     Boolean::New(true),
+#else
+                     Boolean::New(false),
+#endif
+                     v8::ReadOnly);
+
+  // Was the debug flag set?
+  build_options->Set(String::New("debug"),
+#ifdef DEBUG
+                     Boolean::New(true),
+#else
+                     Boolean::New(false),
+#endif
+                     v8::ReadOnly);
+
+  // Is this an optimized build?
+  build_options->Set(String::New("optimized"),
+#ifdef OPTIMIZED_BUILD
+                     Boolean::New(true),
+#else
+                     Boolean::New(false),
+#endif
+                     v8::ReadOnly);
+
+  return scope.Close(build_options);
 }
 }
 
@@ -173,15 +218,15 @@ void AddTemplateAccessor(Handle<ObjectTemplate> templ, const std::string &name,
 void AddJsToGlobalNamespace(Local<ObjectTemplate> global) {
   global->Set(String::NewSymbol("assert"),
               FunctionTemplate::New(JSAssert), v8::ReadOnly);
+#if 0
+  global->Set(String::NewSymbol("buildInfo"),
+              FunctionTemplate::New(JSBuildInfo), v8::ReadOnly);
+#endif
   global->Set(String::NewSymbol("log"),
               FunctionTemplate::New(JSLog), v8::ReadOnly);
   global->Set(String::NewSymbol("panic"),
               FunctionTemplate::New(JSPanic), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(JSRequire), v8::ReadOnly);
-
-  // Expose the platform to the editor (Linux, FreeBSD, Mac, etc.)
-  global->Set(String::NewSymbol("platform"),
-              String::New(PLATFORM), v8::ReadOnly);
 }
 }
