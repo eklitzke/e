@@ -1,30 +1,26 @@
-/**
- * Low-level method to scroll a region of the screen. If lines is positive then
- * the screen is scrolled UP, i.e. line (n + lines) moves to the position on the
- * screen formerly occoupied by line n. And vice versa for negative lines.
- *
- * The value of core.line will *not* change as a result of calling this function.
- *
- * @param {number} lines The number of lines to scroll
- * @param {number} top The top line of the scroll region
- * @param {number} bot The bottom line of the scroll region
- */
+// Low-level method to scroll a region of the screen.
+//
+// The rule to know the direction of scorlling is that line (n + lines) will now
+// be displayed at the position formerly occupied by line n.
+// @param {number} lines The number of lines to scroll
+// @param {number} top The top line of the scroll region
+// @param {number} bot The bottom line of the scroll region
 core.addFunction("scrollRegion", function (lines, top, bot) {
 	var curx = core.windows.buffer.getcurx();
 	var cury = core.windows.buffer.getcury();
 	var maxy = core.windows.buffer.getmaxy();
 	var maxAllowed = world.buffer.length - 1;
 
-	var wt = core.windowTop();  // the top line displayed
-	if (wt + lines <= 0) {
-		lines = -wt;
-	} else if (wt + lines > maxAllowed) {
-		lines -= (wt + lines - maxAllowed);
+	var wt = core.windowTop();  // the top line currently displayed
+
+	var topLine = core.windowTop() + top;  // the top line that will be scrolled
+	if (topLine + lines <= 0) {
+		// don't allow scrolling past the top of the buffer
+		lines = -topLine;
 	}
 	if (lines == 0) {
 		return lines;
 	}
-	log("tesT");
 
 	var newLine, newLinePos;
 	var lineDelta = core.line - cury;
@@ -42,8 +38,7 @@ core.addFunction("scrollRegion", function (lines, top, bot) {
 			core.windows.buffer.clrtoeol();
 		}
 	}
-	core.updateAllWindows();
-	//core.move.absolute(cury, curx);
+	core.move.absolute(cury, curx);
 	return lines;
 });
 

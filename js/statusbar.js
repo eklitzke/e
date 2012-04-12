@@ -116,5 +116,4 @@ core.addFunction("drawStatusRight", function () {
 	core.windows.status.standout();
 	core.windows.status.mvaddstr(0, split.left, statusEnd);
 	core.windows.status.standend();
-	core.moveAbsolute(core.windows.buffer.getcury(), core.column);
 });

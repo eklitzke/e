@@ -49,21 +49,24 @@ core.addKeypressListener("insert", function (event) {
 			var line = core.currentLine();
 			var chopped = "";
 			if (core.column < line.length) {
-				chopped = line.value().substring(core.column, line.length - core.column + 1);
+				// chop the end of the line, so that it can be added to the following line
+				chopped = line.value().substring(core.column, line.length);
 				line.chop(core.column);
+				core.windows.buffer.clrtoeol();
 			}
+			// scroll the region below the cursor one line down
 			core.scrollRegion(-1, core.windows.buffer.getcury() + 1, core.windows.buffer.getmaxy());
-			// add the new line, with the chopped contents
-			world.buffer.addLine(core.line + 1, chopped);
+			world.buffer.addLine(core.line + 1, chopped);  // add the new line, with the chopped contents
 
-			//move the cursor
-			core.windows.buffer.clrtoeol();
-			core.move(1);
+			core.move(1);  // this implicitly updates core.line
+			core.move.left();
 			if (chopped) {
 				core.windows.buffer.addstr(chopped);
+				core.windows.buffer.clrtoeol();
 				core.move.left();
+			} else {
+				core.windows.buffer.clrtoeol();
 			}
-			//core.line++;
 			core.column = 0;
 			core.move(0);
 			break;
