@@ -218,6 +218,12 @@ if __name__ == '__main__':
     if opts.expand_requires:
         code = expand_requires(code)
 
+    p = subprocess.Popen(['python', 'third_party/rjsmin.py'],
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+    p.stdin.write(code)
+    code, _ = p.communicate()
+
     uncompressed_len = len(code)
     compressor = lzma.LZMACompressor()
     compressed_output = compressor.compress(code);
