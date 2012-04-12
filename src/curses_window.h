@@ -7,15 +7,6 @@
 #include <boost/asio.hpp>
 #include <boost/asio/posix/stream_descriptor.hpp>
 
-#ifdef PLATFORM_LINUX
-#ifndef _XOPEN_SOURCE_EXTENDED
-#define _XOPEN_SOURCE_EXTENDED
-#endif
-#include <ncursesw/curses.h>
-#else
-#include <curses.h>
-#endif  // PLATFORM_LINUX
-
 #include <string>
 #include <vector>
 
@@ -31,7 +22,6 @@ class CursesWindow {
   void Loop();
  private:
   State state_;
-  WINDOW *window_;
   std::vector<std::string> args_;
   boost::asio::posix::stream_descriptor term_in_;
 

@@ -325,7 +325,10 @@ if __name__ == '__main__':
                 code_arr.append('      "\\x%02x",' % (code,))
             pass
         else:
-            code_arr.append('      nullptr,')
+            val = '      nullptr,'
+            val += ' ' * (comment_width - len(val))
+            val += '// keycode %d' % (code,)
+            code_arr.append(val)
 
     with open(h_name, 'w') as h_file:
         h_file.write(h_template.lstrip() % {'current_year': current_year})

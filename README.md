@@ -153,25 +153,26 @@ Read on to get the appropriate instructions for your operating system.
 Dependencies
 ------------
 
-These are some of the known dependencies:
+The following are dependencies that *must* be satisified to build the editor:
 
 * [boost](http://www.boost.org/), including the
   [boost::asio](http://www.boost.org/libs/asio) and
   [boost::program_options](http://www.boost.org/libs/program_options) components
+* [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
+  this; other curses implementations might work too)
+* [V8](http://code.google.com/p/v8/) (built as a shared library)
+
+The following dependencies are optional:
+
 * [libunwind](http://www.nongnu.org/libunwind/)
 * [liblzma](http://tukaani.org/xz/) (only needed if you want to build the
   optimized `opt` binary)
-* [ncurses](http://www.gnu.org/software/ncurses/) (you probably already have
-  this; other curses implementations might work too)
+* *ncursesw* (the unicode version of curses)
 * [tcmalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
-* [V8](http://code.google.com/p/v8/) (built as a shared library)
 
-For an authoritative list of the dependencies, it's probably best to manually
-inspect `e.gyp`.
-
-It's also worth noting that some of the dependencies (for instance, on tcmalloc
-and libunwind) could probably easily be made optional with a relatively small
-amount of work, if one were so inclined.
+Many of these "optional" dependencies are controlled by `USE_` defines in
+`e.gyp`; if you're having problems with an optional dependency, you may find it
+useful to take a look at `e.gyp` and tweak it according to your needs.
 
 Bundled Javascript
 ------------------

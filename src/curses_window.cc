@@ -8,6 +8,20 @@
 #include <term.h>
 #include <termios.h>
 #include <v8.h>
+#include <wchar.h>
+
+#ifdef USE_NCURSESW
+#ifdef PLATFORM_LINUX
+#ifndef _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED
+#endif  // _X_OPEN_SOURCE_EXTENDED
+#include <ncursesw/curses.h>
+#else
+#include <curses.h>
+#endif  // PLATFORM_LINUX
+#else  // USE_NCURSESW
+#include <curses.h>  // NOLINT
+#endif  // USE_NCURSESW
 
 #include <functional>
 
@@ -33,20 +47,20 @@ bool UseAsio() {
 
 CursesWindow::CursesWindow(const std::vector<std::string> &scripts,
                            const std::vector<std::string> &files)
-    :state_(scripts, files), window_(nullptr), args_(files),
+    :state_(scripts, files), args_(files),
      term_in_(io_service) {
 }
 
 void CursesWindow::Initialize() {
-  window_ = initscr();
+  WINDOW *window = initscr();
 
   InitializeCurses();
 
-  keypad(window_, TRUE);
-  clearok(window_, TRUE);
-  notimeout(window_, TRUE);
+  keypad(window, TRUE);
+  clearok(window, TRUE);
+  notimeout(window, TRUE);
   if (UseAsio()) {
-    nodelay(window_, true);
+    nodelay(window, true);
   }
 
   struct termios ttystate;
@@ -88,12 +102,23 @@ bool CursesWindow::InnerOnRead() {
   // bytes until getch() returns ERR
   bool keep_going = true;
   while (true) {
+#ifdef USE_NCURSESW
     wint_t wch;
     int ret = get_wch(&wch);
-    if (ret == ERR)
+    if (ret == ERR) {
       break;
+    }
+    bool is_keycode = (ret == KEY_CODE_YES);
+#else
+    int ch = static_cast<wint_t>(getch());
+    if (ch == ERR) {
+      break;
+    }
+    wint_t wch = static_cast<wint_t>(ch);
+    bool is_keycode = (wch >= 256);
+#endif
+    KeyCode *keycode = e::keycode::CursesToKeycode(wch, is_keycode);
 
-    KeyCode *keycode = e::keycode::CursesToKeycode(wch, ret == KEY_CODE_YES);
     keep_going = HandleKey(keycode);
     if (!keep_going)
       break;

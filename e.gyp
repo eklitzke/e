@@ -51,6 +51,7 @@
          'defines': [
            'PLATFORM_LINUX',
            'USE_LIBUNWIND',
+           'USE_NCURSESW',
          ],
         },],
       ['OS=="mac"', {
