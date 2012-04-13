@@ -1,12 +1,21 @@
-var errorText = "";
+function HighlightText() {
+  this.text = ''
+};
 
-core.addFunction("clearError", function () {
-  errorText = "";
-});
+HighlightText.prototype.clear = function () {
+  this.text = '';
+};
 
-core.addFunction("setError", function (text) {
-  errorText = text;
-});
+HighlightText.prototype.set = function (text) {
+  this.text = text;
+};
+
+HighlightText.prototype.value = function () {
+  return this.text;
+};
+
+core.errorText = new HighlightText();
+core.warningText = new HighlightText();
 
 core.addFunction("computeStatusSplits", function (index) {
   var maxx = core.windows.tab.getmaxx();
@@ -54,11 +63,18 @@ core.addFunction("drawStatus", function () {
     curses.move(curses.stdscr.getmaxy() - 1, core.exBuffer.length);
     resetCursor = false;
   }
-  if (errorText) {
+  if (core.errorText.value()) {
     core.windows.status.attron(curses.A_BOLD);
     var colorPair = colors.getColorPair(curses.COLOR_WHITE, curses.COLOR_RED);
     core.windows.status.attron(colorPair);
-    core.windows.status.mvaddstr(1, 0, "ERROR: " + errorText);
+    core.windows.status.mvaddstr(1, 0, "ERROR: " + core.errorText.value());
+    core.windows.status.attroff(colorPair);
+    core.windows.status.attroff(curses.A_BOLD);
+  } else if (core.warningText.value()) {
+    core.windows.status.attron(curses.A_BOLD);
+    var colorPair = colors.getColorPair(curses.COLOR_RED, -1);
+    core.windows.status.attron(colorPair);
+    core.windows.status.mvaddstr(1, 0, "WARNING: " + core.warningText.value());
     core.windows.status.attroff(colorPair);
     core.windows.status.attroff(curses.A_BOLD);
   } else if (core.curmode == "insert") {

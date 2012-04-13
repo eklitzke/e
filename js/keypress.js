@@ -36,7 +36,8 @@ world.addEventListener("keypress", function (event) {
 // function for the details).
 world.addEventListener("keypress", function (event) {
   var code = event.getCode();
-  core.clearError();
+  core.errorText.clear();
+  core.warningText.clear();
 
   // Escape sequences are sent as two separate characters. For instance, if
   // you type M-x (the "Alt" key followed by the letter 'x'), the sequence

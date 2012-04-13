@@ -1,5 +1,60 @@
 // Implementation of vi-mode.
 
+function ExFlags() {
+  this.flags = '';
+}
+
+ExFlags.prototype.setFlag = function (flag) {
+  if (this.flags.indexOf(flag) === -1) {
+    this.flags += flag;
+  }
+};
+
+ExFlags.prototype.clearFlag = function (flag) {
+  var pos = this.flags.indexOf(flag);
+  if (pos) {
+    this.flags.splice(pos, 1);
+  }
+}
+
+ExFlags.prototype.check = function (flag) {
+  return (this.flags.indexOf(flag) !== -1);
+}
+
+var exFlags = new ExFlags();
+
+// The accumulator is what makes commands like 5j or 3dd work. It accumulates
+// digits entered, and runs commands repeatedly. There will only be one instance
+// of the Accumulator class created in normal operation, the variable
+// `accumulator'.
+function Accumulator() {
+  this.count = 0;
+}
+
+// Add a digit to the accumulator.
+Accumulator.prototype.addDigit = function (digit) {
+  if (this.count === 0) {
+    this.count = digit;
+  } else {
+    this.count = this.count * 10 + digit;
+  }
+};
+
+// Run a function the appropriate number of times (which is once if the
+// accumulator is empty).
+Accumulator.prototype.run = function (func) {
+  var count = this.count || 1;
+  for (var i = 0; i < count; i++) {
+    func();
+  }
+  this.count = 0;
+}
+
+// The global instance of the accumulator.
+var accumulator = new Accumulator();
+
+var pasteBuffer = '';
+
 // The main keypress listener for insert mode.
 core.addKeypressListener("insert", function (event) {
   var cury = core.windows.buffer.getcury();
@@ -50,7 +105,7 @@ core.addKeypressListener("insert", function (event) {
     break;
   case 19: // Ctrl-S
     if (!world.buffer.persist(world.buffer.getFile())) {
-      core.setError("failed to save file!");
+      core.errorText.set("failed to save file!");
     }
   case 26: // Ctrl-Z
     sys.kill(sys.getpid(), sys.SIGTSTP);
@@ -174,6 +229,24 @@ core.addKeypressListener("command", function (event) {
     core.switchMode("insert");
   };
 
+  var isWhitespace = function (c) {
+    var val;
+    switch (c) {
+    case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
+    case '\v':
+      val = true;
+      break;
+    default:
+      val = false;
+      break;
+    }
+    return val;
+  };
+
+  var motion = null;
   switch (wch) {
   case 'a':
     core.move(0, 1);
@@ -183,21 +256,41 @@ core.addKeypressListener("command", function (event) {
     core.move.right();
     core.switchMode("insert");
     break;
-  case 'c':
-  case 'C':
-    core.switchMode("insert");
+  case 'b':
+  case 'B':
+    // XXX: this isn't quite right for a couple of reasons. One is that we need
+    // to be able to move up a line if we reach the beginning of a line. The
+    // other is that 'b' and 'B' are actually slightly different (this behaves
+    // like B not b).
+    core.warningText.set("'" + wch + "' not properly implemented");
+    motion = function () {
+      var line = core.currentLine().value();
+      var col = core.column - 1;
+      while (col > 0) {
+        col--;
+        if (isWhitespace(line[col])) {
+          col++;
+          break;
+        }
+      }
+      core.move(0, col - core.column);
+    };
+    break;
+  case 'd':
+    exFlags.setFlag('d');
+    core.warningText.set("'d' not properly implemented");
     break;
   case 'h':
-    core.move(0, -1);
+    motion = function () { core.move(0, -1); };
     break;
   case 'j':
-    core.move(1);
+    motion = function () { core.move(1); };
     break;
   case 'k':
-    core.move(-1);
+    motion = function () { core.move(-1); };
     break;
   case 'l':
-    core.move(0, 1);
+    motion = function () { core.move(0, 1); };
     break;
   case 'i':
     core.switchMode("insert");
@@ -212,16 +305,33 @@ core.addKeypressListener("command", function (event) {
   case 'O':
     insertLine(0);
     break;
-  case 's':
-  case 'S':
-    core.switchMode("insert");
+  case 'y':
+    exFlags.setFlag('y');
+    core.warningText.set("'y' not properly implemented");
     break;
   case '^':
+    motion = core.move.left;
+    break;
   case '0':
-    core.move.left();
+    if (accumulator.count !== 0) {
+      accumulator.addDigit(0);
+    } else {
+      motion = core.move.left;
+    }
+    break;
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    accumulator.addDigit(parseInt(wch));
     break;
   case '$':
-    core.move.right(false, true, -1);
+    motion = function () {core.move.right(false, true, -1) };
     break;
   case ':':
     core.exBuffer = ":";
@@ -233,6 +343,10 @@ core.addKeypressListener("command", function (event) {
     } else {
       wchName = "keycode " + event.getCode();
     }
-    log("didn't know how to handle " + wchName + " in command mode");
+    core.errorText.set("vi command not implemented: " + wchName);
+  }
+
+  if (motion !== null) {
+    accumulator.run(motion);
   }
 });
