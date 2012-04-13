@@ -13,7 +13,7 @@ def check_whitespace(f, check_tabs=False):
     """Ensures that the file doesn't have any trailing whitespace"""
     empty = False
     with open(f) as infile:
-        for line in f:
+        for line in infile:
             line = line.rstrip('\n')
             if not line:
                 empty = True
