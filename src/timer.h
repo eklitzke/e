@@ -22,14 +22,17 @@ using v8::Persistent;
 namespace e {
 class Timer {
  public:
-  static Timer* New(Persistent<Object> callback, uint32_t millis, bool repeat) {
-    return new Timer(callback, millis, repeat);
+  static Timer* New(Persistent<Object> callback) {
+    return new Timer(callback);
   }
 
   ~Timer();
 
-  // start running the timer
-  void Start();
+  // start the timer with a relative timeout
+  void Start(uint32_t millis, bool repeat);
+
+  // start the timer with an absolute timeout; never repeats
+  void Start(uint64_t millis);
 
   // fire the timer
   bool Fire();
@@ -38,7 +41,8 @@ class Timer {
   uint32_t GetId() const { return id_; }
 
  private:
-  Timer(Persistent<Object> callback, uint32_t millis, bool repeat);
+  // Create a timer.
+  explicit Timer(Persistent<Object> callback);
 
   Persistent<Object> func_;
   uint32_t id_;

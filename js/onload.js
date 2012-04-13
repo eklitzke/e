@@ -57,17 +57,26 @@ world.addEventListener("load", function (event) {
 
 // set up the refresh on the clock
 world.addEventListener("load", function (event) {
-	if (core.clockRefresh === null) {
-		if (core.clockShowSeconds) {
-			core.clockRefresh = 1000;
-		} else {
-			core.clockRefresh = 5000;
+
+	if (core.clockShowSeconds) {
+		var getNext = function () {
+			var d = new Date();
+			return new Date(d.getYear() + 1900, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds() + 1);
+		}
+	} else {
+		var getNext = function () {
+			var d = new Date();
+			return new Date(d.getYear() + 1900, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes() + 1, 0);
 		}
 	}
-	setInterval(function () {
+
+	var clockRefresh = function () {
+		var next = getNext();
 		core.drawStatusRight();
 		core.updateAllWindows();
-	}, core.clockRefresh);
+		setDeadline(clockRefresh, next);
+	}
+	clockRefresh();
 });
 
 // Move the cursor and update all windows.

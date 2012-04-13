@@ -3,6 +3,7 @@
 #include "./timer.h"
 
 #include <boost/asio.hpp>
+#include <boost/date_time.hpp>
 #include <v8.h>
 
 #include <functional>
@@ -12,6 +13,7 @@
 #include "./js.h"
 
 using v8::Boolean;
+using v8::Date;
 using v8::HandleScope;
 using v8::Integer;
 using v8::Local;
@@ -42,8 +44,8 @@ Handle<Value> JSSetTimeout(const Arguments& args) {
   Local<Object> obj = val->ToObject();
   if (obj->IsCallable()) {
     Persistent<Object> func = Persistent<Object>::New(obj);
-    e::Timer *timer = e::Timer::New(func, millis, false);
-    timer->Start();
+    e::Timer *timer = e::Timer::New(func);
+    timer->Start(millis, false);
     return scope.Close(Integer::New(timer->GetId()));
   } else {
     return Undefined();
@@ -60,8 +62,26 @@ Handle<Value> JSSetInterval(const Arguments& args) {
   Local<Object> obj = val->ToObject();
   if (obj->IsCallable()) {
     Persistent<Object> func = Persistent<Object>::New(obj);
-    e::Timer *timer = e::Timer::New(func, millis, true);
-    timer->Start();
+    e::Timer *timer = e::Timer::New(func);
+    timer->Start(millis, true);
+    return scope.Close(Integer::New(timer->GetId()));
+  } else {
+    return Undefined();
+  }
+}
+
+// @method: setDeadline
+// @description: run code with a deadline
+Handle<Value> JSSetDeadline(const Arguments& args) {
+  CHECK_ARGS(2);
+  Handle<Value> val = args[0];
+  Local<Object> obj = val->ToObject();
+  if (obj->IsCallable()) {
+    Persistent<Object> func = Persistent<Object>::New(obj);
+    Handle<Date> date = Handle<Date>::Cast(args[1]);
+    uint64_t deadline = static_cast<uint64_t>(date->NumberValue());
+    e::Timer *timer = e::Timer::New(func);
+    timer->Start(deadline);
     return scope.Close(Integer::New(timer->GetId()));
   } else {
     return Undefined();
@@ -88,18 +108,12 @@ Handle<Value> JSClearTimeout(const Arguments& args) {
 }
 
 namespace e {
-Timer::Timer(Persistent<Object> callback, uint32_t millis, bool repeat)
-    :func_(callback), id_(next_id++), millis_(millis), repeat_(repeat),
+Timer::Timer(Persistent<Object> callback)
+    :func_(callback), id_(next_id++), millis_(0), repeat_(false),
      timer_(io_service) {
   ASSERT(func_->IsCallable());
   timers_.insert(timers_.end(), std::pair<uint32_t, Timer*>(id_, this));
 }
-
-#if 0
-static Timer* New(Persistent<Object> callback, uint32_t millis, bool repeat) {
-  return new Timer(callback, millis, repeat);
-}
-#endif
 
 Timer::~Timer() {
   func_.Dispose();
@@ -107,8 +121,21 @@ Timer::~Timer() {
   timers_.erase(id_);
 }
 
-void Timer::Start() {
-  timer_.expires_from_now(boost::posix_time::milliseconds(millis_));
+void Timer::Start(uint32_t millis, bool repeat) {
+  if (repeat) {
+    millis_ = millis;
+    repeat_ = true;
+  }
+  timer_.expires_from_now(boost::posix_time::milliseconds(millis));
+  timer_.async_wait(std::bind(TimeoutHandler, this,
+                              std::placeholders::_1));
+}
+
+void Timer::Start(uint64_t millis) {
+  boost::posix_time::ptime deadline =
+      boost::posix_time::from_time_t(millis / 1000);
+  boost::posix_time::time_duration fractional(0, 0, 0, (millis % 1000) * 1000);
+  timer_.expires_at(deadline + fractional);
   timer_.async_wait(std::bind(TimeoutHandler, this,
                               std::placeholders::_1));
 }
@@ -139,6 +166,8 @@ size_t CancelAllTimers() {
 }
 
 void AddTimersToGlobalNamespace(Local<ObjectTemplate> global) {
+  global->Set(String::NewSymbol("setDeadline"),
+              FunctionTemplate::New(JSSetDeadline), v8::ReadOnly);
   global->Set(String::NewSymbol("setTimeout"),
               FunctionTemplate::New(JSSetTimeout), v8::ReadOnly);
   global->Set(String::NewSymbol("setInterval"),

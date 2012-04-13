@@ -15,7 +15,6 @@ var core = {
 	line: 0,
 	clockMode: "12", // 12 or 24
 	clockShowSeconds: false,
-	clockRefresh: null, // delay loading this until after ~/.e.js has been parsed
 	exBuffer: '', // the buffer for : commands in vi-mode
 	inEscape: false, // true when part of an escape sequence
 	viMode: true,
