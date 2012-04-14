@@ -200,6 +200,9 @@ core.addKeypressListener("command", function (event) {
   var code = event.getCode();
   var wch = event.getChar();
 
+  var origCol = core.column;
+  var origLine = core.line;
+
   // we're in ex-mode
   if (core.exBuffer.length) {
     log("exBuffer is \"" + core.exBuffer + "\"");
@@ -229,6 +232,10 @@ core.addKeypressListener("command", function (event) {
     core.switchMode("insert");
   };
 
+  var isWordChar = function (c) {
+    return /[a-zA-Z0-9]_/.test(c);
+  };
+
   var isWhitespace = function (c) {
     var val;
     switch (c) {
@@ -246,6 +253,39 @@ core.addKeypressListener("command", function (event) {
     return val;
   };
 
+  var moveBackwards = function (pastNewline) {
+    if (core.column == 0) {
+      if (pastNewline && core.line > 0) {
+        core.line--;
+        var line = core.currentLine();
+        if (line.length) {
+          core.column = line.length - 1;
+          return line[core.column];
+        } else {
+          core.column = 0;
+          return '';
+        }
+      }
+      return '';
+    } else {
+      var line = core.currentLine().value();
+      core.column--;
+      return line[core.column];
+    }
+  };
+
+  var moveBackwordsThroughWord = function (r) {
+    var line = core.currentLine().value();
+    while (core.column > 0) {
+      log("testing at col " + core.column + ", val is " + line[core.column]);
+      if (!r.test(line[core.column])) {
+        core.column++;
+        break;
+      }
+      core.column--;
+    }
+  };
+
   var motion = null;
   switch (wch) {
   case 'a':
@@ -257,23 +297,32 @@ core.addKeypressListener("command", function (event) {
     core.switchMode("insert");
     break;
   case 'b':
-  case 'B':
-    // XXX: this isn't quite right for a couple of reasons. One is that we need
-    // to be able to move up a line if we reach the beginning of a line. The
-    // other is that 'b' and 'B' are actually slightly different (this behaves
-    // like B not b).
-    core.warningText.set("'" + wch + "' not properly implemented");
+    var wordRegex = /[_a-zA-Z0-9]/;
+    var nonwordRegex = {};
+    nonwordRegex.test = function (c) {
+      return !(isWhitespace(c) || wordRegex.test(c));
+    };
+    log("in b");
     motion = function () {
-      var line = core.currentLine().value();
-      var col = core.column - 1;
-      while (col > 0) {
-        col--;
-        if (isWhitespace(line[col])) {
-          col++;
+      while (true) {
+        var ch = moveBackwards(true);
+        log("ch is " + ch);
+        if (ch === '') {
+          log("empty");
+          return;
+        } else if (isWhitespace(ch)) {
+          log("in whitespace");
+          continue;
+        } else if (wordRegex.test(ch)) {
+          log("wordRegex");
+          moveBackwordsThroughWord(wordRegex);
+          break;
+        } else {
+          log("nonwordRegex");
+          moveBackwordsThroughWord(nonwordRegex);
           break;
         }
       }
-      core.move(0, col - core.column);
     };
     break;
   case 'd':
@@ -281,16 +330,34 @@ core.addKeypressListener("command", function (event) {
     core.warningText.set("'d' not properly implemented");
     break;
   case 'h':
-    motion = function () { core.move(0, -1); };
+    motion = function () {
+      if (core.column > 0) {
+        core.column--;
+      }
+    };
     break;
   case 'j':
-    motion = function () { core.move(1); };
+    motion = function () {
+      var len = world.buffer.length;
+      if (core.line < len - 1) {
+        core.line++;
+      }
+    };
     break;
   case 'k':
-    motion = function () { core.move(-1); };
+    motion = function () {
+      if (core.column > 0) {
+        core.column--;
+      }
+    };
     break;
   case 'l':
-    motion = function () { core.move(0, 1); };
+    motion = function () {
+      var len = core.currentLine().length;
+      if (core.column < len - 1) {
+        core.column++;
+      }
+    };
     break;
   case 'i':
     core.switchMode("insert");
@@ -349,4 +416,5 @@ core.addKeypressListener("command", function (event) {
   if (motion !== null) {
     accumulator.run(motion);
   }
+  core.move(core.column - origCol, core.line - origLine);
 });
