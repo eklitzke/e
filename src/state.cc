@@ -26,6 +26,7 @@ namespace e {
 
 using v8::Arguments;
 using v8::Array;
+using v8::Boolean;
 using v8::Context;
 using v8::External;
 using v8::Handle;
@@ -125,6 +126,8 @@ void State::Run(std::function<void()> then) {
   world->Set(String::NewSymbol("buffer"), buffers_[0]->ToScript(),
              v8::ReadOnly);
   context->Global()->Set(String::NewSymbol("world"), world, v8::ReadOnly);
+  context->Global()->Set(String::NewSymbol("debug"),
+                         Boolean::New(vm.count("debug")), v8::ReadOnly);
 
   // export the editor's argv array to JS (as `args')
   Local<Array> args = Array::New(args_.size());
@@ -141,9 +144,9 @@ void State::Run(std::function<void()> then) {
   // Load the core script; this should be known to be good and not throw
   // exceptions.
 #if OPTIMIZED_BUILD
-  if (vm().count("debug")) {
+  if (vm.count("debug")) {
     EnsureCoreScript();
-  } else if (!vm().count("skip-core")) {
+  } else if (!vm.count("skip-core")) {
     LOG(INFO, "loading builtin core.js");
     TryCatch trycatch;
     Local<Script> script = GetCoreScript();
@@ -157,7 +160,7 @@ void State::Run(std::function<void()> then) {
 #endif
 
   // add the init file
-  if (vm().count("no-init-file") == 0) {
+  if (vm.count("no-init-file") == 0) {
     uid_t user = getuid();
     passwd pwent;
     passwd *temp_pwent;

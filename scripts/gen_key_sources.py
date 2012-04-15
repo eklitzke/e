@@ -15,6 +15,7 @@ h_template = """
 #ifndef SRC_KEYCODE_H_
 #define SRC_KEYCODE_H_
 
+#include <ctype.h>
 #include <v8.h>
 
 #include <string>
@@ -33,6 +34,9 @@ class KeyCode {
   inline wint_t Code() const { return code_; }
   inline bool IsKeypad() const { return is_keypad_; }
   inline const std::string& Name() const { return name_; }
+  inline bool IsPrintable() const {
+     return static_cast<bool>(isprint(static_cast<int>(code_)));
+  }
  private:
   wint_t code_;
   bool is_keypad_;
@@ -55,7 +59,6 @@ cc_template = """
 
 #include "./%(h_name)s"
 
-#include <ctype.h>
 #include <v8.h>
 #include <wchar.h>
 
@@ -133,8 +136,7 @@ Handle<Value> JSIsKeypad(const Arguments& args) {
 Handle<Value> JSIsPrintable(const Arguments& args) {
   HandleScope scope;
   KeyCode *self = Unwrap<KeyCode>(args);
-  bool printable = !self->IsKeypad() && \
-    static_cast<bool>(isprint(static_cast<int>(self->Code())));
+  bool printable = !self->IsKeypad() && self->IsPrintable();
   Handle<Boolean> b = Boolean::New(printable);
   return scope.Close(b);
 }

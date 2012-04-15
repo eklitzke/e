@@ -41,7 +41,7 @@ using v8::Object;
 namespace e {
 namespace {
 bool UseAsio() {
-  return !vm().count("without-boost-asio");
+  return !vm.count("without-boost-asio");
 }
 }
 
@@ -118,10 +118,17 @@ bool CursesWindow::InnerOnRead() {
     bool is_keycode = (wch >= 256);
 #endif
     KeyCode *keycode = e::keycode::CursesToKeycode(wch, is_keycode);
+    if (keycode->IsPrintable()) {
+      LOG(DBG, "read '%c' from keyboard (code %d)",
+          static_cast<char>(wch), wch);
+    } else {
+      LOG(DBG, "read code %d from keyboard", wch);
+    }
 
     keep_going = HandleKey(keycode);
-    if (!keep_going)
+    if (!keep_going) {
       break;
+    }
   }
   if (keep_going) {
     v8::V8::IdleNotification();  // tell v8 we're idle (it may want to GC)

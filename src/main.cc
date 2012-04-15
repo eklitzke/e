@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   if (return_code != e::NO_EXIT) {
     return return_code;
   }
-  const boost::program_options::variables_map &vm = e::vm();
+  const boost::program_options::variables_map &vm = e::vm;
   if (vm.count("debug")) {
     e::SetDefaultLogLevel(e::DBG);
     e::LOG(e::DBG, "debug logging turned on");

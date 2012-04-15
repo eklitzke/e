@@ -51,7 +51,9 @@ world.addEventListener("keypress", function (event) {
   case 27: // ^[ a.k.a. Ctrl-[ a.k.a. escape
     if (core.viMode) {
       core.switchMode("command");
-      core.move(0, -1);  // like vi
+      if (core.column > 0) {
+        core.column--;  // like vi
+      }
     } else {
       core.inEscape = true;
     }
@@ -92,4 +94,5 @@ world.addEventListener("after_keypress", function (e) {
   core.updateAllWindows();
 });
 
+require("js/insert_mode.js");
 require("js/vi.js");

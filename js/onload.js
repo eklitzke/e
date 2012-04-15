@@ -53,11 +53,11 @@ world.addEventListener("load", function (event) {
     core.windows.buffer.mvaddstr(i, 0, "~");
   }
   core.windows.buffer.attroff(colors.getColorPair(curses.COLOR_BLUE, -1));
+  core.windows.buffer.mvaddstr(0, 0, "");
 });
 
 // set up the refresh on the clock
 world.addEventListener("load", function (event) {
-
   if (core.clockShowSeconds) {
     var getNext = function () {
       var d = new Date();
@@ -69,7 +69,6 @@ world.addEventListener("load", function (event) {
       return new Date(d.getYear() + 1900, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes() + 1, 0);
     }
   }
-
   var clockRefresh = function () {
     var next = getNext();
     core.drawStatusRight();
@@ -81,6 +80,7 @@ world.addEventListener("load", function (event) {
 
 // Move the cursor and update all windows.
 world.addEventListener("load", function (event) {
-  core.moveAbsolute(0, 0);
+  core.line = 0;
+  core.column = 0;
   core.updateAllWindows();
 });

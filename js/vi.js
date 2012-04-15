@@ -1,5 +1,8 @@
 // Implementation of vi-mode.
 
+// this is the pending command that will be shown in the statusbar
+exports.pendingCommand = '';
+
 function ExFlags() {
   this.flags = '';
 }
@@ -10,15 +13,17 @@ ExFlags.prototype.setFlag = function (flag) {
   }
 };
 
-ExFlags.prototype.clearFlag = function (flag) {
-  var pos = this.flags.indexOf(flag);
-  if (pos) {
-    this.flags.splice(pos, 1);
-  }
+ExFlags.prototype.clear = function () {
+  this.flags = '';
 }
 
-ExFlags.prototype.check = function (flag) {
-  return (this.flags.indexOf(flag) !== -1);
+ExFlags.prototype.check = function (flags) {
+  for (var i = 0; i < flags.length; i++) {
+    if (this.flags.indexOf(flags[i]) !== - 1) {
+      return true;
+    }
+  }
+  return false;
 }
 
 var exFlags = new ExFlags();
@@ -42,10 +47,10 @@ Accumulator.prototype.addDigit = function (digit) {
 
 // Run a function the appropriate number of times (which is once if the
 // accumulator is empty).
-Accumulator.prototype.run = function (func) {
+Accumulator.prototype.run = function (func, data) {
   var count = this.count || 1;
   for (var i = 0; i < count; i++) {
-    func();
+    func(data);
   }
   this.count = 0;
 }
@@ -55,298 +60,200 @@ var accumulator = new Accumulator();
 
 var pasteBuffer = '';
 
-// The main keypress listener for insert mode.
-core.addKeypressListener("insert", function (event) {
-  var cury = core.windows.buffer.getcury();
-  var code = event.getCode();
-  var msg = "@(" + core.line + ", " + core.column + ")  isKeypad = " + event.isKeypad() + ", code = " + code;
-  if (!event.isKeypad()) {
-  var wch = event.getChar();
-  msg += ", wch = '" + wch + "'";
-  log(msg);
-  switch (code) {
-  case 1: // Ctrl-A
-    core.move.left();
-    break;
-  case 3: // Ctrl-C
-    // this should have been handled already
-    break;
-  case 5: // Ctrl-E
-    core.move.right();
-    break;
-  case 12: // Ctrl-L
-    curses.redrawwin();
-    break;
-  case 13: // Ctrl-M, carriage return
-    // chop the line
-    var line = core.currentLine();
-    var chopped = "";
-    if (core.column < line.length) {
-      // chop the end of the line, so that it can be added to the following line
-      chopped = line.value().substring(core.column, line.length);
-      line.chop(core.column);
-      core.windows.buffer.clrtoeol();
-    }
-    // scroll the region below the cursor one line down
-    core.scrollRegion(-1, core.windows.buffer.getcury() + 1, core.windows.buffer.getmaxy());
-    world.buffer.addLine(core.line + 1, chopped);  // add the new line, with the chopped contents
+var handlerMap = {};
+var incompatibilityMap = {};
 
-    core.move(1);  // this implicitly updates core.line
-    core.move.left();
-    if (chopped) {
-      core.windows.buffer.addstr(chopped);
-      core.windows.buffer.clrtoeol();
-      core.move.left();
-    } else {
-      core.windows.buffer.clrtoeol();
-    }
-    core.column = 0;
-    core.move(0);
-    break;
-  case 19: // Ctrl-S
-    if (!world.buffer.persist(world.buffer.getFile())) {
-      core.errorText.set("failed to save file!");
-    }
-  case 26: // Ctrl-Z
-    sys.kill(sys.getpid(), sys.SIGTSTP);
-    break;
-  default:
-    var curline = world.buffer.getLine(core.line);
-    curline.insert(core.column, wch);
-    if (core.column < curline.length - 1) {
-      core.windows.buffer.insch(wch);
-      core.move(0, 1);
-    } else {
-      core.windows.buffer.addstr(wch);
-    }
-    core.column++;
-    break;
-  }
+function addHandler(code) {
+  if (arguments.length == 2) {
+    var callback = arguments[1];
+    handlerMap[code] = callback;
   } else {
-    var name = event.getName();
-    msg += ", name = " + name;
-    //log(msg);
-    switch (name) {
-    case "KEY_BACKSPACE":
-      log("backspace, core.line = " + core.line);
-      if (core.column > 0) {
-        var curline = world.buffer.getLine(core.line);
-        core.windows.buffer.mvdelch(cury, curx - 1);
-        curses.stdscr.move(cury + 1, curx - 1);
-        core.column--;
-        curline.erase(core.column, 1);
-      } else if (core.line > 0) {
-        // update the buffers
-        var curline = world.buffer.getLine(core.line);
-        var origSize = curline.length;
-        var contents = curline.value();
-        world.buffer.deleteLine(core.line--);
-        curline = world.buffer.getLine(core.line);
-        core.column = curline.length;
-        if (contents) {
-          curline.append(contents);
-        }
+    var incompatibleFlags = arguments[1];
+    var callback = arguments[2];
+    incompatibilityMap[code] = incompatibleFlags;
+    handlerMap[code] = callback;
+  }
+}
 
-        // clear the current line
-        core.moveAbsolute(cury, 0);
-        core.windows.buffer.clrtoeol();
-        // scroll up
-        core.scrollRegion(1, core.windows.buffer.getcury(), core.windows.buffer.getmaxy());
-        // redraw the previous line
-        core.moveAbsolute(cury - 1, core.column);
-        if (contents) {
-          core.windows.buffer.addstr(contents)
-          core.moveAbsolute(cury - 1, core.column);
-        }
-      }
-      break;
-    case "KEY_DOWN":
-      if (core.line < world.buffer.length - 1) {
-        core.move(1);
-      }
-      break;
-    case "KEY_END":
-      core.move.right();
-      break;
-    case "KEY_HOME":
-      core.move.left();
-      break;
-    case "KEY_LEFT":
-      core.move(0, -1);
-      break;
-    case "KEY_NPAGE": // page down
-      var maxy = core.windows.buffer.getmaxy();
-      var delta = maxy - 1 - cury;
-      core.move(maxy - 1);
-      break;
-    case "KEY_PPAGE": // page up
-      var maxy = core.windows.buffer.getmaxy();
-      var delta = maxy - 1 - cury;
-      core.move(1 - maxy);
-      break;
-    case "KEY_RIGHT":
-      core.move(0, 1);
-      break;
-    case "KEY_UP":
-      if (core.line > 0)
-        core.move(-1);
-      break;
+addHandler('a', 'cd', function (line) {
+  if (core.column < line.length) {
+    core.column++;
+    core.move();
+  }
+  core.switchMode('insert');
+});
+
+addHandler('A', 'cd', function (line) {
+  core.column = line.length;
+  core.move();
+  core.switchMode('insert');
+});
+
+addHandler('d', 'c', function () {
+  if (exFlags.check('d')) {
+    world.buffer.deleteLine(core.line);
+    core.column = 0;
+    if (!world.buffer.length) {
+      world.buffer.addLine(0, '');
     }
+    if (core.line >= world.buffer.length) {
+      core.line--;
+    }
+    exFlags.clear();
+    var cury = core.windows.buffer.getcury();
+    core.windows.buffer.move(cury, 0);
+    core.windows.buffer.clrtoeol();
+    core.scrollRegion(1, cury);
+  } else {
+    exFlags.setFlag('d');
+    return true;
   }
 });
+
+addHandler('h', function () {
+  if (core.column > 0) {
+    core.column--;
+  }
+});
+
+addHandler('i', 'cd', function () {
+  core.switchMode('insert');
+});
+
+addHandler('j', function () {
+  if (core.line < world.buffer.length - 1) {
+    core.line++;
+  }
+});
+
+addHandler('k', function () {
+  if (core.line > 0) {
+    core.line--;
+  }
+});
+
+addHandler('l', function (line) {
+  if (core.column < line.length - 1) {
+    core.column++;
+  }
+});
+
+addHandler(':', 'cd', function (line) {
+  core.switchMode('ex');
+});
+
+addHandler('$', function (line) {
+  core.column = line.length - 1;
+});
+
+// FIXME: need to check modes more carefully,
+addHandler('0', function () {
+  if (accumulator.count !== 0) {
+    accumulator.addDigit(0);
+    return true;
+  } else {
+    core.column = 0;
+  }
+});
+
+// set a handler for each digit
+(function () {
+  for (var i = 1; i < 10; i++) {
+    (function (i, digit) {
+      addHandler(digit, 'cd', function () {
+        accumulator.addDigit(i);
+        return true;
+      });
+    })(i, new String(i));
+  }
+})();
+
 
 // The main keypress listener for command mode.
 core.addKeypressListener("command", function (event) {
-  var code = event.getCode();
-  var wch = event.getChar();
+  var ch = event.getChar();
 
-  // we're in ex-mode
-  if (core.exBuffer.length) {
-    log("exBuffer is \"" + core.exBuffer + "\"");
-    if (code == 13) {
-      switch (core.exBuffer) {
-      case ":q":
-      case ":qa":
-      case ":q!":
-      case ":qa!":
-        world.stopLoop();
-        break;
-      }
-      core.exBuffer = "";
-    } else {
-      core.exBuffer += wch;
-    }
-    return;
-  }
+  // get the handler function for this character
+  var isMovement = true;
+  var handler = handlerMap[ch];
 
-  // for 'o' and 'O'
-  var insertLine = function (lineDelta) {
-    world.buffer.addLine(core.line + lineDelta, "");
-    core.scrollRegion(-lineDelta, core.windows.buffer.getcury(), core.windows.buffer.getmaxy());
-    core.move(lineDelta);
-    core.move.left();
-    core.windows.buffer.clrtoeol();
-    core.switchMode("insert");
-  };
-
-  var isWhitespace = function (c) {
-    var val;
-    switch (c) {
-    case ' ':
-    case '\n':
-    case '\r':
-    case '\t':
-    case '\v':
-      val = true;
-      break;
-    default:
-      val = false;
-      break;
-    }
-    return val;
-  };
-
-  var motion = null;
-  switch (wch) {
-  case 'a':
-    core.move(0, 1);
-    core.switchMode("insert");
-    break;
-  case 'A':
-    core.move.right();
-    core.switchMode("insert");
-    break;
-  case 'b':
-  case 'B':
-    // XXX: this isn't quite right for a couple of reasons. One is that we need
-    // to be able to move up a line if we reach the beginning of a line. The
-    // other is that 'b' and 'B' are actually slightly different (this behaves
-    // like B not b).
-    core.warningText.set("'" + wch + "' not properly implemented");
-    motion = function () {
-      var line = core.currentLine().value();
-      var col = core.column - 1;
-      while (col > 0) {
-        col--;
-        if (isWhitespace(line[col])) {
-          col++;
-          break;
-        }
-      }
-      core.move(0, col - core.column);
-    };
-    break;
-  case 'd':
-    exFlags.setFlag('d');
-    core.warningText.set("'d' not properly implemented");
-    break;
-  case 'h':
-    motion = function () { core.move(0, -1); };
-    break;
-  case 'j':
-    motion = function () { core.move(1); };
-    break;
-  case 'k':
-    motion = function () { core.move(-1); };
-    break;
-  case 'l':
-    motion = function () { core.move(0, 1); };
-    break;
-  case 'i':
-    core.switchMode("insert");
-    break;
-  case 'I':
-    core.move.left();
-    core.switchMode("insert");
-    break;
-  case 'o':
-    insertLine(1);
-    break;
-  case 'O':
-    insertLine(0);
-    break;
-  case 'y':
-    exFlags.setFlag('y');
-    core.warningText.set("'y' not properly implemented");
-    break;
-  case '^':
-    motion = core.move.left;
-    break;
-  case '0':
-    if (accumulator.count !== 0) {
-      accumulator.addDigit(0);
-    } else {
-      motion = core.move.left;
-    }
-    break;
-  case '1':
-  case '2':
-  case '3':
-  case '4':
-  case '5':
-  case '6':
-  case '7':
-  case '8':
-  case '9':
-    accumulator.addDigit(parseInt(wch));
-    break;
-  case '$':
-    motion = function () {core.move.right(false, true, -1) };
-    break;
-  case ':':
-    core.exBuffer = ":";
-    break;
-  default:
-    var wchName;
+  if (handler === undefined) {
+    // the key couldn't be handled
+    var chName;
     if (event.isPrintable()) {
-      wchName = "'" + wch + "'";
+      chName = "'" + ch + "'";
     } else {
-      wchName = "keycode " + event.getCode();
+      chName = "keycode " + event.getCode();
     }
-    core.errorText.set("vi command not implemented: " + wchName);
-  }
-
-  if (motion !== null) {
-    accumulator.run(motion);
+    core.warningText.set(chName + ' not implemented');
+    exFlags.clear();
+  } else {
+    // Movement commands (e.g. hjkl) are compatible with all modifiers, e.g. dj
+    // is valid. non-movement commands are usually not compatible with some or
+    // all modifiers -- e.g. dJ is an invalid sequence. If we see any
+    // incompatibilities, then the command is considered to not be a movement
+    // command. Otherwise it is one.
+    //
+    // Note that some characters are a bit more complicated to handle. For
+    // instance, 0 can be a movment, or it can be entered as part of an
+    // accumulator sequence, e.g. 10j
+    var line = core.currentLine();
+    var incompatibilities = incompatibilityMap[ch];
+    if (incompatibilities) {
+      isMovement = false;
+       if (exFlags.check(incompatibilities)) {
+         // If an invalid sequence like dJ was entered, let the user know, and
+         // clear all of the flags.
+         core.warningText.set('invalid commmand "' + exFlags.flags + ch + '"');
+         core.notificationText.clear();
+         exFlags.clear();
+         exports.pendingCommand = '';
+       } else {
+         var waiting = handler(line);
+         if (waiting) {
+           exports.pendingCommand += ch;
+         } else {
+           exports.pendingCommand = '';
+         }
+       }
+    } else {
+      exports.pendingCommand = '';
+      var change = false;
+      var origCol = core.column;
+      var origLine = core.line;
+      accumulator.run(handler, line);
+      if (exFlags.check('c')) {
+        exFlags.clear();
+        exFlags.setFlag('d');
+        change = true;
+      }
+      if (exFlags.check('d')) {
+        if (origLine !== core.line) {
+          // we need to delete all of the affected lines
+          var smaller = origLine < core.line ? origLine : core.line;
+          var toDelete = 1 + Math.abs(core.line - origLine);
+          log("deleting " + toDelete + " lines");
+          if (origLine < core.line) {
+            // dk moves the line, but dj doesn't. weird, right?
+            core.line = origLine;
+          }
+          core.glitch("about to scroll");
+          core.scrollRegion(toDelete, core.getY(smaller));
+          core.glitch("done with scroll");
+          for (var i = 0; i < toDelete; i++) {
+            world.buffer.deleteLine(smaller);
+          }
+        } else {
+          log("well shucks");
+        }
+        exFlags.clear()
+      }
+      core.notificationText.clear();
+      if (change) {
+        core.switchMode('insert');
+      }
+    }
   }
 });
+
+require("js/ex.js");

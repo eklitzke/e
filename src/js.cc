@@ -4,6 +4,7 @@
 #include "./js.h"
 
 #include <errno.h>
+#include <unistd.h>
 
 #include <map>
 #include <memory>
@@ -93,6 +94,18 @@ Handle<Value> JSRequire(const Arguments& args) {
   String::Utf8Value value(args[0]->ToString());
   std::string script_name(*value, value.length());
   return e::GetModule(script_name);
+}
+
+// @method: sleep
+// @param[delay]: #double The number of seconds to sleep
+// @description: Causes the code to sleep.
+Handle<Value> JSSleep(const Arguments& args) {
+  CHECK_ARGS(1);
+  double delay = args[0]->NumberValue();
+  useconds_t usec = static_cast<useconds_t>(delay * 1000000);
+  usleep(usec);  // TODO(eklitzke): use nanosleep(3) instead, it deals with
+                 // signals better
+  return scope.Close(Undefined());
 }
 
 // @method: buildInfo
@@ -230,6 +243,8 @@ void AddJsToGlobalNamespace(Local<ObjectTemplate> global) {
               FunctionTemplate::New(JSPanic), v8::ReadOnly);
   global->Set(String::NewSymbol("require"),
               FunctionTemplate::New(JSRequire), v8::ReadOnly);
+  global->Set(String::NewSymbol("sleep"),
+              FunctionTemplate::New(JSSleep), v8::ReadOnly);
 }
 
 void SaveErrno() {

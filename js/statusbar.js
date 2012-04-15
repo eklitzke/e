@@ -1,3 +1,5 @@
+var vi = require('js/vi.js');
+
 function HighlightText() {
   this.text = ''
 };
@@ -16,6 +18,7 @@ HighlightText.prototype.value = function () {
 
 core.errorText = new HighlightText();
 core.warningText = new HighlightText();
+core.notificationText = new HighlightText();
 
 core.addFunction("computeStatusSplits", function (index) {
   var maxx = core.windows.tab.getmaxx();
@@ -30,6 +33,7 @@ core.addFunction("computeStatusSplits", function (index) {
 });
 
 core.addFunction("drawStatus", function () {
+  var maxx = core.windows.status.getmaxx();
   core.windows.status.standout();
   core.windows.status.mvaddstr(0, 0, "  ");
   var split = core.computeStatusSplits(0);
@@ -57,38 +61,55 @@ core.addFunction("drawStatus", function () {
 
   // draw the exBuffer (: commands in vi-mode)
   core.windows.status.move(1, 0);
+
+  // draw the bottom line; this wrapper helps deal with correctly adding padding
+  var drawn = false;
+  var drawBottom = function (bottom, leaveCursor) {
+    drawn = true;
+    var len = bottom.length;
+    while (bottom.length < maxx - 10) {
+      bottom += " ";
+    }
+    core.windows.status.mvaddstr(1, 0, bottom);
+    if (leaveCursor) {
+      resetCursor = false;
+      curses.move(curses.stdscr.getmaxy() - 1, bottom.length);
+    }
+  };
+
+  var bottomline = '';
   core.windows.status.clrtoeol();
-  if (core.exBuffer) {
-    core.windows.status.mvaddstr(1, 0, core.exBuffer);
-    curses.move(curses.stdscr.getmaxy() - 1, core.exBuffer.length);
-    resetCursor = false;
+  if (core.curmode == 'ex') {
+    drawBottom(':' + core.exBuffer, true);
   }
+
+  var drawStatusLine = function (fg, bg, text) {
+    core.windows.status.attron(curses.A_BOLD);
+    var colorPair = colors.getColorPair(fg, bg);
+    drawBottom(text);
+    core.windows.status.attron(colorPair);
+    core.windows.status.mvaddstr(1, 0, text);
+    core.windows.status.attroff(colorPair);
+    core.windows.status.attroff(curses.A_BOLD);
+  };
+
   if (core.errorText.value()) {
-    core.windows.status.attron(curses.A_BOLD);
-    var colorPair = colors.getColorPair(curses.COLOR_WHITE, curses.COLOR_RED);
-    core.windows.status.attron(colorPair);
-    core.windows.status.mvaddstr(1, 0, "ERROR: " + core.errorText.value());
-    core.windows.status.attroff(colorPair);
-    core.windows.status.attroff(curses.A_BOLD);
+    drawStatusLine(curses.COLOR_WHITE, curses.COLOR_RED, "ERROR: " +
+                   core.errorText.value());
   } else if (core.warningText.value()) {
-    core.windows.status.attron(curses.A_BOLD);
-    var colorPair = colors.getColorPair(curses.COLOR_RED, -1);
-    core.windows.status.attron(colorPair);
-    core.windows.status.mvaddstr(1, 0, "WARNING: " + core.warningText.value());
-    core.windows.status.attroff(colorPair);
-    core.windows.status.attroff(curses.A_BOLD);
+    drawStatusLine(curses.COLOR_RED, -1, "WARNING: " + core.warningText.value());
+  } else if (core.notificationText.value()) {
+    drawStatusLine(curses.COLOR_GREEN, -1, core.notificationText.value());
   } else if (core.curmode == "insert") {
-    core.windows.status.attron(curses.A_BOLD);
-    var colorPair = colors.getColorPair(curses.COLOR_YELLOW, -1);
-    core.windows.status.attron(colorPair);
-    core.windows.status.mvaddstr(1, 0, "-- INSERT --");
-    core.windows.status.attroff(colorPair);
-    core.windows.status.attroff(curses.A_BOLD);
+    drawStatusLine(curses.COLOR_YELLOW, -1, "-- INSERT --");
+  } else if (drawn === false) {
+    drawBottom('');
   }
+  core.windows.status.addstr(vi.pendingCommand);
 
   if (resetCursor) {
     // move the cursor back to the main editing buffer
-    core.moveAbsolute(core.windows.buffer.getcury(), core.column);
+    core.move()
   }
 });
 

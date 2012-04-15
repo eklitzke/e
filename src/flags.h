@@ -15,8 +15,7 @@ enum {
 // parse argc and argv
 int ParseOptions(int argc, char **argv);
 
-// get the variables map
-const boost::program_options::variables_map& vm();
+extern boost::program_options::variables_map vm;
 }
 
 #endif  // SRC_FLAGS_H_

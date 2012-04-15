@@ -205,8 +205,9 @@ Handle<Value> JSGetLine(const Arguments& args) {
 
   Handle<Value> arg0 = args[0];
   uint32_t offset = arg0->Uint32Value();
-  Line *l = (*self)[static_cast<size_t>(offset)];
-  return scope.Close(l->ToScript());
+  Line *line = (*self)[static_cast<size_t>(offset)];
+  ASSERT(line != nullptr);
+  return scope.Close(line->ToScript());
 }
 
 // @method: getContents

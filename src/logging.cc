@@ -77,8 +77,8 @@ void Logger::VLog(int level, const std::string &fmt, va_list ap) const {
   format += outstr;
 
   pid_t p = getpid();
-  int millis = tv.tv_usec / 1000;
-  snprintf(outstr, sizeof(outstr), ".%03d %5d", millis, p);
+  snprintf(outstr, sizeof(outstr), ".%06d %5d",
+           static_cast<int>(tv.tv_usec), p);
   format += outstr;
 
   switch (level) {

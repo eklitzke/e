@@ -65,20 +65,6 @@ core.addFunction("toBool", function (val, defaultValue) {
 });
 
 /**
- * Get the line number of the top line in the window (zero indexed).
- */
-core.addFunction("windowTop", function () {
-  return core.line - core.windows.buffer.getcury();
-});
-
-/**
- * Get the line number of the bottom line in the window (zero indexed).
- */
-core.addFunction("windowBottom", function () {
-  return core.windowTop() + core.windows.buffer.getmaxy();
-});
-
-/**
  * Attempt to log a traceback.
  */
 core.addFunction("logTrace", function () {
@@ -117,6 +103,40 @@ core.addFunction("updateAllWindows", function (doupdate) {
 
   // do the update
   curses.doupdate();
+});
+
+// Update the screen, and then sleep for some amount of time (by default one
+// second). This is sometimes useful for debugging complicated drawing
+// operations that involve multiple screen updates, as you can "glitch" between
+// each one to verify that the screen looks correct.
+core.addFunction("glitch", function () {
+  if (debug) {
+    var delay = 5;
+    var msg = '';
+    if (arguments.length === 1) {
+      var arg = arguments[0];
+      if (typeof arg === "number" || typeof arg === "Number") {
+        delay = arg;
+      } else if (typeof arg === "string" || typeof arg === "String") {
+        msg = arg;
+      }
+    } else if (arguments.length === 2) {
+      delay = arguments[0];
+      msg = arguments[1];
+    }
+    if (msg) {
+      log("GLITCH, msg = " + msg);
+      var curx = curses.stdscr.getcurx();
+      var cury = curses.stdscr.getcury();
+      var maxy = curses.stdscr.getmaxy();
+      curses.stdscr.move(maxy - 1, 0);
+      curses.stdscr.clrtoeol();
+      curses.stdscr.mvaddstr(maxy - 1, 0, msg);
+      curses.stdscr.move(cury, curx);
+    }
+    core.updateAllWindows();
+    sleep(delay);
+  }
 });
 
 require("js/keypress.js");  // for side-effects

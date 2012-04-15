@@ -6,8 +6,6 @@
 namespace po = boost::program_options;
 
 namespace {
-po::variables_map vm_;
-
 void PrintDescription(const po::options_description &desc,
                       FILE *f = stderr) {
   fprintf(f, "%s\n", boost::lexical_cast<std::string>(desc).c_str());
@@ -15,6 +13,8 @@ void PrintDescription(const po::options_description &desc,
 }
 
 namespace e {
+po::variables_map vm;
+
 int ParseOptions(int argc, char **argv) {
   po::options_description help_desc("Help options");
   help_desc.add_options()
@@ -51,16 +51,16 @@ int ParseOptions(int argc, char **argv) {
   p.add("file", -1);
 
   po::store(po::command_line_parser(argc, argv).
-            options(all_desc).positional(p).run(), vm_);
-  po::notify(vm_);
+            options(all_desc).positional(p).run(), vm);
+  po::notify(vm);
 
-  if (vm_.count("help")) {
+  if (vm.count("help")) {
     printf("Usage: e [options] [file ...]\n");
     PrintDescription(visible_desc);
     return 0;
   }
-  if (vm_.count("help-module")) {
-    const std::string& s = vm_["help-module"].as<std::string>();
+  if (vm.count("help-module")) {
+    const std::string& s = vm["help-module"].as<std::string>();
     if (s == "help") {
       PrintDescription(help_desc);
     } else if (s == "scripting") {
@@ -73,7 +73,7 @@ int ParseOptions(int argc, char **argv) {
     }
     return 0;
   }
-  if (vm_.count("list-help-modules")) {
+  if (vm.count("list-help-modules")) {
     puts("backend");
     puts("help");
     puts("scripting");
@@ -83,9 +83,9 @@ int ParseOptions(int argc, char **argv) {
   // Generally a user should only be allowed to --skip-core if they specify
   // other scripts on the command line; if they try to skip this, make sure that
   // --really-do-nothing was specified.
-  if (vm_.count("skip-core") &&
-      !vm_.count("script") &&
-      !vm_.count("really-do-nothing")) {
+  if (vm.count("skip-core") &&
+      !vm.count("script") &&
+      !vm.count("really-do-nothing")) {
     printf(
         "Running with --skip-core and no --script arguments is probably a bad "
         "idea.\nIf you want to do this anyway, invoke with "
@@ -93,9 +93,5 @@ int ParseOptions(int argc, char **argv) {
     return 1;
   }
   return NO_EXIT;
-}
-
-const po::variables_map& vm() {
-  return vm_;
 }
 }
