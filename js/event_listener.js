@@ -15,7 +15,6 @@ var removeListener = function (callbacks, name, callback) {
         i--;  // correct for the splice
       }
     }
-
   }
 };
 
