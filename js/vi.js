@@ -1,5 +1,7 @@
 // Implementation of vi-mode.
 
+var curses = require("curses");
+
 // this is the pending command that will be shown in the statusbar
 exports.pendingCommand = '';
 
@@ -66,12 +68,16 @@ var incompatibilityMap = {};
 function addHandler(code) {
   if (arguments.length == 2) {
     var callback = arguments[1];
-    handlerMap[code] = callback;
+    for (var i = 0; i < code.length; i++) {
+      handlerMap[code[i]] = callback;
+    }
   } else {
     var incompatibleFlags = arguments[1];
     var callback = arguments[2];
     incompatibilityMap[code] = incompatibleFlags;
-    handlerMap[code] = callback;
+    for (var i = 0; i < code.length; i++) {
+      handlerMap[code[i]] = callback;
+    }
   }
 }
 
@@ -110,7 +116,7 @@ addHandler('d', 'c', function () {
   }
 });
 
-addHandler('h', function () {
+addHandler(['h', curses.keycodes['KEY_LEFT']], function () {
   if (core.column > 0) {
     core.column--;
   }
@@ -120,22 +126,38 @@ addHandler('i', 'cd', function () {
   core.switchMode('insert');
 });
 
-addHandler('j', function () {
+
+addHandler(['j', curses.keycodes['KEY_DOWN']], function () {
   if (core.line < world.buffer.length - 1) {
     core.line++;
   }
 });
 
-addHandler('k', function () {
+addHandler(['k', curses.keycodes['KEY_UP']], function () {
   if (core.line > 0) {
     core.line--;
   }
 });
 
-addHandler('l', function (line) {
+addHandler(['l', curses.keycodes['KEY_RIGHT']], function (line) {
   if (core.column < line.length - 1) {
     core.column++;
   }
+});
+
+addHandler('o', 'cd', function () {
+  world.buffer.addLine(core.line + 1)
+  core.redrawBuffer();
+  core.line++;
+  core.column = 0;
+  core.switchMode('insert');
+});
+
+addHandler('O', 'cd', function () {
+  world.buffer.addLine(core.line)
+  core.column = 0;
+  core.redrawBuffer();
+  core.switchMode('insert');
 });
 
 addHandler(':', 'cd', function (line) {
@@ -176,6 +198,9 @@ core.addKeypressListener("command", function (event) {
   // get the handler function for this character
   var isMovement = true;
   var handler = handlerMap[ch];
+  if (handler === undefined) {
+    handler = handlerMap[event.getCode()];
+  }
 
   if (handler === undefined) {
     // the key couldn't be handled

@@ -8,6 +8,7 @@
 
 #include "./js.h"
 #include "./js_curses_window.h"
+#include "./keycode.h"
 #include "./logging.h"
 #include "./module.h"
 
@@ -353,6 +354,7 @@ bool Build(Handle<Object> obj) {
   AddFunction(obj, "newwin", &CursesNewwin);
   AddFunction(obj, "refresh", &CursesRefresh);
 
+  obj->Set(String::New("keycodes"), GetKeycodeMap(), v8::ReadOnly);
   return true;
 }
 }

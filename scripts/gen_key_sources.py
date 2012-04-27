@@ -21,6 +21,8 @@ h_template = """
 #include <string>
 
 using v8::Arguments;
+using v8::Handle;
+using v8::Object;
 using v8::Persistent;
 using v8::Value;
 
@@ -43,9 +45,8 @@ class KeyCode {
   std::string name_;
 };
 
-namespace keycode {
 KeyCode* CursesToKeycode(const wint_t &wch, bool is_keypad);
-}
+Handle<Object> GetKeycodeMap();
 }
 
 #endif  // SRC_KEYCODE_H_
@@ -77,6 +78,7 @@ using v8::Integer;
 using v8::Object;
 using v8::ObjectTemplate;
 using v8::String;
+using v8::Undefined;
 using v8::Value;
 
 namespace e {
@@ -203,26 +205,33 @@ Persistent<Value> KeyCode::ToScript() {
   return kc;
 }
 
-namespace keycode {
-  const size_t max_code = %(max_code)d;
-  const char * keycode_arr[%(arr_size)d] = {
+namespace {
+const size_t max_code = %(max_code)d;
+const char * keycode_arr[%(arr_size)d] = {
 %(codes)s
-  };
+};
+}
 
-  KeyCode* CursesToKeycode(const wint_t &wch, bool is_keypad) {
-    // The returned pointers are "owned" by V8; the way they'll get deleted
-    // later on is by CleanupKeycode, which will be invoked when the containing
-    // V8 object is garbage collected.
-    if (is_keypad) {
-      size_t offset = static_cast<size_t>(wch);
-      ASSERT(offset <= max_code);
-      const char *name = keycode_arr[offset];
-      ASSERT(name != nullptr);
-      return new KeyCode(wch, name);
-    } else {
-      return new KeyCode(wch);
-    }
+KeyCode* CursesToKeycode(const wint_t &wch, bool is_keypad) {
+  // The returned pointers are "owned" by V8; the way they'll get deleted
+  // later on is by CleanupKeycode, which will be invoked when the containing
+  // V8 object is garbage collected.
+  if (is_keypad) {
+    size_t offset = static_cast<size_t>(wch);
+    ASSERT(offset <= max_code);
+    const char *name = keycode_arr[offset];
+    ASSERT(name != nullptr);
+    return new KeyCode(wch, name);
+  } else {
+    return new KeyCode(wch);
   }
+}
+
+Handle<Object> GetKeycodeMap() {
+  HandleScope scope;
+  Handle<Object> arr = Object::New();
+  %(keycode_map_code)s
+  return scope.Close(arr);
 }
 }
 """
@@ -309,6 +318,7 @@ if __name__ == '__main__':
 
     printable = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ '
     code_arr = []
+    map_arr = []
     comment_width = 30
     for code in xrange(max_code + 1):
         if code and code in value_map:
@@ -317,15 +327,16 @@ if __name__ == '__main__':
             val += ' ' * (comment_width - len(val))
             val += '// %s' % (description,)
             code_arr.append(val)
+            map_arr.append('arr->Set(String::New("%s"), Integer::New(%d), v8::ReadOnly);' % (name, code));
         elif code < 128:
-            chrval = chr(code)
-            if chrval in printable:
-                chrval = chrval.replace('\\', '\\\\')
-                chrval = chrval.replace('"', '\\"')
-                code_arr.append('      "%s",' % (chrval,))
+            name = chr(code)
+            if name in printable:
+                name = name.replace('\\', '\\\\')
+                name = name.replace('"', '\\"')
+                code_arr.append('      "%s",' % (name,))
+                map_arr.append('arr->Set(String::New("%s"), Integer::New(%d), v8::ReadOnly);' % (name, code));
             else:
                 code_arr.append('      "\\x%02x",' % (code,))
-            pass
         else:
             val = '      nullptr,'
             val += ' ' * (comment_width - len(val))
@@ -340,4 +351,5 @@ if __name__ == '__main__':
                                                'current_year': current_year,
                                                'codes': '\n'.join(code_arr),
                                                'h_name': os.path.basename(h_name),
+                                               'keycode_map_code': '\n  '.join(map_arr),
                                                'max_code': max_code}))

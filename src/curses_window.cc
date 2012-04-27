@@ -117,7 +117,7 @@ bool CursesWindow::InnerOnRead() {
     wint_t wch = static_cast<wint_t>(ch);
     bool is_keycode = (wch >= 256);
 #endif
-    KeyCode *keycode = e::keycode::CursesToKeycode(wch, is_keycode);
+    KeyCode *keycode = CursesToKeycode(wch, is_keycode);
     if (keycode->IsPrintable()) {
       LOG(DBG, "read '%c' from keyboard (code %d)",
           static_cast<char>(wch), wch);
